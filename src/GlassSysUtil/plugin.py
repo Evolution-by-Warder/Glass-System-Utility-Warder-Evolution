@@ -19,7 +19,7 @@ from Components.ActionMap import ActionMap
 from Components.Label import Label
 from Components.MenuList import MenuList
 
-VERSION = "13.22-w3"
+VERSION = "13.23-w4"
 
 
 def _read_text(path, default="N/A"):
@@ -312,7 +312,7 @@ def Plugins(path=None, **kwargs):
     return [
         PluginDescriptor(name="Glass System Utility",
                          description="Glass System Utility Warder Evolution",
-                         where=PluginDescriptor.WHERE_PLUGINMENU, fnc=main),
+                         where=PluginDescriptor.WHERE_PLUGINMENU, icon="SysMgt.png", fnc=main),
         PluginDescriptor(name="Glass System Utility",
                          description="Glass System Utility Warder Evolution",
                          where=PluginDescriptor.WHERE_MENU, fnc=startViaMenu),
