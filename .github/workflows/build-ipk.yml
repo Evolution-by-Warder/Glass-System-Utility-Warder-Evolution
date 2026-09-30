@@ -6,6 +6,8 @@ on:
     paths:
       - "src/GlassSysUtil/**"
       - "packaging/CONTROL/**"
+      - "tests/**"
+      - "tools/build-ipk.sh"
       - ".github/workflows/build-ipk.yml"
   workflow_dispatch:
 
@@ -16,30 +18,52 @@ jobs:
       - uses: actions/checkout@v4
       - name: Validate source
         run: |
+          set -eu
+          VERSION="$(tr -d '\r\n' < src/GlassSysUtil/version)"
+          test -n "$VERSION"
+          grep -Fqx "Version: $VERSION" packaging/CONTROL/control
           python3 -m py_compile src/GlassSysUtil/plugin.py
-          test "$(cat src/GlassSysUtil/version)" = "13.24-w5"
-          grep -q '^Version: 13.24$' packaging/CONTROL/control
+          test -s src/GlassSysUtil/plugin.py
+          test -s src/GlassSysUtil/__init__.py
           test -s src/GlassSysUtil/SysMgt.png
-      - name: Build IPK
+          file --mime-type src/GlassSysUtil/SysMgt.png | grep -Fq 'image/png'
+          grep -q 'def _temperature_candidates' src/GlassSysUtil/plugin.py
+          grep -q 'def _temperature_values' src/GlassSysUtil/plugin.py
+          grep -q 'def _auto_update_check' src/GlassSysUtil/plugin.py
+          grep -q 'Check for updates' src/GlassSysUtil/plugin.py
+          grep -q 'ScrollLabel' src/GlassSysUtil/plugin.py
+          grep -q 'WHERE_SESSIONSTART' src/GlassSysUtil/plugin.py
+          python3 -m unittest discover -s tests -p 'test_*.py'
+      - name: Build and validate deterministic IPK
         run: |
           set -eu
-          ROOT="$PWD/.build/root"
-          PARTS="$PWD/.build/parts"
+          VERSION="$(tr -d '\r\n' < src/GlassSysUtil/version)"
+          WORK="$PWD/.build"
+          ROOT="$WORK/root"
+          CONTROL="$WORK/control"
           PLUGIN="$ROOT/usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil"
-          mkdir -p "$PLUGIN" "$PARTS/control"
+          IPK="$GITHUB_WORKSPACE/enigma2-plugin-glasssysutil_${VERSION}_all.ipk"
+          mkdir -p "$PLUGIN" "$CONTROL"
           cp src/GlassSysUtil/plugin.py src/GlassSysUtil/__init__.py src/GlassSysUtil/version src/GlassSysUtil/SysMgt.png "$PLUGIN/"
-          cp packaging/CONTROL/control packaging/CONTROL/postinst "$PARTS/control/"
-          chmod 755 "$PARTS/control/postinst"
-          printf '2.0\n' > "$PARTS/debian-binary"
-          tar -C "$PARTS/control" -czf "$PARTS/control.tar.gz" .
-          tar -C "$ROOT" -czf "$PARTS/data.tar.gz" usr
-          (cd "$PARTS" && ar rc "$GITHUB_WORKSPACE/enigma2-plugin-glasssysutil_13.24-w5_all.ipk" debian-binary control.tar.gz data.tar.gz)
-          ar t enigma2-plugin-glasssysutil_13.24-w5_all.ipk
-          sha256sum enigma2-plugin-glasssysutil_13.24-w5_all.ipk | tee enigma2-plugin-glasssysutil_13.24-w5_all.ipk.sha256
+          cp packaging/CONTROL/control packaging/CONTROL/postinst "$CONTROL/"
+          chmod 755 "$CONTROL/postinst"
+          printf '2.0\n' > "$WORK/debian-binary"
+          tar --sort=name --mtime='@0' --owner=0 --group=0 --numeric-owner -cf - -C "$CONTROL" . | gzip -n > "$WORK/control.tar.gz"
+          tar --sort=name --mtime='@0' --owner=0 --group=0 --numeric-owner -cf - -C "$ROOT" usr | gzip -n > "$WORK/data.tar.gz"
+          (cd "$WORK" && ar rcD "$IPK" debian-binary control.tar.gz data.tar.gz)
+          MEMBERS="$(ar t "$IPK" | tr '\n' ' ')"
+          test "$MEMBERS" = "debian-binary control.tar.gz data.tar.gz "
+          test "$(ar p "$IPK" debian-binary)" = "2.0"
+          ar p "$IPK" control.tar.gz | tar -xzOf - ./control | grep -Fqx "Package: enigma2-plugin-glasssysutil"
+          ar p "$IPK" control.tar.gz | tar -xzOf - ./control | grep -Fqx "Version: $VERSION"
+          ar p "$IPK" control.tar.gz | tar -xzOf - ./postinst | grep -q 'GUI restart is required'
+          ar p "$IPK" data.tar.gz | tar -tzf - | grep -Fq 'usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/plugin.py'
+          ar p "$IPK" data.tar.gz | tar -tzf - | grep -Fq 'usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/SysMgt.png'
+          sha256sum "$IPK" | tee "$IPK.sha256"
       - uses: actions/upload-artifact@v4
         with:
-          name: glasssysutil-13.24-w5
+          name: glasssysutil-test-${{ github.sha }}
           path: |
-            enigma2-plugin-glasssysutil_13.24-w5_all.ipk
-            enigma2-plugin-glasssysutil_13.24-w5_all.ipk.sha256
+            enigma2-plugin-glasssysutil_*.ipk
+            enigma2-plugin-glasssysutil_*.ipk.sha256
           if-no-files-found: error

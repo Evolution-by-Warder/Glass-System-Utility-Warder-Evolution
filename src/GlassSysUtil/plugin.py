@@ -12,8 +12,11 @@ import shutil
 import socket
 import subprocess
 import json
+import tempfile
+import threading
 import urllib.request
 import urllib.error
+from urllib.parse import urlsplit
 
 from Plugins.Plugin import PluginDescriptor
 from Screens.MessageBox import MessageBox
@@ -25,10 +28,23 @@ try:
 except ImportError:
     ScrollLabel = None
 from Components.MenuList import MenuList
+try:
+    from enigma import eTimer
+except ImportError:
+    eTimer = None
 
-VERSION = "13.24-w5"
+def _installed_version():
+    try:
+        with open(os.path.join(os.path.dirname(__file__), "version"), "r") as handle:
+            value = handle.read().strip()
+        return value or "unknown"
+    except Exception:
+        return "unknown"
+
+
+VERSION = _installed_version()
 UPDATE_API = "https://api.github.com/repos/Evolution-by-Warder/Glass-System-Utility-Warder-Evolution/releases/latest"
-UPDATE_MARKER = "/tmp/gsu-update-check"
+_AUTO_UPDATE_STARTED = False
 
 
 def _read_text(path, default="N/A"):
@@ -103,7 +119,7 @@ def _ipv4_for_interface(name):
 
 def hardware_identity_information():
     """Read receiver identity and exposed hardware capabilities without vendor branching."""
-    brand_paths = ("/proc/stb/info/brand", "/proc/stb/info/boxtype", "/etc/hostname")
+    brand_paths = ("/proc/stb/info/brand",)
     model_paths = ("/proc/stb/info/model", "/proc/stb/info/boxtype", "/proc/device-tree/model")
     serial_paths = ("/proc/stb/info/serial", "/proc/stb/info/serial_number")
     def first(paths, default="N/A"):
@@ -119,6 +135,16 @@ def hardware_identity_information():
         "Architecture: %s" % platform.machine(),
         "Kernel: %s" % platform.release(),
     ]
+    cpu = ""
+    for line in _read_lines("/proc/cpuinfo"):
+        if ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        if key.strip().lower() in ("model name", "hardware", "cpu model", "processor"):
+            cpu = value.strip()
+            if cpu:
+                break
+    rows.append("CPU: %s" % (cpu or "N/A"))
     # Serial is deliberately reported only as presence, not exposed in UI.
     serial_present = any(bool(_read_text(path, "")) for path in serial_paths)
     rows.append("Hardware serial interface: %s" % ("available (hidden)" if serial_present else "not exposed"))
@@ -225,11 +251,11 @@ def service_information():
     rows = []
     patterns = ("enigma2", "oscam", "cccam", "ncam", "mgcamd", "samba", "smbd",
                 "nmbd", "dropbear", "sshd", "vsftpd", "rpcbind")
-    proc = _run(["ps", "-ef"], 4) or _run(["pgrep", "-a", "-f", "."], 4)
-    for line in proc.splitlines():
-        low = line.lower()
-        if any(name in low for name in patterns) and "grep" not in low:
-            rows.append(line.strip())
+    for needle in patterns:
+        for pid, argv in _find_processes(needle):
+            if argv:
+                rows.append("%s (PID %s)" % (os.path.basename(argv[0]), pid))
+    rows = sorted(set(rows), key=lambda value: value.lower())
     return "\n".join(rows) if rows else "No known GSU service processes detected."
 
 
@@ -245,24 +271,11 @@ def mount_information():
 
 def oscam_information():
     rows = []
-    proc = _run(["pgrep", "-a", "-i", "oscam"], 4)
-    matches = [line.strip() for line in proc.splitlines() if line.strip()]
+    matches = _find_processes("oscam")
     rows.append("Process: %s" % ("RUNNING" if matches else "not detected"))
     if matches:
-        rows.extend(matches[:6])
-
-    config_dir = ""
-    for line in matches:
-        fields = line.split()
-        for index, field in enumerate(fields):
-            if field == "--config-dir" and index + 1 < len(fields):
-                config_dir = fields[index + 1]
-                break
-            if field.startswith("--config-dir="):
-                config_dir = field.split("=", 1)[1]
-                break
-        if config_dir:
-            break
+        rows.append("Process IDs: %s" % ", ".join(pid for pid, argv in matches[:8]))
+    config_dir = _process_option(matches, "--config-dir")
 
     if not config_dir:
         pidfiles = ("/var/tmp/oscam-uni.pid", "/var/volatile/tmp/oscam-uni.pid")
@@ -291,7 +304,7 @@ def oscam_information():
 
 def _proc_cmdline(pid):
     raw = _read_text("/proc/%s/cmdline" % pid, "")
-    return raw.replace("\x00", " ").strip()
+    return [part for part in raw.split("\x00") if part]
 
 
 def _find_processes(needle):
@@ -301,10 +314,23 @@ def _find_processes(needle):
     except Exception:
         pids = []
     for pid in pids:
-        cmd = _proc_cmdline(pid)
-        if needle.lower() in cmd.lower():
-            rows.append((pid, cmd))
+        argv = _proc_cmdline(pid)
+        if not argv:
+            comm = _read_text("/proc/%s/comm" % pid, "")
+            argv = [comm] if comm else []
+        if argv and needle.lower() in " ".join(argv).lower():
+            rows.append((pid, argv))
     return rows
+
+
+def _process_option(matches, option):
+    for pid, argv in matches:
+        for index, value in enumerate(argv):
+            if value == option and index + 1 < len(argv):
+                return argv[index + 1]
+            if value.startswith(option + "="):
+                return value.split("=", 1)[1]
+    return ""
 
 
 def _parse_ini_section(path, section_name):
@@ -323,20 +349,8 @@ def _parse_ini_section(path, section_name):
 
 
 def oscam_webif_information():
-    proc = _run(["pgrep", "-a", "-i", "oscam"], 4)
-    matches = [line.strip() for line in proc.splitlines() if line.strip()]
-    config_dir = ""
-    for line in matches:
-        fields = line.split()
-        for index, field in enumerate(fields):
-            if field == "--config-dir" and index + 1 < len(fields):
-                config_dir = fields[index + 1]
-                break
-            if field.startswith("--config-dir="):
-                config_dir = field.split("=", 1)[1]
-                break
-        if config_dir:
-            break
+    matches = _find_processes("oscam")
+    config_dir = _process_option(matches, "--config-dir")
     candidates = []
     if config_dir:
         candidates.append(os.path.join(config_dir, "oscam.conf"))
@@ -441,8 +455,9 @@ def _temperature_candidates():
     return candidates
 
 
-def temperature_information():
-    rows = []
+def _temperature_values():
+    """Return valid readings from detected sysfs and Enigma2 sensor files."""
+    values = []
     seen = set()
     for path, label_path in _temperature_candidates():
         if not os.path.isfile(path):
@@ -462,10 +477,14 @@ def temperature_information():
             if not label:
                 parent = os.path.basename(os.path.dirname(path))
                 label = parent if parent else "Temperature"
-            rows.append("%s: %.1f C" % (label, value))
+            values.append((label, value))
         except Exception:
             pass
+    return values
 
+
+def temperature_information():
+    rows = ["%s: %.1f C" % (label, value) for label, value in _temperature_values()]
     if rows:
         return "\n".join(rows)
     return "Temperature data not exposed through detected system interfaces."
@@ -487,20 +506,8 @@ def oscam_runtime_information():
     else:
         rows.append("OSCam runtime version file: not found")
 
-    proc = _run(["pgrep", "-a", "-i", "oscam"], 4)
-    matches = [line.strip() for line in proc.splitlines() if line.strip()]
-    config_dir = ""
-    for line in matches:
-        fields = line.split()
-        for index, field in enumerate(fields):
-            if field == "--config-dir" and index + 1 < len(fields):
-                config_dir = fields[index + 1]
-                break
-            if field.startswith("--config-dir="):
-                config_dir = field.split("=", 1)[1]
-                break
-        if config_dir:
-            break
+    matches = _find_processes("oscam")
+    config_dir = _process_option(matches, "--config-dir")
     if config_dir:
         server = os.path.join(config_dir, "oscam.server")
         users = os.path.join(config_dir, "oscam.user")
@@ -524,9 +531,7 @@ def package_information():
         rows.append("%s" % package)
         rows.append("  Version: %s" % (version or "N/A"))
         rows.append("  Status: %s" % (status or "N/A"))
-    upgradable = _run(["opkg", "list-upgradable"], 8)
-    count = len([line for line in upgradable.splitlines() if " - " in line])
-    rows += ["", "Packages with upgrades available: %d" % count]
+    rows += ["", "Available upgrades: not checked here (repository queries may block this screen)."]
     return "\n".join(rows)
 
 
@@ -647,8 +652,10 @@ def filesystem_health_information():
 
 def capability_information():
     """Report interfaces actually exposed by the running receiver/image."""
+    temp_paths = [path for path, label in _temperature_candidates() if os.path.isfile(path)]
     probes = [
-        ("Temperature data", any(os.path.isfile(path) for path, label in _temperature_candidates())),
+        ("Temperature interfaces", bool(temp_paths)),
+        ("Temperature readings", bool(_temperature_values())),
         ("Thermal sysfs", os.path.isdir("/sys/class/thermal")),
         ("Hardware monitor", os.path.isdir("/sys/class/hwmon")),
         ("Network sysfs", os.path.isdir("/sys/class/net")),
@@ -658,8 +665,8 @@ def capability_information():
         ("Mount table", os.path.isfile("/proc/mounts")),
         ("opkg", bool(shutil.which("opkg"))),
         ("iproute2", bool(shutil.which("ip"))),
-        ("socket status", bool(shutil.which("ss") or shutil.which("netstat"))),
-        ("process lookup", bool(shutil.which("pgrep"))),
+        ("ss/netstat", bool(shutil.which("ss") or shutil.which("netstat"))),
+        ("pgrep", bool(shutil.which("pgrep"))),
     ]
     rows = ["Detected runtime capabilities", ""]
     rows.extend("%-20s %s" % (name + ":", "YES" if present else "no") for name, present in probes)
@@ -667,7 +674,7 @@ def capability_information():
 
 
 def diagnostic_summary():
-    oscam = bool(_run(["pgrep", "-a", "-i", "oscam"], 3))
+    oscam = bool(_find_processes("oscam"))
     network_mounts = 0
     for line in _read_lines("/proc/mounts"):
         fields = line.split()
@@ -693,7 +700,7 @@ def diagnostic_summary():
 
 
 def _version_key(value):
-    """Compare Warder versions such as 13.24-w5 without float conversion."""
+    """Compare Warder versions such as 13.25-w6 without float conversion."""
     text = (value or "").strip().lower().lstrip("v")
     parts = []
     for chunk in text.replace("-", ".").split("."):
@@ -704,129 +711,236 @@ def _version_key(value):
 
 def _latest_release():
     """Read the public GitHub release manifest. No GitHub credentials are used."""
+    req = urllib.request.Request(
+        UPDATE_API,
+        headers={"User-Agent": "Glass-System-Utility-Warder-Evolution/%s" % VERSION,
+                 "Accept": "application/vnd.github+json"})
     try:
-        req = urllib.request.Request(
-            UPDATE_API,
-            headers={"User-Agent": "Glass-System-Utility-Warder-Evolution/%s" % VERSION,
-                     "Accept": "application/vnd.github+json"})
-        with urllib.request.urlopen(req, timeout=6) as response:
-            data = json.loads(response.read().decode("utf-8", "replace"))
-        tag = (data.get("tag_name") or "").strip()
-        assets = data.get("assets") or []
-        ipk = next((asset for asset in assets
-                    if (asset.get("name") or "").endswith(".ipk")
-                    and asset.get("browser_download_url")), None)
-        if not tag or not ipk:
+        response = urllib.request.urlopen(req, timeout=6)
+    except urllib.error.HTTPError as exc:
+        if exc.code == 404:
             return None
-        version = tag.lstrip("v")
-        name = ipk.get("name") or ""
-        # Release asset must visibly belong to the version being offered.
-        if version not in name:
-            return None
-        return {"version": version,
-                "url": ipk.get("browser_download_url"),
-                "name": name,
-                "size": int(ipk.get("size") or 0)}
-    except Exception:
+        raise
+    with response:
+        data = json.loads(response.read().decode("utf-8", "replace"))
+    tag = (data.get("tag_name") or "").strip()
+    version = tag[1:] if tag.lower().startswith("v") else tag
+    if not version or not all(char.isalnum() or char in ".-_" for char in version):
         return None
+    name = "enigma2-plugin-glasssysutil_%s_all.ipk" % version
+    ipk = next((asset for asset in (data.get("assets") or [])
+                if asset.get("name") == name), None)
+    if not ipk:
+        return None
+    url = ipk.get("browser_download_url") or ""
+    parsed = urlsplit(url)
+    expected_path = ("/Evolution-by-Warder/Glass-System-Utility-Warder-Evolution/"
+                     "releases/download/%s/%s" % (tag, name))
+    if (parsed.scheme != "https" or parsed.hostname != "github.com" or
+            parsed.username or parsed.password or parsed.port or parsed.path != expected_path):
+        return None
+    try:
+        size = int(ipk.get("size") or 0)
+    except (TypeError, ValueError):
+        return None
+    if size < 256:
+        return None
+    return {"version": version, "tag": tag, "url": url, "name": name, "size": size}
 
 
-def _download_update(url, name):
-    """Download only an IPK asset from this project's official GitHub releases."""
-    if not url or not url.startswith("https://github.com/Evolution-by-Warder/Glass-System-Utility-Warder-Evolution/releases/download/"):
-        return ""
-    safe = os.path.basename(name or "")
-    if not safe.endswith(".ipk"):
-        return ""
-    target = os.path.join("/tmp", safe)
+def _download_update(release):
+    """Download an official release asset to a unique temporary file."""
+    url = release.get("url") or ""
+    name = release.get("name") or ""
+    if name != "enigma2-plugin-glasssysutil_%s_all.ipk" % release.get("version"):
+        raise ValueError("Release asset name does not match its version")
+    parsed = urlsplit(url)
+    expected_path = ("/Evolution-by-Warder/Glass-System-Utility-Warder-Evolution/"
+                     "releases/download/%s/%s" % (release.get("tag"), name))
+    if (parsed.scheme != "https" or parsed.hostname != "github.com" or
+            parsed.username or parsed.password or parsed.port or parsed.path != expected_path):
+        raise ValueError("Release asset origin is invalid")
+
+    fd, target = tempfile.mkstemp(prefix="gsu-update-", suffix=".ipk", dir="/tmp")
+    os.close(fd)
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "Glass-System-Utility-Warder-Evolution/%s" % VERSION})
         with urllib.request.urlopen(req, timeout=20) as response, open(target, "wb") as handle:
-            final_url = response.geturl()
+            final = urlsplit(response.geturl())
+            allowed_hosts = ("github.com", "objects.githubusercontent.com",
+                             "release-assets.githubusercontent.com")
             content_type = (response.headers.get("Content-Type") or "").lower()
-            if not (final_url.startswith("https://github.com/") or
-                    final_url.startswith("https://objects.githubusercontent.com/") or
-                    final_url.startswith("https://release-assets.githubusercontent.com/")):
-                raise ValueError("Unexpected update host")
+            if final.scheme != "https" or final.hostname not in allowed_hosts:
+                raise ValueError("Unexpected GitHub download redirect host")
             if "text/html" in content_type:
-                raise ValueError("Unexpected HTML response")
-            shutil.copyfileobj(response, handle)
-        if not os.path.isfile(target) or os.path.getsize(target) < 256:
-            return ""
+                raise ValueError("GitHub returned an HTML page")
+            received = 0
+            expected_size = int(release["size"])
+            while True:
+                block = response.read(65536)
+                if not block:
+                    break
+                received += len(block)
+                if received > expected_size:
+                    raise ValueError("Downloaded file exceeds GitHub metadata size")
+                handle.write(block)
+        if received != int(release["size"]):
+            raise ValueError("Downloaded file size does not match GitHub metadata")
+        with open(target, "rb") as handle:
+            if handle.read(8) != b"!<arch>\n":
+                raise ValueError("Downloaded file is not a valid IPK archive")
         return target
     except Exception:
         try:
             os.unlink(target)
         except Exception:
             pass
-        return ""
+        raise
+
+
+def _install_release(release):
+    """Verify the IPK metadata before asking opkg to install it."""
+    path = _download_update(release)
+    try:
+        rc_info, package_info = _run_status(["opkg", "info", path], 15)
+        if rc_info != 0:
+            raise ValueError("opkg could not parse the downloaded IPK")
+        package_name = ""
+        package_version = ""
+        for line in package_info.splitlines():
+            if line.startswith("Package:"):
+                package_name = line.split(":", 1)[1].strip()
+            elif line.startswith("Version:"):
+                package_version = line.split(":", 1)[1].strip()
+        expected_version = (release.get("version") or "").lower()
+        actual_version = package_version[1:] if package_version.lower().startswith("v") else package_version
+        if package_name != "enigma2-plugin-glasssysutil" or actual_version.lower() != expected_version:
+            raise ValueError("IPK package identity or version does not match the GitHub release")
+        rc, result = _run_status(["opkg", "install", path], 60)
+        if rc != 0:
+            raise RuntimeError("opkg install returned %d: %s" % (rc, result[-1200:]))
+    finally:
+        try:
+            os.unlink(path)
+        except Exception:
+            pass
 
 
 class GSUUpdater(object):
     def __init__(self, session):
         self.session = session
         self.release = None
+        self.silent = True
+        self.result = None
+        self.worker = None
+        self.timer = None
+        self.progress = None
+        self._timer_callback = self._poll
+
+    def _start_timer(self):
+        if eTimer is None:
+            return False
+        try:
+            self.timer = eTimer()
+            if hasattr(self.timer, "callback"):
+                self.timer.callback.append(self._timer_callback)
+            else:
+                self.timer.timeout.get().append(self._timer_callback)
+            self.timer.start(250, True)
+            return True
+        except Exception:
+            self.timer = None
+            return False
+
+    def _poll(self):
+        if self.result is None:
+            self.timer.start(250, True)
+            return
+        try:
+            self.timer.stop()
+        except Exception:
+            pass
+        kind, value = self.result
+        if kind == "check":
+            self._finish_check(value)
+        elif kind == "check-error":
+            self._finish_check_error(value)
+        else:
+            self._finish_install(kind == "installed", value)
 
     def check(self, silent=True):
-        release = _latest_release()
-        if not release or _version_key(release["version"]) <= _version_key(VERSION):
+        self.silent = silent
+        if eTimer is None:
             if not silent:
+                self.session.open(MessageBox, "Update check is unavailable on this Enigma2 image.",
+                                  MessageBox.TYPE_INFO, timeout=5)
+            return
+        self.result = None
+        if not self._start_timer():
+            return
+        try:
+            self.worker = threading.Thread(target=self._check_worker, daemon=True)
+            self.worker.start()
+        except Exception as exc:
+            self.result = ("check-error", str(exc))
+
+    def _check_worker(self):
+        try:
+            self.result = ("check", _latest_release())
+        except Exception as exc:
+            self.result = ("check-error", str(exc))
+
+    def _finish_check(self, result):
+        release = result
+        if not release or _version_key(release["version"]) <= _version_key(VERSION):
+            if not self.silent:
                 self.session.open(MessageBox,
                                   "Glass System Utility %s is up to date." % VERSION,
                                   MessageBox.TYPE_INFO, timeout=5)
             return
         self.release = release
         self.session.openWithCallback(
-            self._answer,
-            MessageBox,
+            self._answer, MessageBox,
             "Glass System Utility %s is available.\nInstalled: %s\n\nInstall the update now?"
-            % (release["version"], VERSION),
-            MessageBox.TYPE_YESNO)
+            % (release["version"], VERSION), MessageBox.TYPE_YESNO)
+
+    def _finish_check_error(self, detail):
+        if not self.silent:
+            self.session.open(MessageBox, "Unable to check for updates.\n\n%s" % detail,
+                              MessageBox.TYPE_INFO, timeout=8)
 
     def _answer(self, answer):
         if not answer or not self.release:
             return
-        path = _download_update(self.release["url"], self.release["name"])
-        if not path:
-            self.session.open(MessageBox, "Update download failed.", MessageBox.TYPE_ERROR)
-            return
-        expected_size = int(self.release.get("size") or 0)
-        if expected_size and os.path.getsize(path) != expected_size:
-            try:
-                os.unlink(path)
-            except Exception:
-                pass
-            self.session.open(MessageBox, "Update verification failed (size mismatch).", MessageBox.TYPE_ERROR)
-            return
-
-        # Ask opkg to parse the downloaded package before installation.
-        rc_info, package_info = _run_status(["opkg", "info", path], 15)
-        if rc_info != 0:
-            try:
-                os.unlink(path)
-            except Exception:
-                pass
-            self.session.open(MessageBox, "Update verification failed (invalid IPK).", MessageBox.TYPE_ERROR)
-            return
-        pkg_name = ""
-        pkg_version = ""
-        for line in package_info.splitlines():
-            if line.startswith("Package:"):
-                pkg_name = line.split(":", 1)[1].strip()
-            elif line.startswith("Version:"):
-                pkg_version = line.split(":", 1)[1].strip()
-        if pkg_name != "enigma2-plugin-glasssysutil" or _version_key(pkg_version) != _version_key(self.release["version"]):
-            try:
-                os.unlink(path)
-            except Exception:
-                pass
-            self.session.open(MessageBox, "Update verification failed (package identity/version mismatch).",
+        if eTimer is None or not self._start_timer():
+            self.session.open(MessageBox, "Update installation is unavailable on this Enigma2 image.",
                               MessageBox.TYPE_ERROR)
             return
+        self.result = None
+        self.progress = self.session.open(MessageBox, "Downloading, verifying and installing the update...",
+                                          MessageBox.TYPE_INFO)
+        try:
+            self.worker = threading.Thread(target=self._install_worker, daemon=True)
+            self.worker.start()
+        except Exception as exc:
+            self.result = ("install-error", str(exc))
 
-        rc, result = _run_status(["opkg", "install", path], 60)
-        if rc != 0:
-            self.session.open(MessageBox, "Update installation failed.\n\n%s" % result[-1200:],
+    def _install_worker(self):
+        try:
+            _install_release(self.release)
+            self.result = ("installed", "")
+        except Exception as exc:
+            self.result = ("install-error", str(exc))
+
+    def _finish_install(self, success, detail):
+        if self.progress is not None:
+            try:
+                self.progress.close()
+            except Exception:
+                pass
+            self.progress = None
+        if not success:
+            self.session.open(MessageBox, "Update installation failed.\n\n%s" % detail,
                               MessageBox.TYPE_ERROR)
             return
         self.session.openWithCallback(
@@ -847,12 +961,12 @@ class GSUUpdater(object):
 
 
 def _auto_update_check(session):
-    """Once per GUI boot, check quietly and prompt only when a newer release exists."""
+    """Start one non-blocking quiet check during this Enigma2 GUI session."""
+    global _AUTO_UPDATE_STARTED
+    if _AUTO_UPDATE_STARTED:
+        return
+    _AUTO_UPDATE_STARTED = True
     try:
-        if os.path.exists(UPDATE_MARKER):
-            return
-        with open(UPDATE_MARKER, "w") as handle:
-            handle.write(VERSION)
         GSUUpdater(session).check(silent=True)
     except Exception:
         pass

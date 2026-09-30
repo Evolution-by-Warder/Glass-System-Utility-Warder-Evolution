@@ -20,3 +20,7 @@ Legacy functionality is evaluated feature-by-feature; obsolete mechanisms are no
 ## 13.23-w4 receiver checkpoint — 2026-09-30
 
 GigaBlue Quad 4K Pro / OpenATV / Python 3.14 runtime PASS: modern process discovery and OSCam process/config-dir detection verified on real hardware. Continue read-only migration without per-line approval; state-changing operations remain separately gated.
+
+## 13.25-w6 test candidate — 2026-09-30
+
+This candidate moves release checks and installation work off the Enigma2 GUI thread, tightens release asset/IPK identity checks, avoids repository-wide package queries in the package screen, and reports temperature interfaces separately from valid readings. It also reads process command lines from `/proc` without displaying full arguments. Static/build checks do not establish receiver runtime PASS; await the GigaBlue Quad 4K Pro test.

@@ -4,7 +4,7 @@ Modern continuation and evolution of the Glass System Utility Enigma2 plugin.
 
 ## Project status
 
-The current baseline is **13.21-w2**: a clean Python 3 source-core bootstrap confirmed on real Enigma2 hardware with Python 3.14.
+The current production development version is recorded in `src/GlassSysUtil/version`. Version 13.25-w6 is a test candidate; runtime status is not PASS until it is checked on a receiver.
 
 This repository is a **standalone project**. It is not part of PiconHub Warder Evolution or FullHDGlass Warder Evolution.
 
@@ -21,6 +21,10 @@ Planned areas include system and hardware information, networking and server dia
 - feature detection instead of hardcoded image assumptions
 - dangerous write operations are migrated and tested separately
 - autostart hooks return only after their components are safely ported
+
+## Test build
+
+Build a deterministic IPK from this checkout with `sh tools/build-ipk.sh`. The artifact and its SHA-256 file are written to `dist/`. GitHub Actions runs the same source/version/package checks on changes to the production branch. A test build is not a GitHub Release; installed receivers only receive updates from an explicitly published official Release.
 
 ## Credits
 
