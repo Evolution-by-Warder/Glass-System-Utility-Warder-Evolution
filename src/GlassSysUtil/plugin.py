@@ -735,6 +735,28 @@ def _active_cam():
     return None
 
 
+
+def _cam_process_metrics(pid):
+    rows = []
+    status = {}
+    for line in _read_lines("/proc/%s/status" % pid):
+        if ":" in line:
+            key, value = line.split(":", 1)
+            status[key.strip()] = value.strip()
+    if status.get("VmRSS"):
+        rows.append("Resident memory: %s" % status["VmRSS"])
+    if status.get("VmSize"):
+        rows.append("Virtual memory: %s" % status["VmSize"])
+    try:
+        seconds = int(time.time() - os.stat("/proc/%s" % pid).st_ctime)
+        days, seconds = divmod(max(0, seconds), 86400)
+        hours, seconds = divmod(seconds, 3600)
+        minutes, seconds = divmod(seconds, 60)
+        rows.append("Process runtime: %dd %02d:%02d:%02d" % (days, hours, minutes, seconds))
+    except Exception:
+        pass
+    return rows
+
 def active_cam_information():
     cam = _active_cam()
     if not cam:
@@ -744,6 +766,7 @@ def active_cam_information():
         "Family: %s" % cam["family"],
         "PID: %s" % cam["pid"],
     ]
+    rows.extend(_cam_process_metrics(cam["pid"]))
     if cam["family"] == "oscam":
         rows += ["", oscam_runtime_information(), "", oscam_webif_information()]
     return "\n".join(rows)
