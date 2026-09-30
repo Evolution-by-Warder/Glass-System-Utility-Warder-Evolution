@@ -61,6 +61,14 @@ class DiagnosticRedactionTests(unittest.TestCase):
         self.assertNotIn('["killall"', source)
         self.assertIn("/etc/init.d/softcam", source)
 
+
+    def test_cam_monitor_requires_confirmation_and_image_restart_path(self):
+        import inspect
+        monitor = inspect.getsource(gsu.GSUActiveCAM)
+        self.assertIn("openWithCallback", monitor)
+        self.assertIn("_active_cam_restart_command", monitor)
+        self.assertNotIn('["killall"', monitor)
+
     def test_rejects_binary_or_oversized_log(self):
         with tempfile.NamedTemporaryFile(delete=False) as handle:
             path = handle.name
