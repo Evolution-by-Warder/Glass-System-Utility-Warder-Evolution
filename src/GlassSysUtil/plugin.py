@@ -1416,32 +1416,47 @@ class GSUActiveCAM(Screen):
         if not answer:
             return
         # Execute only the already discovered image-provided service command.
+        command = list(self.restart_command)
         before = _active_cam()
         before_pid = before["pid"] if before else ""
-        rc, output = _run_status(self.restart_command, 12)
-        if rc != 0:
-            detail = output[-800:] if output else "restart command returned status %s" % rc
-            self.session.open(MessageBox, "Active CAM restart failed.\n\n%s" % detail,
-                              MessageBox.TYPE_ERROR, timeout=10)
-            return
 
-        # A successful service command is not enough: verify that a CAM is
-        # actually present afterwards.  Keep the UI bounded and deterministic.
-        verified = None
-        for _attempt in range(5):
-            time.sleep(0.4)
-            verified = _active_cam()
-            if verified:
-                break
-        self._refresh()
-        if verified:
-            changed = " (new PID %s)" % verified["pid"] if verified["pid"] != before_pid else ""
-            self.session.open(MessageBox, "Active CAM restart verified%s." % changed,
-                              MessageBox.TYPE_INFO, timeout=6)
-        else:
-            self.session.open(MessageBox,
-                              "Restart command completed, but no active CAM was detected afterwards.",
-                              MessageBox.TYPE_ERROR, timeout=10)
+        def worker():
+            rc, output = _run_status(command, 12)
+            verified = None
+            if rc == 0:
+                for _attempt in range(8):
+                    time.sleep(0.5)
+                    verified = _active_cam()
+                    if verified:
+                        break
+
+            def finish():
+                self._refresh()
+                if rc != 0:
+                    detail = output[-800:] if output else "restart command returned status %s" % rc
+                    self.session.open(MessageBox, "Active CAM restart failed.\n\n%s" % detail,
+                                      MessageBox.TYPE_ERROR, timeout=10)
+                elif verified:
+                    changed = " (new PID %s)" % verified["pid"] if verified["pid"] != before_pid else ""
+                    self.session.open(MessageBox, "Active CAM restart verified%s." % changed,
+                                      MessageBox.TYPE_INFO, timeout=6)
+                else:
+                    self.session.open(MessageBox,
+                                      "Restart command completed, but no active CAM was detected afterwards.",
+                                      MessageBox.TYPE_ERROR, timeout=10)
+
+            if eTimer is None:
+                finish()
+            else:
+                timer = eTimer()
+                self._restart_finish_timer = timer
+                try:
+                    timer.callback.append(finish)
+                except Exception:
+                    timer.timeout.connect(finish)
+                timer.start(1, True)
+
+        threading.Thread(target=worker, name="GSU-CAM-Restart", daemon=True).start()
 
 class SysUtilMngMain(Screen):
     skin = """
