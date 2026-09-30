@@ -399,6 +399,48 @@ def _oscam_live_status():
         return None, "OSCam live status unavailable: %s" % exc.__class__.__name__
 
 
+
+_OSCAM_SAFE_SCHEMA_BLOCK = (
+    "password", "passwd", "pwd", "token", "secret", "key", "boxkey",
+    "deskey", "rsakey", "user", "username", "account"
+)
+
+
+def _oscam_safe_schema_paths(payload, limit=96):
+    """Return OSCam JSON field paths only; never values or credential-like paths."""
+    paths = []
+
+    def walk(value, prefix="", depth=0):
+        if depth > 6 or len(paths) >= limit:
+            return
+        if isinstance(value, dict):
+            for key, nested in value.items():
+                name = str(key).lower()
+                if any(block in name for block in _OSCAM_SAFE_SCHEMA_BLOCK):
+                    continue
+                path = ("%s.%s" % (prefix, name)) if prefix else name
+                if path not in paths:
+                    paths.append(path)
+                walk(nested, path, depth + 1)
+        elif isinstance(value, list):
+            for item in value[:3]:
+                walk(item, prefix + "[]" if prefix else "[]", depth + 1)
+
+    walk(payload)
+    return paths[:limit]
+
+
+def oscam_api_schema_information():
+    """Safe receiver-diagnostic view: field names/shape only, no OSCam values."""
+    payload, reason = _oscam_live_status()
+    if payload is None:
+        return "OSCam API schema unavailable: %s" % reason
+    paths = _oscam_safe_schema_paths(payload)
+    if not paths:
+        return "OSCam API reachable, but no safe schema paths were detected."
+    return "OSCam API schema (field names only; values omitted)\n\n" + "\n".join(paths)
+
+
 def _oscam_status_rows(payload):
     """Extract only actual OSCam client rows from known nested API containers."""
     found = []
