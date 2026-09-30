@@ -19,7 +19,7 @@ from Components.ActionMap import ActionMap
 from Components.Label import Label
 from Components.MenuList import MenuList
 
-VERSION = "13.23-w4"
+VERSION = "13.24-w5"
 
 
 def _read_text(path, default="N/A"):
@@ -229,6 +229,118 @@ def oscam_information():
     return "\n".join(rows)
 
 
+def _proc_cmdline(pid):
+    raw = _read_text("/proc/%s/cmdline" % pid, "")
+    return raw.replace("\\x00", " ").strip()
+
+
+def _find_processes(needle):
+    rows = []
+    try:
+        pids = [name for name in os.listdir("/proc") if name.isdigit()]
+    except Exception:
+        pids = []
+    for pid in pids:
+        cmd = _proc_cmdline(pid)
+        if needle.lower() in cmd.lower():
+            rows.append((pid, cmd))
+    return rows
+
+
+def _parse_ini_section(path, section_name):
+    values, current = {}, ""
+    for raw in _read_lines(path):
+        line = raw.strip()
+        if not line or line.startswith(("#", ";")):
+            continue
+        if line.startswith("[") and line.endswith("]"):
+            current = line[1:-1].strip().lower()
+            continue
+        if current == section_name.lower() and "=" in line:
+            key, value = line.split("=", 1)
+            values[key.strip().lower()] = value.strip()
+    return values
+
+
+def oscam_webif_information():
+    proc = _run(["pgrep", "-a", "-i", "oscam"], 4)
+    matches = [line.strip() for line in proc.splitlines() if line.strip()]
+    config_dir = ""
+    for line in matches:
+        fields = line.split()
+        for index, field in enumerate(fields):
+            if field == "--config-dir" and index + 1 < len(fields):
+                config_dir = fields[index + 1]
+                break
+            if field.startswith("--config-dir="):
+                config_dir = field.split("=", 1)[1]
+                break
+        if config_dir:
+            break
+    candidates = []
+    if config_dir:
+        candidates.append(os.path.join(config_dir, "oscam.conf"))
+    candidates += ["/etc/tuxbox/config/oscam-uni/oscam.conf",
+                   "/etc/tuxbox/config/oscam.conf",
+                   "/etc/tuxbox/config/oscam/oscam.conf"]
+    conf = next((path for path in candidates if os.path.isfile(path)), "")
+    if not conf:
+        return "OSCam configuration not found."
+
+    webif = _parse_ini_section(conf, "webif")
+    port = webif.get("httpport", "disabled/not configured")
+    bind = webif.get("httpip", "all interfaces")
+    allowed = webif.get("httpallowed", "not restricted in config")
+    user_set = bool(webif.get("httpuser"))
+    pass_set = bool(webif.get("httppwd"))
+    return "\n".join((
+        "Config: %s" % conf,
+        "",
+        "WebIF port: %s" % port,
+        "Bind: %s" % bind,
+        "Allowed: %s" % allowed,
+        "Authentication: %s" % ("configured" if user_set or pass_set else "not configured"),
+        "",
+        "Credentials are intentionally never displayed.",
+    ))
+
+
+def tuner_information():
+    rows = []
+    nim_root = "/proc/stb/frontend"
+    try:
+        frontends = sorted(os.listdir(nim_root))
+    except Exception:
+        frontends = []
+    if frontends:
+        rows.append("Frontend devices: %s" % ", ".join(frontends))
+    nim_sockets = _read_lines("/proc/bus/nim_sockets")
+    if nim_sockets:
+        rows.append("")
+        rows.extend(line.rstrip() for line in nim_sockets[:40])
+    return "\n".join(rows) if rows else "No tuner information exposed by this image."
+
+
+def log_information():
+    candidates = [
+        "/home/root/logs/enigma2_crash.log",
+        "/media/hdd/enigma2_crash.log",
+        "/tmp/enigma2_crash.log",
+        "/var/log/messages",
+    ]
+    rows = []
+    for path in candidates:
+        if os.path.isfile(path):
+            try:
+                stat = os.stat(path)
+                rows.append("%s  (%.1f KiB)" % (path, stat.st_size / 1024.0))
+            except Exception:
+                rows.append(path)
+    dmesg = _run(["dmesg"], 4)
+    rows.append("Kernel log: %s" % ("available" if dmesg else "not available"))
+    return "\n".join(rows) if rows else "No known diagnostic logs found."
+
+
 class GSUInfo(Screen):
     skin = """
     <screen name="GSUInfo" position="center,center" size="1160,680" title="Glass System Utility">
@@ -256,6 +368,9 @@ class SysUtilMngMain(Screen):
         ("Services & Processes", "services"),
         ("Network Mounts (NFS/CIFS)", "mounts"),
         ("OSCam status", "oscam"),
+        ("OSCam WebIF configuration", "oscamweb"),
+        ("Tuner information", "tuners"),
+        ("Logs & Diagnostics", "logs"),
         ("Restart Enigma2 GUI", "restart"),
         ("About this build", "about"),
     ]
@@ -279,6 +394,9 @@ class SysUtilMngMain(Screen):
             "services": ("Services & Processes", service_information),
             "mounts": ("Network Mounts", mount_information),
             "oscam": ("OSCam status", oscam_information),
+            "oscamweb": ("OSCam WebIF configuration", oscam_webif_information),
+            "tuners": ("Tuner information", tuner_information),
+            "logs": ("Logs & Diagnostics", log_information),
         }
         if action in actions:
             title, fnc = actions[action]
@@ -293,7 +411,7 @@ class SysUtilMngMain(Screen):
             self._info("About", (
                 "Glass System Utility Warder Evolution %s\n\n"
                 "Modern Python 3 source core.\n"
-                "Read-only system, network, storage, service, mount and OSCam diagnostics enabled.\n\n"
+                "Read-only system, network, storage, service, mount, OSCam, tuner and log diagnostics enabled.\n\n"
                 "State-changing legacy functions remain gated until separately migrated and tested."
             ) % VERSION)
 
