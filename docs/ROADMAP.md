@@ -21,6 +21,13 @@ Legacy functionality is evaluated feature-by-feature; obsolete mechanisms are no
 
 GigaBlue Quad 4K Pro / OpenATV / Python 3.14 runtime PASS: modern process discovery and OSCam process/config-dir detection verified on real hardware. Continue read-only migration without per-line approval; state-changing operations remain separately gated.
 
-## 13.25-w6 test candidate — 2026-09-30
+## 13.25-w6 real receiver checkpoint — 2026-09-30
 
-This candidate moves release checks and installation work off the Enigma2 GUI thread, tightens release asset/IPK identity checks, avoids repository-wide package queries in the package screen, and reports temperature interfaces separately from valid readings. It also reads process command lines from `/proc` without displaying full arguments. Static/build checks do not establish receiver runtime PASS; await the GigaBlue Quad 4K Pro test.
+Commit `fa31a924500639bfdd1e107d8b534141e1039f92`.
+
+STATIC PASS and BUILD PASS were completed for the deterministic IPK. REAL RECEIVER PASS was then confirmed on GigaBlue Quad 4K Pro / OpenATV 8 / Python 3.14 across the requested w6 checklist: temperature discovery, Detected Capabilities, Hardware Identity, Services & Processes, OSCam, Package information, diagnostic scrolling, and manual update-check responsiveness. Temperature data was successfully read through the capability-driven interface; an observed runtime reading was 37 °C.
+
+The end-to-end GitHub Release update path remains REVIEW because no public release had been published during this checkpoint. Release discovery, confirmation, download, verification, `opkg` installation and the automatic three-second GUI restart must be verified separately before that path is marked REAL RECEIVER PASS.
+
+Test artifact: `enigma2-plugin-glasssysutil_13.25-w6_all.ipk`
+SHA-256: `d72e961f794d620537617622488a8dbad03a2e3f22ae2924296a0bfb00409138`.
