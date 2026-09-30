@@ -1331,6 +1331,77 @@ class GSUInfo(Screen):
         self["actions"] = ActionMap(["OkCancelActions", "DirectionActions"], actions, -1)
 
 
+
+class GSUActiveCAM(Screen):
+    """Focused CAM monitor: useful runtime data plus one explicit safe action."""
+    skin = """
+    <screen name="GSUActiveCAM" position="center,center" size="1040,700" title="Active CAM / OSCam Monitor">
+        <widget name="text" position="30,30" size="980,570" font="Regular;24" />
+        <widget name="key_red" position="35,625" size="300,45" font="Regular;24" />
+        <widget name="key_green" position="370,625" size="300,45" font="Regular;24" />
+    </screen>
+    """
+
+    def __init__(self, session):
+        Screen.__init__(self, session)
+        self["text"] = ScrollLabel(active_cam_information()) if ScrollLabel is not None else Label(active_cam_information())
+        self["key_red"] = Label("Close")
+        command, detail = _active_cam_restart_command()
+        self.restart_command = command
+        self.restart_detail = detail
+        self["key_green"] = Label("Restart Active CAM" if command else "Restart unavailable")
+        actions = {
+            "cancel": self.close,
+            "red": self.close,
+            "green": self.restart_cam,
+        }
+        if ScrollLabel is not None:
+            actions.update({
+                "up": self["text"].pageUp,
+                "down": self["text"].pageDown,
+                "left": self["text"].pageUp,
+                "right": self["text"].pageDown,
+            })
+        self["actions"] = ActionMap(
+            ["OkCancelActions", "ColorActions", "DirectionActions"], actions, -1)
+
+    def _refresh(self):
+        text = active_cam_information()
+        try:
+            self["text"].setText(text)
+        except Exception:
+            pass
+        command, detail = _active_cam_restart_command()
+        self.restart_command = command
+        self.restart_detail = detail
+        try:
+            self["key_green"].setText("Restart Active CAM" if command else "Restart unavailable")
+        except Exception:
+            pass
+
+    def restart_cam(self):
+        if not self.restart_command:
+            self.session.open(MessageBox, self.restart_detail, MessageBox.TYPE_INFO, timeout=8)
+            return
+        self.session.openWithCallback(
+            self._restart_confirmed,
+            MessageBox,
+            "%s?\n\nThe currently active CAM will be briefly interrupted." % self.restart_detail,
+            MessageBox.TYPE_YESNO)
+
+    def _restart_confirmed(self, answer):
+        if not answer:
+            return
+        # Execute only the already discovered image-provided service command.
+        rc, output = _run_status(self.restart_command, 12)
+        if rc == 0:
+            self._refresh()
+            self.session.open(MessageBox, "Active CAM restart completed.", MessageBox.TYPE_INFO, timeout=6)
+        else:
+            detail = output[-800:] if output else "restart command returned status %s" % rc
+            self.session.open(MessageBox, "Active CAM restart failed.\n\n%s" % detail,
+                              MessageBox.TYPE_ERROR, timeout=10)
+
 class SysUtilMngMain(Screen):
     skin = """
     <screen name="SysUtilMngMain" position="center,center" size="980,690" title="Glass System Utility Warder Evolution">
@@ -1393,7 +1464,6 @@ class SysUtilMngMain(Screen):
             "ports": ("Listening Ports", listening_ports_information),
             "mounts": ("Network Mounts", mount_information),
             "caminventory": ("CAM Inventory", cam_inventory_information),
-            "cammonitor": ("Active CAM / OSCam Monitor", active_cam_information),
 
             "tuners": ("Tuner information", tuner_information),
             "logs": ("Logs & Diagnostics", log_information),
@@ -1406,6 +1476,8 @@ class SysUtilMngMain(Screen):
         if action in actions:
             title, fnc = actions[action]
             self._info(title, fnc())
+        elif action == "cammonitor":
+            self.session.open(GSUActiveCAM)
         elif action == "diagbundle":
             try:
                 path = create_diagnostic_bundle()
