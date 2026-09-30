@@ -443,7 +443,7 @@ def oscam_live_information():
     """Compact live OSCam monitor derived from the local credential-free WebIF API."""
     payload, reason = _oscam_live_status()
     if payload is None:
-        return "Live OSCam status: %s" % reason
+        return "Live OSCam status: %s\nExisting CAM diagnostics remain available." % reason
     rows = _oscam_status_rows(payload)
     if not rows:
         return "Live OSCam status: API reachable, no client/reader rows recognized."
