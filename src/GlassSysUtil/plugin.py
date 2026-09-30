@@ -101,6 +101,48 @@ def _ipv4_for_interface(name):
     return "N/A"
 
 
+def hardware_identity_information():
+    """Read receiver identity and exposed hardware capabilities without vendor branching."""
+    brand_paths = ("/proc/stb/info/brand", "/proc/stb/info/boxtype", "/etc/hostname")
+    model_paths = ("/proc/stb/info/model", "/proc/stb/info/boxtype", "/proc/device-tree/model")
+    serial_paths = ("/proc/stb/info/serial", "/proc/stb/info/serial_number")
+    def first(paths, default="N/A"):
+        for path in paths:
+            value = _read_text(path, "")
+            if value:
+                return value.replace("\x00", "").strip()
+        return default
+
+    rows = [
+        "Brand: %s" % first(brand_paths),
+        "Model: %s" % first(model_paths),
+        "Architecture: %s" % platform.machine(),
+        "Kernel: %s" % platform.release(),
+    ]
+    # Serial is deliberately reported only as presence, not exposed in UI.
+    serial_present = any(bool(_read_text(path, "")) for path in serial_paths)
+    rows.append("Hardware serial interface: %s" % ("available (hidden)" if serial_present else "not exposed"))
+
+    cpu_count = os.cpu_count()
+    rows.append("CPU cores: %s" % (cpu_count if cpu_count is not None else "N/A"))
+
+    freq_values = []
+    cpu_root = "/sys/devices/system/cpu"
+    try:
+        for name in sorted(os.listdir(cpu_root)):
+            if not name.startswith("cpu") or not name[3:].isdigit():
+                continue
+            raw = _read_text(os.path.join(cpu_root, name, "cpufreq/scaling_cur_freq"), "")
+            if raw.isdigit():
+                freq_values.append(int(raw) / 1000.0)
+    except Exception:
+        pass
+    if freq_values:
+        rows.append("CPU frequency: %.0f-%.0f MHz" % (min(freq_values), max(freq_values)))
+
+    return "\n".join(rows)
+
+
 def system_information():
     model = _read_text("/proc/stb/info/model", platform.machine())
     brand = _read_text("/proc/stb/info/brand", "")
@@ -842,6 +884,7 @@ class SysUtilMngMain(Screen):
     """
     MENU = [
         ("System & Hardware", "system"),
+        ("Hardware Identity", "hardwareid"),
         ("Temperatures", "temps"),
         ("Network & Interfaces", "network"),
         ("Network Diagnostics", "netdiag"),
@@ -880,6 +923,7 @@ class SysUtilMngMain(Screen):
         action = self.MENU[index][1]
         actions = {
             "system": ("System & Hardware", system_information),
+            "hardwareid": ("Hardware Identity", hardware_identity_information),
             "temps": ("Temperatures", temperature_information),
             "network": ("Network & Interfaces", network_information),
             "netdiag": ("Network Diagnostics", network_diagnostics),
