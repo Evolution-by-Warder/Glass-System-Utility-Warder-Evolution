@@ -547,7 +547,7 @@ def _oscam_service_display(row):
 
 
 def _oscam_table_cell(value, width):
-    value = str(value or "-").replace("\n", " ").replace("\r", " ")
+    value = str(value or "").replace("\n", " ").replace("\r", " ")
     if len(value) > width:
         value = value[:max(1, width - 1)] + "~"
     return value.ljust(width)
