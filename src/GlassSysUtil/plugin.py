@@ -519,19 +519,20 @@ def _oscam_table_cell(value, width):
 
 def _oscam_table_line(row):
     service = "%s:%s@%s" % (row["srvid"], row["caid"], row["provid"])
+    name = row["name"]
+    if row["type"] not in ("-", "") and row["type"] not in name:
+        name = "%s/%s" % (name, row["type"])
     return " ".join((
-        _oscam_table_cell(row["name"], 12),
-        _oscam_table_cell(row["type"], 8),
+        _oscam_table_cell(name, 13),
         _oscam_table_cell(row["address"], 15),
         _oscam_table_cell(row["port"], 5),
-        _oscam_table_cell(row["protocol"], 9),
-        _oscam_table_cell(service, 20),
-        _oscam_table_cell(row["channel"], 18),
+        _oscam_table_cell(row["protocol"], 10),
+        _oscam_table_cell(service, 21),
+        _oscam_table_cell(row["channel"], 20),
         _oscam_table_cell(row["ecm"], 8),
         _oscam_table_cell(row["idle"], 8),
         _oscam_table_cell(row["status"], 12),
     ))
-
 
 def oscam_live_information():
     """Readable text fallback for Details/support output."""
@@ -539,7 +540,7 @@ def oscam_live_information():
     if not rows:
         return "Live OSCam status: %s\nExisting CAM diagnostics remain available." % reason
     out = ["Live OSCam clients/readers", "",
-           "Reader/User  Type     Address         Port  Protocol  srvid:caid@provid     Channel            ECM      Idle     Status"]
+           "Reader/User   Address         Port  Protocol   srvid:caid@provid      Channel              ECM      Idle     Status"]
     out.extend(_oscam_table_line(row) for row in rows)
     return "\n".join(out)
 
@@ -1583,7 +1584,7 @@ class GSUActiveCAM(Screen):
         <widget name="key_blue" position="960,625" size="220,45" font="Regular;24" foregroundColor="#3399ff" />
     </screen>
     """
-    TABLE_HEADER = "Reader/User  Type     Address         Port  Protocol  srvid:caid@provid     Channel            ECM      Idle     Status"
+    TABLE_HEADER = "Reader/User   Address         Port  Protocol   srvid:caid@provid      Channel              ECM      Idle     Status"
 
     def __init__(self, session):
         Screen.__init__(self, session)
