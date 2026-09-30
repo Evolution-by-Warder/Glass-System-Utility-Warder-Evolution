@@ -169,3 +169,13 @@ REAL UI REVIEW:
 - Tuner diagnostics are functionally correct but deliberately technical; a future UX pass may add a concise human-readable summary while retaining raw technical details.
 
 Release status: HOLD for the CAM Monitor key-color UI correction and one final receiver smoke test. Do not publish the current candidate as v13.29-w10.
+
+
+### 13.29-w10 final UI smoke validation — GigaBlue Quad 4K Pro — 2026-09-30
+
+REAL RECEIVER PASS after CAM Monitor UI correction:
+- monitor opens normally with active oscam-uni;
+- conventional action colors confirmed on receiver: Close red, Restart CAM green, Refresh yellow, Details blue;
+- no regression observed in CAM runtime display.
+
+The previously recorded CAM restart E2E PASS remains valid because the follow-up candidate changes only the action-label presentation. The 13.29-w10 feature set is now receiver-approved for release preparation.
