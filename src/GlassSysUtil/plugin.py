@@ -527,6 +527,53 @@ def cam_inventory_information():
     return "\n".join(rows) if rows else "No known CAM components detected."
 
 
+def listening_ports_information():
+    output = _run(["ss", "-lntup"], 5) or _run(["netstat", "-lntup"], 5)
+    return "\n".join(output.splitlines()[:45]) if output else "No listener information available."
+
+
+def filesystem_health_information():
+    rows = []
+    for line in _read_lines("/proc/mounts"):
+        fields = line.split()
+        if len(fields) < 4 or not fields[0].startswith("/dev/"):
+            continue
+        device, mountpoint, fstype, options = fields[:4]
+        state = "read-only" if "ro" in options.split(",") else "read-write"
+        try:
+            usage = shutil.disk_usage(mountpoint)
+            free_pct = usage.free * 100.0 / usage.total if usage.total else 0
+            rows.append("%s -> %s [%s, %s] free %.1f%%" % (device, mountpoint, fstype, state, free_pct))
+        except Exception:
+            rows.append("%s -> %s [%s, %s]" % (device, mountpoint, fstype, state))
+    return "\n".join(rows) if rows else "No physical filesystems found."
+
+
+def diagnostic_summary():
+    oscam = bool(_run(["pgrep", "-a", "-i", "oscam"], 3))
+    network_mounts = 0
+    for line in _read_lines("/proc/mounts"):
+        fields = line.split()
+        if len(fields) >= 3 and fields[2].lower() in ("nfs", "nfs4", "cifs", "smbfs"):
+            network_mounts += 1
+    mem = {}
+    for line in _read_lines("/proc/meminfo"):
+        if ":" in line:
+            key, value = line.split(":", 1)
+            mem[key] = value.strip()
+    return "\n".join((
+        "GSU diagnostic summary", "",
+        "Receiver: %s" % _read_text("/proc/stb/info/model", platform.machine()),
+        "Python: %s" % platform.python_version(),
+        "Kernel: %s" % platform.release(),
+        "Uptime: %s" % _uptime(),
+        "Gateway: %s" % _default_gateway(),
+        "OSCam: %s" % ("RUNNING" if oscam else "not detected"),
+        "Network mounts: %d" % network_mounts,
+        "Memory available: %s" % mem.get("MemAvailable", "N/A"),
+    ))
+
+
 class GSUInfo(Screen):
     skin = """
     <screen name="GSUInfo" position="center,center" size="1160,680" title="Glass System Utility">
@@ -552,9 +599,11 @@ class SysUtilMngMain(Screen):
         ("Network & Interfaces", "network"),
         ("Network Diagnostics", "netdiag"),
         ("Storage & Filesystems", "storage"),
+        ("Filesystem Health", "fshealth"),
         ("Block Devices", "devices"),
         ("Memory & Swap", "memory"),
         ("Services & Processes", "services"),
+        ("Listening Ports", "ports"),
         ("Network Mounts (NFS/CIFS)", "mounts"),
         ("CAM Inventory", "caminventory"),
         ("OSCam status", "oscam"),
@@ -564,6 +613,7 @@ class SysUtilMngMain(Screen):
         ("Logs & Diagnostics", "logs"),
         ("Package information", "packages"),
         ("Image & Runtime", "imageinfo"),
+        ("Diagnostic Summary", "summary"),
         ("Restart Enigma2 GUI", "restart"),
         ("About this build", "about"),
     ]
@@ -585,9 +635,11 @@ class SysUtilMngMain(Screen):
             "network": ("Network & Interfaces", network_information),
             "netdiag": ("Network Diagnostics", network_diagnostics),
             "storage": ("Storage & Filesystems", storage_information),
+            "fshealth": ("Filesystem Health", filesystem_health_information),
             "devices": ("Block Devices", device_information),
             "memory": ("Memory & Swap", memory_information),
             "services": ("Services & Processes", service_information),
+            "ports": ("Listening Ports", listening_ports_information),
             "mounts": ("Network Mounts", mount_information),
             "caminventory": ("CAM Inventory", cam_inventory_information),
             "oscam": ("OSCam status", oscam_information),
@@ -597,6 +649,7 @@ class SysUtilMngMain(Screen):
             "logs": ("Logs & Diagnostics", log_information),
             "packages": ("Package information", package_information),
             "imageinfo": ("Image & Runtime", image_information),
+            "summary": ("Diagnostic Summary", diagnostic_summary),
         }
         if action in actions:
             title, fnc = actions[action]
