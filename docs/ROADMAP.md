@@ -58,3 +58,15 @@ SHA-256: `d72e961f794d620537617622488a8dbad03a2e3f22ae2924296a0bfb00409138`.
 - Schedules the GUI restart independently after 3 seconds.
 - Avoids opening `TryQuitMainloop` as a nested modal; uses its quit action directly with a `quitMainloop(3)` fallback.
 - REAL RECEIVER status: REVIEW until update from installed 13.27-w8 is tested.
+
+
+## 13.28-w9 real receiver result
+
+- REAL RECEIVER PASS on GigaBlue Quad 4K Pro / OpenATV 8 / Python 3.14.
+- Starting state: installed and loaded 13.27-w8.
+- Update discovery PASS: updater offered 13.28-w9 and correctly reported installed 13.27-w8.
+- Download / verification / installation progress PASS.
+- Post-install completion PASS: no OpenATV software-problem dialog was observed.
+- Automatic GUI restart PASS: receiver restarted cleanly before a third test screenshot could be captured.
+- This closes the post-install modal-lifecycle blocker seen in w7 and w8.
+- Release v13.28-w9 remains immutable.
