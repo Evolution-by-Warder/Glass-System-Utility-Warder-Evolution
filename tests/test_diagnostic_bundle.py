@@ -44,6 +44,7 @@ class DiagnosticRedactionTests(unittest.TestCase):
         self.assertNotIn("secret", result)
         self.assertIn("aa:bb:cc:dd:ee:ff", result)
         self.assertIn("<redacted>", result)
+        self.assertNotIn("<redacted-mac>", result)
 
     def test_redacts_stable_private_identifiers(self):
         source = "serial=ABC123\nuuid=deadbeef\nmachine-id=xyz987\n"
