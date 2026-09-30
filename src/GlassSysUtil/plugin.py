@@ -1820,7 +1820,8 @@ class GSUActiveCAM(Screen):
             return
         parts = [active_cam_information()]
         if active.get("family") == "oscam":
-            parts.extend(["", oscam_live_information(), "", oscam_runtime_information(), "", oscam_webif_information()])
+            parts.extend(["", oscam_live_information(), "", oscam_runtime_information(), "",
+                          oscam_webif_information(), "", oscam_api_schema_information()])
         self.session.open(GSUInfo, "CAM / OSCam Details", "\n".join(parts))
 
     def restart_cam(self):
