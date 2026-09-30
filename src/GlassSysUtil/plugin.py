@@ -351,6 +351,112 @@ def _parse_ini_section(path, section_name):
     return values
 
 
+def _oscam_webif_endpoint():
+    """Return a safe local OSCam WebIF endpoint only when no WebIF auth is configured."""
+    matches = _find_processes("oscam")
+    config_dir = _process_option(matches, "--config-dir")
+    candidates = []
+    if config_dir:
+        candidates.append(os.path.join(config_dir, "oscam.conf"))
+    candidates += ["/etc/tuxbox/config/oscam-uni/oscam.conf",
+                   "/etc/tuxbox/config/oscam.conf",
+                   "/etc/tuxbox/config/oscam/oscam.conf"]
+    conf = next((path for path in candidates if os.path.isfile(path)), "")
+    if not conf:
+        return "", "OSCam configuration not found."
+    webif = _parse_ini_section(conf, "webif")
+    raw_port = webif.get("httpport", "").strip()
+    if not raw_port:
+        return "", "OSCam WebIF is not configured."
+    # Never obtain or use WebIF credentials. Authenticated WebIF remains read-only
+    # from GSU's point of view until OSCam exposes a credential-free local API.
+    if webif.get("httpuser") or webif.get("httppwd"):
+        return "", "OSCam WebIF authentication is configured; live rows are not queried."
+    ssl = raw_port.startswith("+")
+    port = raw_port.lstrip("+")
+    if not port.isdigit():
+        return "", "OSCam WebIF port is invalid."
+    scheme = "https" if ssl else "http"
+    return "%s://127.0.0.1:%s" % (scheme, port), ""
+
+
+def _oscam_live_status():
+    """Fetch OSCam's local read-only status JSON without credentials."""
+    endpoint, reason = _oscam_webif_endpoint()
+    if not endpoint:
+        return None, reason
+    url = endpoint + "/oscamapi.json?part=status"
+    try:
+        request = urllib.request.Request(url, headers={"User-Agent": "GSU-Warder-Evolution"})
+        with urllib.request.urlopen(request, timeout=2.0) as response:
+            if response.getcode() != 200:
+                return None, "OSCam WebIF returned HTTP %s." % response.getcode()
+            raw = response.read(262145)
+        if len(raw) > 262144:
+            return None, "OSCam live status response is too large."
+        return json.loads(raw.decode("utf-8", "replace")), ""
+    except Exception as exc:
+        return None, "OSCam live status unavailable: %s" % exc.__class__.__name__
+
+
+def _oscam_status_rows(payload):
+    """Normalize known OSCam status JSON layouts without assuming one build."""
+    if not isinstance(payload, dict):
+        return []
+    candidates = []
+    for key in ("status", "clients", "client"):
+        value = payload.get(key)
+        if isinstance(value, list):
+            candidates.extend(value)
+        elif isinstance(value, dict):
+            for subkey in ("client", "clients", "status"):
+                nested = value.get(subkey)
+                if isinstance(nested, list):
+                    candidates.extend(nested)
+                elif isinstance(nested, dict):
+                    candidates.append(nested)
+    return [row for row in candidates if isinstance(row, dict)][:32]
+
+
+def _oscam_pick(row, *names):
+    for name in names:
+        value = row.get(name)
+        if value not in (None, ""):
+            return str(value)
+    return "-"
+
+
+def oscam_live_information():
+    """Compact live OSCam monitor derived from the local credential-free WebIF API."""
+    payload, reason = _oscam_live_status()
+    if payload is None:
+        return "Live OSCam status: %s" % reason
+    rows = _oscam_status_rows(payload)
+    if not rows:
+        return "Live OSCam status: API reachable, no client/reader rows recognized."
+
+    out = ["Live OSCam clients/readers", ""]
+    for item in rows:
+        name = _oscam_pick(item, "name", "user", "label", "reader")
+        typ = _oscam_pick(item, "type", "typ")
+        protocol = _oscam_pick(item, "protocol", "proto")
+        address = _oscam_pick(item, "ip", "address")
+        port = _oscam_pick(item, "port")
+        caid = _oscam_pick(item, "caid")
+        provid = _oscam_pick(item, "provid", "provider")
+        srvid = _oscam_pick(item, "srvid")
+        channel = _oscam_pick(item, "lastchannel", "channel", "srvname")
+        status = _oscam_pick(item, "status", "connection")
+        idle = _oscam_pick(item, "idle", "idletime")
+        ecm = _oscam_pick(item, "ecmtime", "ecm_time")
+        out.append("%s  [%s]  %s" % (name, typ, status))
+        out.append("  %s  %s:%s" % (protocol, address, port))
+        out.append("  %s:%s@%s  %s" % (srvid, caid, provid, channel))
+        if ecm != "-" or idle != "-":
+            out.append("  ECM: %s  Idle: %s" % (ecm, idle))
+    return "\n".join(out)
+
+
 def oscam_webif_information():
     matches = _find_processes("oscam")
     config_dir = _process_option(matches, "--config-dir")
