@@ -400,43 +400,56 @@ def _oscam_live_status():
 
 
 def _oscam_status_rows(payload):
-    """Normalize OSCam status JSON across nested WebIF API layouts."""
+    """Extract only actual OSCam client rows from known nested API containers."""
     found = []
-    seen = set()
 
-    def visit(value, depth=0):
-        if depth > 6 or len(found) >= 32:
+    def add(value):
+        if isinstance(value, dict) and value not in found and len(found) < 32:
+            found.append(value)
+        elif isinstance(value, list):
+            for item in value:
+                if isinstance(item, dict) and item not in found and len(found) < 32:
+                    found.append(item)
+
+    def walk(value, depth=0):
+        if depth > 7 or len(found) >= 32:
             return
         if isinstance(value, list):
             for item in value:
-                visit(item, depth + 1)
+                walk(item, depth + 1)
             return
         if not isinstance(value, dict):
             return
+        for key, nested in value.items():
+            low = str(key).lower()
+            if low in ("client", "clients") and isinstance(nested, (dict, list)):
+                add(nested)
+            elif isinstance(nested, (dict, list)):
+                walk(nested, depth + 1)
 
-        keys = set(str(key).lower() for key in value.keys())
-        row_markers = {"name", "user", "label", "reader", "protocol", "proto",
-                       "caid", "srvid", "status", "connection", "ip", "address"}
-        if len(keys.intersection(row_markers)) >= 2:
-            marker = id(value)
-            if marker not in seen:
-                seen.add(marker)
-                found.append(value)
-                if len(found) >= 32:
-                    return
-        for nested in value.values():
-            if isinstance(nested, (dict, list)):
-                visit(nested, depth + 1)
-
-    visit(payload)
+    walk(payload)
     return found[:32]
+
+
+def _oscam_scalar(value):
+    if isinstance(value, (str, int, float, bool)):
+        return str(value)
+    return ""
+
 
 def _oscam_pick(row, *names):
     for name in names:
-        value = row.get(name)
-        if value not in (None, ""):
-            return str(value)
+        value = _oscam_scalar(row.get(name))
+        if value:
+            return value
     return "-"
+
+
+def _oscam_client_type(row):
+    raw = _oscam_pick(row, "type", "typ")
+    mapping = {"s": "server", "h": "http", "p": "reader/proxy",
+               "r": "reader", "c": "client"}
+    return mapping.get(raw.lower(), raw)
 
 
 def oscam_live_information():
@@ -446,12 +459,12 @@ def oscam_live_information():
         return "Live OSCam status: %s\nExisting CAM diagnostics remain available." % reason
     rows = _oscam_status_rows(payload)
     if not rows:
-        return "Live OSCam status: API reachable, no client/reader rows recognized."
+        return "Live OSCam status: API reachable, no client rows recognized."
 
     out = ["Live OSCam clients/readers", ""]
     for item in rows:
         name = _oscam_pick(item, "name", "user", "label", "reader")
-        typ = _oscam_pick(item, "type", "typ")
+        typ = _oscam_client_type(item)
         protocol = _oscam_pick(item, "protocol", "proto")
         address = _oscam_pick(item, "ip", "address")
         port = _oscam_pick(item, "port")
@@ -463,12 +476,13 @@ def oscam_live_information():
         idle = _oscam_pick(item, "idle", "idletime")
         ecm = _oscam_pick(item, "ecmtime", "ecm_time")
         out.append("%s  [%s]  %s" % (name, typ, status))
-        out.append("  %s  %s:%s" % (protocol, address, port))
-        out.append("  %s:%s@%s  %s" % (srvid, caid, provid, channel))
+        if protocol != "-" or address != "-" or port != "-":
+            out.append("  %s  %s:%s" % (protocol, address, port))
+        if caid != "-" or srvid != "-" or provid != "-" or channel != "-":
+            out.append("  %s:%s@%s  %s" % (srvid, caid, provid, channel))
         if ecm != "-" or idle != "-":
             out.append("  ECM: %s  Idle: %s" % (ecm, idle))
     return "\n".join(out)
-
 
 def oscam_webif_information():
     matches = _find_processes("oscam")
