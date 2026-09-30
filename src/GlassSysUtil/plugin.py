@@ -1373,10 +1373,10 @@ class GSUActiveCAM(Screen):
     skin = """
     <screen name="GSUActiveCAM" position="center,center" size="1040,700" title="Active CAM / OSCam Monitor">
         <widget name="text" position="30,30" size="980,570" font="Regular;24" />
-        <widget name="key_red" position="35,625" size="300,45" font="Regular;24" />
-        <widget name="key_green" position="270,625" size="230,45" font="Regular;24" />
-        <widget name="key_yellow" position="520,625" size="220,45" font="Regular;24" />
-        <widget name="key_blue" position="760,625" size="220,45" font="Regular;24" />
+        <widget name="key_red" position="35,625" size="210,45" font="Regular;24" foregroundColor="#ff3333" />
+        <widget name="key_green" position="270,625" size="230,45" font="Regular;24" foregroundColor="#33cc33" />
+        <widget name="key_yellow" position="520,625" size="220,45" font="Regular;24" foregroundColor="#e6d500" />
+        <widget name="key_blue" position="760,625" size="220,45" font="Regular;24" foregroundColor="#3399ff" />
     </screen>
     """
 
