@@ -466,17 +466,17 @@ def log_information():
 
 
 def _redact_diagnostic_text(text):
-    """Redact credentials, cryptographic secrets and stable private identifiers."""\n    # Diagnostic identifiers such as interface MAC addresses remain visible;\n    # they are useful for support and are not authentication secrets.
+    """Redact credentials, cryptographic secrets and stable private identifiers."""
+    # Diagnostic identifiers such as interface MAC addresses remain visible;
+    # they are useful for support and are not authentication secrets.
     value = text or ""
     rules = (
-        (r"(?im)^((?:user|username|password|passwd|pwd|httpuser|httppwd|rsakey|boxkey|deskey|key)\s*[=:]\s*).*$", r"\\1<redacted>"),
-        (r"(?i)\b(?:[0-9a-f]{2}:){5}[0-9a-f]{2}\b", "<redacted-mac>"),
+        (r"(?im)^((?:user|username|password|passwd|pwd|httpuser|httppwd|rsakey|boxkey|deskey|key)\s*[=:]\s*).*$", r"\1<redacted>"),
         (r"(?i)\b(?:serial(?:_number)?|uuid|machine-id)\s*[=:]\s*[^\s]+", "<redacted-identifier>"),
     )
     for pattern, replacement in rules:
         value = re.sub(pattern, replacement, value)
     return value
-
 
 def _safe_diagnostic_file(path, limit=131072):
     try:
