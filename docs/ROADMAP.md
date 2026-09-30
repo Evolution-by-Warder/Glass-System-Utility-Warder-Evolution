@@ -111,3 +111,15 @@ Included so far:
 - modern user-needs roadmap based on recurring Enigma2 support themes rather than historical feature parity alone.
 
 Status: STATIC/CI validation in progress; REAL RECEIVER REVIEW required before release.
+
+
+### CAM / OSCam monitor consolidation
+
+- Consolidated separate OSCam status/WebIF/runtime top-level entries into one focused Active CAM / OSCam Monitor.
+- Detects the actually running CAM process rather than assuming a receiver vendor.
+- Shows process identity, PID, runtime and memory alongside existing OSCam runtime/WebIF diagnostics.
+- Restart is deliberately state-changing and therefore requires explicit confirmation.
+- Restart uses only a discovered image-provided init/service path; there is no blind process-kill fallback.
+- A successful restart command is followed by active-CAM re-detection before success is reported.
+- Passwords, tokens and cryptographic keys remain excluded; ordinary diagnostic network identifiers are not needlessly hidden.
+- Receiver validation is required before 13.29-w10 can be released.
