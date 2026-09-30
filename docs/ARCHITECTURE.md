@@ -41,7 +41,7 @@ GSU uses the project's official public GitHub Releases as its update authority.
 - At most one silent network check is attempted per Enigma2 GUI boot.
 - If no newer release exists or the network is unavailable, startup is not interrupted.
 - A newer version is offered to the user; installation is never performed without confirmation.
-- Only `.ipk` assets hosted under this repository's official GitHub release-download path are accepted.
+- Only `.ipk` assets hosted under this repository's official GitHub release-download path are accepted. The release tag must match the package filename; redirects are accepted only to GitHub release-asset hosts, HTML responses are rejected, and the downloaded byte size must match GitHub's release metadata.
 - The downloaded package is installed through `opkg`; a GUI restart is requested after a successful update.
 - A manual **Check for updates** action is also available from the plugin.
 - Development commits are not treated as releases. Publishing a GitHub Release is the explicit act that makes a build available to installed receivers.
