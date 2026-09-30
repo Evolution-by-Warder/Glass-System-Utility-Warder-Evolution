@@ -165,7 +165,7 @@ def service_information():
     rows = []
     patterns = ("enigma2", "oscam", "cccam", "ncam", "mgcamd", "samba", "smbd",
                 "nmbd", "dropbear", "sshd", "vsftpd", "rpcbind")
-    proc = _run(["ps", "w"], 4) or _run(["ps"], 4)
+    proc = _run(["ps", "-ef"], 4) or _run(["pgrep", "-a", "-f", "."], 4)
     for line in proc.splitlines():
         low = line.lower()
         if any(name in low for name in patterns) and "grep" not in low:
@@ -185,21 +185,47 @@ def mount_information():
 
 def oscam_information():
     rows = []
-    proc = _run(["ps", "w"], 4) or _run(["ps"], 4)
-    matches = [line.strip() for line in proc.splitlines()
-               if "oscam" in line.lower() and "grep" not in line.lower()]
+    proc = _run(["pgrep", "-a", "-i", "oscam"], 4)
+    matches = [line.strip() for line in proc.splitlines() if line.strip()]
     rows.append("Process: %s" % ("RUNNING" if matches else "not detected"))
     if matches:
-        rows.extend(matches[:4])
-    rows.append("")
-    candidates = [
+        rows.extend(matches[:6])
+
+    config_dir = ""
+    for line in matches:
+        fields = line.split()
+        for index, field in enumerate(fields):
+            if field == "--config-dir" and index + 1 < len(fields):
+                config_dir = fields[index + 1]
+                break
+            if field.startswith("--config-dir="):
+                config_dir = field.split("=", 1)[1]
+                break
+        if config_dir:
+            break
+
+    if not config_dir:
+        pidfiles = ("/var/tmp/oscam-uni.pid", "/var/volatile/tmp/oscam-uni.pid")
+        for pidfile in pidfiles:
+            if os.path.isfile(pidfile):
+                rows.append("PID file: %s" % pidfile)
+                break
+
+    candidates = []
+    if config_dir:
+        candidates.append(os.path.join(config_dir, "oscam.conf"))
+    candidates.extend([
+        "/etc/tuxbox/config/oscam-uni/oscam.conf",
         "/etc/tuxbox/config/oscam.conf",
         "/etc/tuxbox/config/oscam/oscam.conf",
         "/usr/keys/oscam.conf",
         "/var/keys/oscam.conf",
-    ]
-    found = [path for path in candidates if os.path.isfile(path)]
-    rows.append("Config: %s" % (found[0] if found else "not found in common paths"))
+    ])
+    found = next((path for path in candidates if os.path.isfile(path)), "")
+    rows.append("")
+    rows.append("Config: %s" % (found if found else "not found"))
+    if config_dir:
+        rows.append("Config dir: %s" % config_dir)
     return "\n".join(rows)
 
 
