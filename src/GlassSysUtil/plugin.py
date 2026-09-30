@@ -53,6 +53,15 @@ def _run(argv, timeout=3):
         return ""
 
 
+def _run_status(argv, timeout=3):
+    try:
+        proc = subprocess.run(argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                              text=True, timeout=timeout, check=False)
+        return proc.returncode, (proc.stdout or "").strip()
+    except Exception:
+        return -1, ""
+
+
 def _uptime():
     try:
         seconds = int(float(_read_text("/proc/uptime", "0").split()[0]))
@@ -236,7 +245,7 @@ def oscam_information():
 
 def _proc_cmdline(pid):
     raw = _read_text("/proc/%s/cmdline" % pid, "")
-    return raw.replace("\\x00", " ").strip()
+    return raw.replace("\x00", " ").strip()
 
 
 def _find_processes(needle):
@@ -480,8 +489,8 @@ def network_diagnostics():
     gateway = _default_gateway()
     rows.append("Default gateway: %s" % gateway)
     if gateway != "N/A":
-        ping = _run(["ping", "-c", "1", "-W", "2", gateway], 4)
-        rows.append("Gateway reachability: %s" % ("OK" if "1 packets received" in ping or "1 received" in ping else "no reply"))
+        rc, ping = _run_status(["ping", "-c", "1", "-W", "2", gateway], 4)
+        rows.append("Gateway reachability: %s" % ("OK" if rc == 0 else "no reply"))
 
     resolvers = []
     for line in _read_lines("/etc/resolv.conf"):
@@ -698,8 +707,8 @@ class GSUUpdater(object):
         if not path:
             self.session.open(MessageBox, "Update download failed.", MessageBox.TYPE_ERROR)
             return
-        result = _run(["opkg", "install", path], 60)
-        if "error" in result.lower() or "failed" in result.lower():
+        rc, result = _run_status(["opkg", "install", path], 60)
+        if rc != 0:
             self.session.open(MessageBox, "Update installation failed.\n\n%s" % result[-1200:],
                               MessageBox.TYPE_ERROR)
             return
