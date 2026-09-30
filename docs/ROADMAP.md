@@ -15,3 +15,8 @@ Development proceeds from low-risk diagnostics to state-changing functions:
 9. Autostart integration only after dependent components are proven safe.
 
 Legacy functionality is evaluated feature-by-feature; obsolete mechanisms are not restored merely for compatibility.
+
+
+## 13.23-w4 receiver checkpoint — 2026-09-30
+
+GigaBlue Quad 4K Pro / OpenATV / Python 3.14 runtime PASS: modern process discovery and OSCam process/config-dir detection verified on real hardware. Continue read-only migration without per-line approval; state-changing operations remain separately gated.
