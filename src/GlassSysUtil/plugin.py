@@ -1624,8 +1624,17 @@ class GSUActiveCAM(Screen):
         if active and active.get("family") == "oscam":
             table_rows, reason = oscam_live_rows()
         try:
+            selected = 0
+            try:
+                selected = self["table"].getSelectionIndex()
+            except Exception:
+                pass
             self["table"].setList([_oscam_table_line(row) for row in table_rows])
             if table_rows:
+                try:
+                    self["table"].moveToIndex(min(selected, len(table_rows) - 1))
+                except Exception:
+                    pass
                 self["live_status"].setText("Live OSCam: %d client/reader row%s" %
                                             (len(table_rows), "" if len(table_rows) == 1 else "s"))
             else:
