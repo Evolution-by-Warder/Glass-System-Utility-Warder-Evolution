@@ -20,3 +20,15 @@
 - `docs/` — architecture, roadmap and testing policy
 - `tests/` — host-side tests where practical
 - `legacy/` — documentation/reference material only; never an active runtime core
+
+
+## Capability discovery
+
+Glass System Utility Warder Evolution detects capabilities from the running Linux/Enigma2 system before considering receiver-specific fallbacks.
+
+- Do not branch on receiver brand/model when a standard runtime interface can be probed.
+- Prefer Linux interfaces such as sysfs, procfs, process state, mounts and image-provided runtime files.
+- Treat sysfs class entries as possible symlinks and enumerate/probe them explicitly where required.
+- A missing interface means only that the current kernel/image does not expose that capability through a detected path; it does not prove the physical hardware lacks it.
+- Vendor-specific handling is a fallback only when there is no reliable capability-based interface.
+- Read-only discovery is preferred; state-changing operations remain separately gated and tested.
