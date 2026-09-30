@@ -37,3 +37,15 @@ Never mix their code, repository history, branches, checkpoints, release artifac
 ## Original authorship
 
 The legacy Glass System Utility remains the work of its original authors. Warder Evolution identifies modernization and continuation work only.
+
+
+## Automation and maintainer interaction
+
+Routine project mechanics must be automated whenever an authorized and auditable path exists. ChatGPT/Work should perform repository edits, commits, CI/build orchestration, artifact verification, release publication, release-asset upload and post-publication verification directly through the project's authorized GitHub integration/workflows.
+
+The maintainer must not be used as a manual command relay or asked to copy/paste shell, PowerShell or GitHub CLI commands for operations the project automation can safely perform itself. Human interaction is reserved for decisions, explicit approvals when genuinely required, credentials/authorization that only the account owner can grant, and real-receiver/hardware testing that cannot be performed remotely.
+
+Preferred production flow:
+`development -> commit -> CI/tests -> deterministic build -> verified Release -> real receiver test`.
+
+If an automation capability is missing, first try to add a safe, documented and reproducible project-side mechanism rather than permanently shifting the mechanical step to the maintainer.
