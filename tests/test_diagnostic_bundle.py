@@ -45,6 +45,14 @@ class DiagnosticRedactionTests(unittest.TestCase):
         self.assertIn("aa:bb:cc:dd:ee:ff", result)
         self.assertIn("<redacted>", result)
 
+    def test_redacts_stable_private_identifiers(self):
+        source = "serial=ABC123\nuuid=deadbeef\nmachine-id=xyz987\n"
+        result = gsu._redact_diagnostic_text(source)
+        self.assertNotIn("ABC123", result)
+        self.assertNotIn("deadbeef", result)
+        self.assertNotIn("xyz987", result)
+        self.assertEqual(result.count("<redacted-identifier>"), 3)
+
     def test_rejects_binary_or_oversized_log(self):
         with tempfile.NamedTemporaryFile(delete=False) as handle:
             path = handle.name
