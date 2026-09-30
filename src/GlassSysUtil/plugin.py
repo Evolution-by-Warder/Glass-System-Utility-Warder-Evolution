@@ -1754,39 +1754,41 @@ class GSUActiveCAM(Screen):
             return
         self._refresh_in_progress = True
         try:
-            self["summary"].setText(active_cam_summary())
-        except Exception:
-            pass
-        active = _active_cam()
-        table_rows, reason = ([], "No supported active OSCam detected.")
-        if active and active.get("family") == "oscam":
-            table_rows, reason = oscam_live_rows()
-        try:
-            selected = 0
             try:
-                selected = self["table"].getSelectionIndex()
+                self["summary"].setText(active_cam_summary())
             except Exception:
                 pass
-            self["table"].setList([_oscam_table_line(row) for row in table_rows])
-            if table_rows:
+            active = _active_cam()
+            table_rows, reason = ([], "No supported active OSCam detected.")
+            if active and active.get("family") == "oscam":
+                table_rows, reason = oscam_live_rows()
+            try:
+                selected = 0
                 try:
-                    self["table"].moveToIndex(min(selected, len(table_rows) - 1))
+                    selected = self["table"].getSelectionIndex()
                 except Exception:
                     pass
-                self["live_status"].setText("Live OSCam: %d client/reader row%s" %
-                                            (len(table_rows), "" if len(table_rows) == 1 else "s"))
-            else:
-                self["live_status"].setText("Live OSCam: %s" % reason)
-        except Exception:
-            pass
-        command, detail = _active_cam_restart_command()
-        self.restart_command = command
-        self.restart_detail = detail
-        try:
-            self["key_green"].setText("Restart CAM" if command else "Restart unavailable")
-        except Exception:
-            pass
-        self._refresh_in_progress = False
+                self["table"].setList([_oscam_table_line(row) for row in table_rows])
+                if table_rows:
+                    try:
+                        self["table"].moveToIndex(min(selected, len(table_rows) - 1))
+                    except Exception:
+                        pass
+                    self["live_status"].setText("Live OSCam: %d client/reader row%s" %
+                                                (len(table_rows), "" if len(table_rows) == 1 else "s"))
+                else:
+                    self["live_status"].setText("Live OSCam: %s" % reason)
+            except Exception:
+                pass
+            command, detail = _active_cam_restart_command()
+            self.restart_command = command
+            self.restart_detail = detail
+            try:
+                self["key_green"].setText("Restart CAM" if command else "Restart unavailable")
+            except Exception:
+                pass
+        finally:
+            self._refresh_in_progress = False
 
     def _start_auto_refresh(self):
         if eTimer is None:
