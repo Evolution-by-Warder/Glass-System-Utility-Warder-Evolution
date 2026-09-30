@@ -466,7 +466,7 @@ def log_information():
 
 
 def _redact_diagnostic_text(text):
-    """Redact credentials, cryptographic secrets and stable private identifiers."""
+    """Redact credentials, cryptographic secrets and stable private identifiers."""\n    # Diagnostic identifiers such as interface MAC addresses remain visible;\n    # they are useful for support and are not authentication secrets.
     value = text or ""
     rules = (
         (r"(?im)^((?:user|username|password|passwd|pwd|httpuser|httppwd|rsakey|boxkey|deskey|key)\s*[=:]\s*).*$", r"\\1<redacted>"),
