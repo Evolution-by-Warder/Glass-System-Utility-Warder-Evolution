@@ -452,6 +452,35 @@ def _oscam_client_type(row):
     return mapping.get(raw.lower(), raw)
 
 
+def _oscam_flatten_scalars(value, prefix="", depth=0, out=None):
+    """Flatten scalar OSCam API fields so variant builds can be mapped safely."""
+    if out is None:
+        out = {}
+    if depth > 4:
+        return out
+    if isinstance(value, dict):
+        for key, nested in value.items():
+            name = str(key).lower()
+            full = ("%s.%s" % (prefix, name)) if prefix else name
+            _oscam_flatten_scalars(nested, full, depth + 1, out)
+    elif isinstance(value, list):
+        return out
+    elif value not in (None, ""):
+        text = str(value)
+        out[prefix] = text
+        leaf = prefix.rsplit(".", 1)[-1]
+        out.setdefault(leaf, text)
+    return out
+
+
+def _oscam_flat_pick(flat, *names):
+    for name in names:
+        value = flat.get(name)
+        if value not in (None, ""):
+            return str(value)
+    return "-"
+
+
 def oscam_live_rows():
     """Return sanitized, display-ready OSCam client rows plus a status message."""
     payload, reason = _oscam_live_status()
@@ -459,19 +488,24 @@ def oscam_live_rows():
         return [], reason
     rows = []
     for item in _oscam_status_rows(payload):
+        flat = _oscam_flatten_scalars(item)
+        raw_type = _oscam_flat_pick(flat, "type", "typ")
+        type_map = {"s": "server", "h": "http", "p": "proxy",
+                    "r": "reader", "c": "client"}
+        row_type = type_map.get(raw_type.lower(), raw_type)
         rows.append({
-            "name": _oscam_pick(item, "name", "user", "label", "reader"),
-            "type": _oscam_client_type(item),
-            "address": _oscam_pick(item, "ip", "address"),
-            "port": _oscam_pick(item, "port"),
-            "protocol": _oscam_pick(item, "protocol", "proto"),
-            "srvid": _oscam_pick(item, "srvid"),
-            "caid": _oscam_pick(item, "caid"),
-            "provid": _oscam_pick(item, "provid", "provider"),
-            "channel": _oscam_pick(item, "lastchannel", "channel", "srvname"),
-            "status": _oscam_pick(item, "status", "connection"),
-            "ecm": _oscam_pick(item, "ecmtime", "ecm_time"),
-            "idle": _oscam_pick(item, "idle", "idletime"),
+            "name": _oscam_flat_pick(flat, "name", "user", "label", "reader", "username"),
+            "type": row_type,
+            "address": _oscam_flat_pick(flat, "ip", "address", "host", "hostname"),
+            "port": _oscam_flat_pick(flat, "port", "remoteport"),
+            "protocol": _oscam_flat_pick(flat, "protocol", "proto"),
+            "srvid": _oscam_flat_pick(flat, "srvid", "serviceid", "sid"),
+            "caid": _oscam_flat_pick(flat, "caid"),
+            "provid": _oscam_flat_pick(flat, "provid", "provider", "prid"),
+            "channel": _oscam_flat_pick(flat, "lastchannel", "channel", "srvname", "servicename"),
+            "status": _oscam_flat_pick(flat, "status", "connection", "state"),
+            "ecm": _oscam_flat_pick(flat, "ecmtime", "ecm_time", "lastresponsetime"),
+            "idle": _oscam_flat_pick(flat, "idle", "idletime"),
         })
     return rows, "" if rows else "API reachable, no client rows recognized."
 
