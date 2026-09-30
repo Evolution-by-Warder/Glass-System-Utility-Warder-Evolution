@@ -31,3 +31,8 @@ The end-to-end GitHub Release update path remains REVIEW because no public relea
 
 Test artifact: `enigma2-plugin-glasssysutil_13.25-w6_all.ipk`
 SHA-256: `d72e961f794d620537617622488a8dbad03a2e3f22ae2924296a0bfb00409138`.
+
+
+## 13.26-w7 update-path candidate — 2026-09-30
+
+13.26-w7 is intentionally a minimal successor to the REAL RECEIVER PASS 13.25-w6 checkpoint. Its purpose is to validate the complete official GitHub Release self-update path from an installed w6 receiver without mixing unrelated feature changes into that test. Source/runtime behavior remains based on the tested w6 implementation; version/package metadata advance together to 13.26-w7. Publishing the public Release remains gated by explicit user approval.
