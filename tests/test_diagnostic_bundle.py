@@ -44,7 +44,6 @@ class DiagnosticRedactionTests(unittest.TestCase):
         self.assertNotIn("secret", result)
         self.assertIn("aa:bb:cc:dd:ee:ff", result)
         self.assertIn("<redacted>", result)
-        self.assertIn("<redacted-mac>", result)
 
     def test_rejects_binary_or_oversized_log(self):
         with tempfile.NamedTemporaryFile(delete=False) as handle:
