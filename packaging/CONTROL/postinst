@@ -3,7 +3,8 @@ set -e
 PLUGIN_DIR="/usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil"
 rm -rf "$PLUGIN_DIR/__pycache__"
 echo "*****************************************************"
-echo "Glass System Utility 13.21-w2 Warder Evolution installed."
-echo "Modern Python 3 source core enabled; no version-specific bytecode selection."
+echo "Glass System Utility 13.22-w3 Warder Evolution installed."
+echo "Modern Python 3 source core enabled."
+echo "Read-only service, mount and OSCam diagnostics added."
 echo "GUI restart is required to enable the plugin."
 exit 0
