@@ -47,3 +47,19 @@ GSU uses the project's official public GitHub Releases as its update authority.
 - A manual **Check for updates** action is also available from the plugin.
 - Development commits are not treated as releases. Publishing a GitHub Release is the explicit act that makes a build available to installed receivers.
 - A public GitHub Release is prepared only after a real receiver test and explicit user approval.
+
+
+## Release automation
+
+Production releases are published by `.github/workflows/release-ipk.yml` from the `warder-master-production` branch.
+
+The workflow is intentionally manual-dispatch and guarded:
+- the caller supplies the exact expected version;
+- source `version`, package control metadata and post-install metadata must agree;
+- source validation and unit tests must pass;
+- the IPK is rebuilt deterministically and its package identity is checked;
+- an existing tag/release is never overwritten;
+- GitHub's scoped `GITHUB_TOKEN` publishes the immutable Release and assets;
+- the published release metadata and asset digest are verified after publication.
+
+This removes the need for a maintainer workstation to download the CI artifact and run `gh release create`. The receiver update authority remains the official GitHub Release for this repository.
