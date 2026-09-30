@@ -192,3 +192,18 @@ The receiver-approved CAM monitor is being extended toward the useful OSCamInfo-
 - if live API access is unavailable or authenticated, the existing process/runtime/config diagnostics remain functional.
 
 Real receiver validation is required before this extension can be included in the w10 release checkpoint.
+
+
+### Visual OSCam monitor implementation checkpoint
+
+The live OSCam experiment has been promoted from raw/text diagnostics to a TV-oriented monitor:
+- structured client/reader rows are separated from raw API payloads;
+- nested scalar fields are normalized for differing OSCam API layouts;
+- table presents Reader/User, Address, Port, Protocol, srvid:caid@provid, Channel, ECM, Idle and Status;
+- raw Python/JSON structures are never rendered to the user;
+- monitor refreshes live data every 5 seconds while open and stops its timer on close;
+- manual Refresh remains available and row selection is preserved across refreshes;
+- Details retains deeper runtime/config diagnostics;
+- restart remains the previously receiver-verified image-provided service action.
+
+Real receiver validation remains required for final field mapping and visual acceptance before v13.29-w10 release.
