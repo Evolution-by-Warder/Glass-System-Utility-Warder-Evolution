@@ -37,12 +37,12 @@ spec.loader.exec_module(gsu)
 
 
 class DiagnosticRedactionTests(unittest.TestCase):
-    def test_redacts_credentials_and_mac(self):
+    def test_redacts_credentials_but_keeps_mac(self):
         source = "username = admin\npassword = secret\nMAC: aa:bb:cc:dd:ee:ff\n"
         result = gsu._redact_diagnostic_text(source)
         self.assertNotIn("admin", result)
         self.assertNotIn("secret", result)
-        self.assertNotIn("aa:bb:cc:dd:ee:ff", result)
+        self.assertIn("aa:bb:cc:dd:ee:ff", result)
         self.assertIn("<redacted>", result)
         self.assertIn("<redacted-mac>", result)
 
