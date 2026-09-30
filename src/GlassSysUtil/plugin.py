@@ -169,8 +169,7 @@ def hardware_identity_information():
     if freq_values:
         rows.append("CPU frequency: %.0f-%.0f MHz" % (min(freq_values), max(freq_values)))
 
-    return "
-".join(rows)
+    return "\n".join(rows)
 
 
 def system_information():
