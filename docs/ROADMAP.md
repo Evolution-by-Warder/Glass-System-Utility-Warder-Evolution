@@ -51,6 +51,8 @@ SHA-256: `d72e961f794d620537617622488a8dbad03a2e3f22ae2924296a0bfb00409138`.
 
 ## 13.28-w9 updater completion candidate
 
+- Candidate source HEAD: `eac32fa5ad39992ec9c4683c6d8646ac688f29f2`.
+
 - Removes the post-install modal swap entirely.
 - Reuses the already-open progress MessageBox for success/error status.
 - Schedules the GUI restart independently after 3 seconds.
