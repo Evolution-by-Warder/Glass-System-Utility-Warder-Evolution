@@ -123,3 +123,14 @@ Status: STATIC/CI validation in progress; REAL RECEIVER REVIEW required before r
 - A successful restart command is followed by active-CAM re-detection before success is reported.
 - Passwords, tokens and cryptographic keys remain excluded; ordinary diagnostic network identifiers are not needlessly hidden.
 - Receiver validation is required before 13.29-w10 can be released.
+
+
+### 13.29-w10 pre-receiver candidate checkpoint — 2026-09-30
+
+Production source and regression suite are green at commit `1e522dfd479184b4c81c9053c2076204f04318bf`.
+
+The candidate contains the post-w9 read-only diagnostics block (expanded tuner discovery, Time & Synchronization, Health Check and privacy-safe local Diagnostic Support Bundle) plus the consolidated Active CAM / OSCam Monitor. The monitor detects the running CAM, exposes runtime diagnostics, provides Refresh and Details actions, and offers a confirmation-gated restart using only a discovered image-provided service path. There is no generic `killall` fallback. CAM restart work runs outside the Enigma2 UI thread and re-detects the CAM before reporting success.
+
+STATIC/CI: PASS.
+REAL RECEIVER: REVIEW REQUIRED.
+Release: NOT PUBLISHED. The immutable 13.28-w9 release remains the current public release until the w10 receiver checklist passes.
