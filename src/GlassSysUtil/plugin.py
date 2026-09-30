@@ -12,6 +12,9 @@ import shutil
 import socket
 import subprocess
 import json
+import re
+import tarfile
+import time
 import tempfile
 import threading
 import urllib.request
@@ -460,6 +463,90 @@ def log_information():
     dmesg = _run(["dmesg"], 4)
     rows.append("Kernel log: %s" % ("available" if dmesg else "not available"))
     return "\n".join(rows) if rows else "No known diagnostic logs found."
+
+
+def _redact_diagnostic_text(text):
+    """Redact common credentials and stable device/network identifiers."""
+    value = text or ""
+    rules = (
+        (r"(?im)^((?:user|username|password|passwd|pwd|httpuser|httppwd|rsakey|boxkey|deskey|key)\s*[=:]\s*).*$", r"\\1<redacted>"),
+        (r"(?i)\b(?:[0-9a-f]{2}:){5}[0-9a-f]{2}\b", "<redacted-mac>"),
+        (r"(?i)\b(?:serial(?:_number)?|uuid|machine-id)\s*[=:]\s*[^\s]+", "<redacted-identifier>"),
+    )
+    for pattern, replacement in rules:
+        value = re.sub(pattern, replacement, value)
+    return value
+
+
+def _safe_diagnostic_file(path, limit=131072):
+    try:
+        if not os.path.isfile(path):
+            return ""
+        with open(path, "rb") as handle:
+            raw = handle.read(limit + 1)
+        if len(raw) > limit or b"\x00" in raw:
+            return ""
+        return _redact_diagnostic_text(raw.decode("utf-8", "replace"))
+    except Exception:
+        return ""
+
+
+def create_diagnostic_bundle():
+    """Create a bounded, redacted support bundle without changing system state."""
+    stamp = time.strftime("%Y%m%d-%H%M%S")
+    target = "/tmp/gsu-diagnostics-%s.tar.gz" % stamp
+    workspace = tempfile.mkdtemp(prefix="gsu-diagnostics-")
+    try:
+        reports = {
+            "summary.txt": diagnostic_summary(),
+            "system.txt": system_information(),
+            "hardware.txt": hardware_identity_information(),
+            "network.txt": network_information(),
+            "storage.txt": storage_information(),
+            "memory.txt": memory_information(),
+            "services.txt": service_information(),
+            "mounts.txt": mount_information(),
+            "tuners.txt": tuner_information(),
+            "temperatures.txt": temperature_information(),
+            "capabilities.txt": capability_information(),
+            "image-runtime.txt": image_information(),
+            "packages.txt": package_information(),
+            "oscam-status.txt": oscam_information(),
+        }
+        for name, report in reports.items():
+            with open(os.path.join(workspace, name), "w") as handle:
+                handle.write(_redact_diagnostic_text(report) + "\n")
+
+        # Include only bounded text logs.  OSCam configuration/account files
+        # are intentionally never copied into a support bundle.
+        log_paths = (
+            "/home/root/logs/enigma2_crash.log",
+            "/media/hdd/enigma2_crash.log",
+            "/tmp/enigma2_crash.log",
+            "/var/log/messages",
+        )
+        for index, path in enumerate(log_paths):
+            data = _safe_diagnostic_file(path)
+            if data:
+                with open(os.path.join(workspace, "log-%02d.txt" % index), "w") as handle:
+                    handle.write("Source: %s\n\n%s" % (path, data))
+
+        manifest = (
+            "Glass System Utility Warder Evolution diagnostic bundle\n"
+            "GSU version: %s\n"
+            "Generated: %s\n"
+            "Privacy: credentials, MAC addresses and stable identifiers are redacted; "
+            "CAM account/configuration files are excluded.\n"
+        ) % (VERSION, time.strftime("%Y-%m-%d %H:%M:%S"))
+        with open(os.path.join(workspace, "README.txt"), "w") as handle:
+            handle.write(manifest)
+
+        with tarfile.open(target, "w:gz") as archive:
+            for name in sorted(os.listdir(workspace)):
+                archive.add(os.path.join(workspace, name), arcname=name, recursive=False)
+        return target
+    finally:
+        shutil.rmtree(workspace, ignore_errors=True)
 
 
 def _temperature_candidates():
@@ -1096,6 +1183,7 @@ class SysUtilMngMain(Screen):
         ("Package information", "packages"),
         ("Image & Runtime", "imageinfo"),
         ("Diagnostic Summary", "summary"),
+        ("Create Diagnostic Bundle", "diagbundle"),
         ("Detected Capabilities", "capabilities"),
         ("Check for updates", "update"),
         ("Restart Enigma2 GUI", "restart"),
@@ -1140,6 +1228,14 @@ class SysUtilMngMain(Screen):
         if action in actions:
             title, fnc = actions[action]
             self._info(title, fnc())
+        elif action == "diagbundle":
+            try:
+                path = create_diagnostic_bundle()
+                self.session.open(MessageBox, "Diagnostic bundle created:\n%s" % path,
+                                  MessageBox.TYPE_INFO, timeout=10)
+            except Exception as exc:
+                self.session.open(MessageBox, "Unable to create diagnostic bundle.\n\n%s" % exc,
+                                  MessageBox.TYPE_ERROR, timeout=10)
         elif action == "update":
             GSUUpdater(self.session).check(silent=False)
         elif action == "restart":
