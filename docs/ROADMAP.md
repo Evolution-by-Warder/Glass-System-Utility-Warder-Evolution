@@ -207,3 +207,20 @@ The live OSCam experiment has been promoted from raw/text diagnostics to a TV-or
 - restart remains the previously receiver-verified image-provided service action.
 
 Real receiver validation remains required for final field mapping and visual acceptance before v13.29-w10 release.
+
+
+### OSCam monitor batch refinement — pre-receiver candidate
+
+A coherent visual-monitor batch is now complete:
+- raw API/dictionary output is excluded from the main screen;
+- missing values render as clean empty cells rather than placeholder punctuation;
+- nested OSCam field aliases are normalized for address, port, protocol, service identifiers, channel and timing;
+- ECM timing and idle values are normalized to human-readable units;
+- rows receive compact semantic role markers (reader/client/server/WebIF/local where detectable);
+- status text is normalized for fast visual scanning;
+- widescreen 1500x760 layout provides more room for the live table;
+- visual hierarchy separates summary, live status, column header and table;
+- five-second auto-refresh remains bounded, stops on close, preserves selection and is guarded against re-entry;
+- safe restart and deeper Details behavior are unchanged.
+
+CI is green for the implementation commits. Next gate is one real-receiver visual/data validation; no release should be published before that check.
