@@ -341,38 +341,74 @@ def log_information():
     return "\n".join(rows) if rows else "No known diagnostic logs found."
 
 
+def _temperature_candidates():
+    """Discover temperature interfaces by capability, not receiver brand."""
+    candidates = []
+
+    # Linux thermal class. Entries are commonly symlinks, so enumerate them
+    # explicitly instead of relying on os.walk() following directory links.
+    thermal_root = "/sys/class/thermal"
+    try:
+        for name in sorted(os.listdir(thermal_root)):
+            if name.startswith("thermal_zone"):
+                candidates.append((os.path.join(thermal_root, name, "temp"),
+                                   os.path.join(thermal_root, name, "type")))
+    except Exception:
+        pass
+
+    # Generic Linux hwmon interfaces.
+    hwmon_root = "/sys/class/hwmon"
+    try:
+        for hwmon in sorted(os.listdir(hwmon_root)):
+            base = os.path.join(hwmon_root, hwmon)
+            try:
+                for name in sorted(os.listdir(base)):
+                    if name.startswith("temp") and name.endswith("_input"):
+                        stem = name[:-6]
+                        candidates.append((os.path.join(base, name),
+                                           os.path.join(base, stem + "_label")))
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    # Enigma2/STB compatibility interfaces. These are capability probes only;
+    # no receiver brand/model assumptions are made.
+    candidates.extend([
+        ("/proc/stb/sensors/temp0/value", ""),
+        ("/proc/stb/fp/temp_sensor", ""),
+    ])
+    return candidates
+
+
 def temperature_information():
     rows = []
-    roots = ("/sys/class/thermal", "/sys/class/hwmon")
     seen = set()
-    for root in roots:
-        if not os.path.isdir(root):
+    for path, label_path in _temperature_candidates():
+        if not os.path.isfile(path):
             continue
-        for base, dirs, files in os.walk(root):
-            for name in files:
-                if not (name.startswith("temp") and name.endswith("_input")) and name != "temp":
-                    continue
-                path = os.path.join(base, name)
-                raw = _read_text(path, "")
-                try:
-                    value = float(raw)
-                    if value > 1000:
-                        value /= 1000.0
-                    if -20 <= value <= 150:
-                        key = os.path.realpath(path)
-                        if key not in seen:
-                            seen.add(key)
-                            label = _read_text(path.replace("_input", "_label"), os.path.basename(base))
-                            rows.append("%s: %.1f C" % (label, value))
-                except Exception:
-                    pass
-    for path in ("/proc/stb/sensors/temp0/value", "/proc/stb/fp/temp_sensor"):
-        if os.path.isfile(path):
-            value = _read_text(path, "")
-            if value:
-                rows.append("%s: %s" % (path, value))
-    return "\n".join(rows[:20]) if rows else "No temperature sensors exposed by this image."
+        try:
+            raw = _read_text(path, "")
+            value = float(raw)
+            if abs(value) >= 1000:
+                value /= 1000.0
+            if not (-20.0 <= value <= 150.0):
+                continue
+            real = os.path.realpath(path)
+            if real in seen:
+                continue
+            seen.add(real)
+            label = _read_text(label_path, "") if label_path else ""
+            if not label:
+                parent = os.path.basename(os.path.dirname(path))
+                label = parent if parent else "Temperature"
+            rows.append("%s: %.1f C" % (label, value))
+        except Exception:
+            pass
 
+    if rows:
+        return "\n".join(rows)
+    return "Temperature data not exposed through detected system interfaces."
 
 def oscam_runtime_information():
     rows = []
