@@ -134,3 +134,16 @@ The candidate contains the post-w9 read-only diagnostics block (expanded tuner d
 STATIC/CI: PASS.
 REAL RECEIVER: REVIEW REQUIRED.
 Release: NOT PUBLISHED. The immutable 13.28-w9 release remains the current public release until the w10 receiver checklist passes.
+
+
+### 13.29-w10 authoritative CI artifact — 2026-09-30
+
+Authoritative build commit: `d9510b25d9b9fba42ae4c3cba41b35bdb09be476`.
+GitHub Actions run: `36752018129` — PASS.
+Artifact: `enigma2-plugin-glasssysutil_13.29-w10_all.ipk`.
+Size: 19,716 bytes.
+SHA-256: `c1ca485b2ceb0709df41ca2cbfcaf7ee7be82654a0d1268741ae5bc1991e6262`.
+
+The downloaded CI artifact was independently inspected after the workflow completed: deterministic ar member order is correct, package identity is `enigma2-plugin-glasssysutil`, package version is `13.29-w10`, and the embedded SHA-256 sidecar matches the independently calculated digest.
+
+This is the receiver-test candidate only. Do not publish `v13.29-w10` until the real receiver checklist passes.
