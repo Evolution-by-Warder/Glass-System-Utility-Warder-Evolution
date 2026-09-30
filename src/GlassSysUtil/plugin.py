@@ -1454,6 +1454,16 @@ class GSUActiveCAM(Screen):
         except Exception:
             pass
 
+    def show_details(self):
+        active = _active_cam()
+        if not active:
+            self.session.open(MessageBox, "No supported active CAM detected.", MessageBox.TYPE_INFO, timeout=6)
+            return
+        parts = [active_cam_information()]
+        if active.get("family") == "oscam":
+            parts.extend(["", oscam_runtime_information(), "", oscam_webif_information()])
+        self.session.open(GSUInfo, "CAM / OSCam Details", "\\n".join(parts))
+
     def restart_cam(self):
         if not self.restart_command:
             self.session.open(MessageBox, self.restart_detail, MessageBox.TYPE_INFO, timeout=8)
@@ -1461,9 +1471,7 @@ class GSUActiveCAM(Screen):
         self.session.openWithCallback(
             self._restart_confirmed,
             MessageBox,
-            "%s?
-
-The currently active CAM will be briefly interrupted." % self.restart_detail,
+            "%s?\\n\\nThe currently active CAM will be briefly interrupted." % self.restart_detail,
             MessageBox.TYPE_YESNO)
 
     def _restart_confirmed(self, answer):
@@ -1488,9 +1496,7 @@ The currently active CAM will be briefly interrupted." % self.restart_detail,
                 self._refresh()
                 if rc != 0:
                     detail = output[-800:] if output else "restart command returned status %s" % rc
-                    self.session.open(MessageBox, "Active CAM restart failed.
-
-%s" % detail,
+                    self.session.open(MessageBox, "Active CAM restart failed.\\n\\n%s" % detail,
                                       MessageBox.TYPE_ERROR, timeout=10)
                 elif verified:
                     changed = " (new PID %s)" % verified["pid"] if verified["pid"] != before_pid else ""
