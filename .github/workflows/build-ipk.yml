@@ -1,0 +1,45 @@
+name: Build GSU IPK
+
+on:
+  push:
+    branches: [warder-master-production]
+    paths:
+      - "src/GlassSysUtil/**"
+      - "packaging/CONTROL/**"
+      - ".github/workflows/build-ipk.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate source
+        run: |
+          python3 -m py_compile src/GlassSysUtil/plugin.py
+          test "$(cat src/GlassSysUtil/version)" = "13.24-w5"
+          grep -q '^Version: 13.24$' packaging/CONTROL/control
+          test -s src/GlassSysUtil/SysMgt.png
+      - name: Build IPK
+        run: |
+          set -eu
+          ROOT="$PWD/.build/root"
+          PARTS="$PWD/.build/parts"
+          PLUGIN="$ROOT/usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil"
+          mkdir -p "$PLUGIN" "$PARTS/control"
+          cp src/GlassSysUtil/plugin.py src/GlassSysUtil/__init__.py src/GlassSysUtil/version src/GlassSysUtil/SysMgt.png "$PLUGIN/"
+          cp packaging/CONTROL/control packaging/CONTROL/postinst "$PARTS/control/"
+          chmod 755 "$PARTS/control/postinst"
+          printf '2.0\n' > "$PARTS/debian-binary"
+          tar -C "$PARTS/control" -czf "$PARTS/control.tar.gz" .
+          tar -C "$ROOT" -czf "$PARTS/data.tar.gz" usr
+          (cd "$PARTS" && ar rc "$GITHUB_WORKSPACE/enigma2-plugin-glasssysutil_13.24-w5_all.ipk" debian-binary control.tar.gz data.tar.gz)
+          ar t enigma2-plugin-glasssysutil_13.24-w5_all.ipk
+          sha256sum enigma2-plugin-glasssysutil_13.24-w5_all.ipk | tee enigma2-plugin-glasssysutil_13.24-w5_all.ipk.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: glasssysutil-13.24-w5
+          path: |
+            enigma2-plugin-glasssysutil_13.24-w5_all.ipk
+            enigma2-plugin-glasssysutil_13.24-w5_all.ipk.sha256
+          if-no-files-found: error
