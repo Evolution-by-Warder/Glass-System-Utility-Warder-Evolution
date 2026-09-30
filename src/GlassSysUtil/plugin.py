@@ -380,19 +380,66 @@ def oscam_webif_information():
 
 
 def tuner_information():
+    """Report tuner/front-end capabilities exposed by the running image."""
     rows = []
-    nim_root = "/proc/stb/frontend"
-    try:
-        frontends = sorted(os.listdir(nim_root))
-    except Exception:
-        frontends = []
-    if frontends:
-        rows.append("Frontend devices: %s" % ", ".join(frontends))
     nim_sockets = _read_lines("/proc/bus/nim_sockets")
     if nim_sockets:
-        rows.append("")
-        rows.extend(line.rstrip() for line in nim_sockets[:40])
-    return "\n".join(rows) if rows else "No tuner information exposed by this image."
+        rows.append("Enigma2 tuner sockets")
+        rows.extend(line.rstrip() for line in nim_sockets[:80])
+    else:
+        rows.append("Enigma2 tuner socket table: not exposed")
+
+    frontend_roots = ("/proc/stb/frontend", "/sys/class/dvb")
+    discovered = False
+    for root in frontend_roots:
+        try:
+            entries = sorted(os.listdir(root))
+        except Exception:
+            entries = []
+        if not entries:
+            continue
+        discovered = True
+        rows += ["", "%s:" % root]
+        for entry in entries[:32]:
+            path = os.path.join(root, entry)
+            if os.path.isdir(path):
+                details = []
+                try:
+                    names = sorted(os.listdir(path))
+                except Exception:
+                    names = []
+                for name in names:
+                    candidate = os.path.join(path, name)
+                    if not os.path.isfile(candidate):
+                        continue
+                    # Keep this page strictly read-only and bounded.  Only
+                    # expose short text attributes; binary/control nodes are
+                    # deliberately ignored.
+                    value = _read_text(candidate, "")
+                    if value and len(value) <= 160 and all(
+                            ord(ch) >= 32 or ch in "\r\n\t" for ch in value):
+                        value = " ".join(value.split())
+                        if value:
+                            details.append("%s=%s" % (name, value))
+                    if len(details) >= 8:
+                        break
+                rows.append("%s%s" % (
+                    entry, ("  " + ", ".join(details)) if details else ""))
+            else:
+                rows.append(entry)
+
+    adapters = []
+    try:
+        adapters = sorted(name for name in os.listdir("/dev/dvb")
+                          if name.startswith("adapter"))
+    except Exception:
+        pass
+    rows += ["", "DVB device adapters: %s" %
+             (", ".join(adapters) if adapters else "not exposed")]
+
+    if not nim_sockets and not discovered and not adapters:
+        return "Tuner data not exposed through detected system interfaces."
+    return "\n".join(rows)
 
 
 def log_information():
