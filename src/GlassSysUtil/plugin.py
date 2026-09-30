@@ -466,7 +466,7 @@ def log_information():
 
 
 def _redact_diagnostic_text(text):
-    """Redact common credentials and stable device/network identifiers."""
+    """Redact credentials, cryptographic secrets and stable private identifiers."""
     value = text or ""
     rules = (
         (r"(?im)^((?:user|username|password|passwd|pwd|httpuser|httppwd|rsakey|boxkey|deskey|key)\s*[=:]\s*).*$", r"\\1<redacted>"),
