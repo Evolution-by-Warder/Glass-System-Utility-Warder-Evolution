@@ -20,6 +20,7 @@ from Screens.MessageBox import MessageBox
 from Screens.Screen import Screen
 from Components.ActionMap import ActionMap
 from Components.Label import Label
+from Components.ScrollLabel import ScrollLabel
 from Components.MenuList import MenuList
 
 VERSION = "13.24-w5"
@@ -743,14 +744,18 @@ def _auto_update_check(session):
 class GSUInfo(Screen):
     skin = """
     <screen name="GSUInfo" position="center,center" size="1160,680" title="Glass System Utility">
-        <widget name="text" position="30,30" size="1100,620" font="Regular;25" />
+        <widget name="text" position="30,30" size="1100,620" font="Regular;25" scrollbarMode="showOnDemand" />
     </screen>
     """
     def __init__(self, session, title, text):
         Screen.__init__(self, session)
         self.setTitle(title)
-        self["text"] = Label(text)
-        self["actions"] = ActionMap(["OkCancelActions"], {"ok": self.close, "cancel": self.close}, -1)
+        self["text"] = ScrollLabel(text)
+        self["actions"] = ActionMap(["OkCancelActions", "DirectionActions"], {
+            "ok": self.close, "cancel": self.close,
+            "up": self["text"].pageUp, "down": self["text"].pageDown,
+            "left": self["text"].pageUp, "right": self["text"].pageDown,
+        }, -1)
 
 
 class SysUtilMngMain(Screen):
