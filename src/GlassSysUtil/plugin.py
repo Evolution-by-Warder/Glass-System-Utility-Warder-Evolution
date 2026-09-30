@@ -933,67 +933,62 @@ class GSUUpdater(object):
             self.result = ("install-error", str(exc))
 
     def _finish_install(self, success, detail):
-        if self.progress is not None:
-            try:
-                self.progress.close()
-            except Exception:
-                pass
-            self.progress = None
+        # Do not close the progress dialog and immediately open another modal.
+        # OpenATV enforces modal ownership and can crash Enigma2 when a
+        # background updater swaps MessageBoxes in this state.  Reuse the
+        # already-open progress MessageBox for the final status instead.
+        progress = self.progress
+        self.progress = None
+        if progress is None:
+            return
+        if not success:
+            self._set_progress_text(progress, "Update installation failed.\n\n%s" % detail)
+            return
 
-        # Closing a modal dialog is asynchronous on some Enigma2 images
-        # (notably current OpenATV).  Opening the result MessageBox in the
-        # same eTimer callback can therefore raise "Modal open are allowed
-        # only from a screen which is modal".  Defer the next modal until
-        # Enigma2 has processed the close.
-        self.result = ("install-ui", success, detail)
-        self._defer_install_result()
+        self._set_progress_text(
+            progress,
+            "Update installed successfully.\nEnigma2 GUI will restart in 3 seconds.")
+        self._schedule_gui_restart()
 
-    def _defer_install_result(self):
+    def _set_progress_text(self, progress, message):
+        try:
+            progress["text"].setText(message)
+            return
+        except Exception:
+            pass
+        try:
+            progress.setTitle("Glass System Utility")
+        except Exception:
+            pass
+
+    def _schedule_gui_restart(self):
         if eTimer is None:
-            self._show_install_result()
+            self._restart_after_update()
             return
         try:
             self.timer = eTimer()
-            callback = self._show_install_result
-            self._install_ui_callback = callback
+            callback = self._restart_after_update
+            self._restart_callback = callback
             if hasattr(self.timer, "callback"):
                 self.timer.callback.append(callback)
             else:
                 self.timer.timeout.get().append(callback)
-            self.timer.start(100, True)
+            self.timer.start(3000, True)
         except Exception:
-            self._show_install_result()
-
-    def _show_install_result(self):
-        try:
-            if self.timer is not None:
-                self.timer.stop()
-        except Exception:
-            pass
-        state = self.result
-        self.result = None
-        if not state or state[0] != "install-ui":
-            return
-        success, detail = state[1], state[2]
-        if not success:
-            self.session.open(MessageBox, "Update installation failed.\n\n%s" % detail,
-                              MessageBox.TYPE_ERROR)
-            return
-        self.session.openWithCallback(
-            self._restart_after_update,
-            MessageBox,
-            "Update installed successfully.\nEnigma2 GUI will restart in 3 seconds.",
-            MessageBox.TYPE_INFO,
-            timeout=3)
+            self._restart_after_update()
 
     def _restart_after_update(self, *args):
         try:
             from Screens.Standby import TryQuitMainloop
-            self.session.open(TryQuitMainloop, 3)
-        except Exception as exc:
-            self.session.open(MessageBox,
-                              "Update is installed, but automatic GUI restart failed.\n\n%s" % exc,
-                              MessageBox.TYPE_ERROR)
+            # Do not open TryQuitMainloop as another modal.  Its constructor
+            # performs the quit request, so instantiate it directly.
+            TryQuitMainloop(self.session, 3)
+        except Exception:
+            try:
+                from enigma import quitMainloop
+                quitMainloop(3)
+            except Exception:
+                pass
 
 
 def _auto_update_check(session):
