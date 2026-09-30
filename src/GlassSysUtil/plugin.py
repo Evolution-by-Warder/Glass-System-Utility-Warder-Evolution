@@ -889,7 +889,7 @@ def _cam_process_metrics(pid):
         rows.append("Process runtime: %dd %02d:%02d:%02d" % (days, hours, minutes, seconds))
     return rows
 
-def active_cam_information():
+def active_cam_summary():
     cam = _active_cam()
     if not cam:
         return "No known active CAM process detected."
@@ -899,6 +899,14 @@ def active_cam_information():
         "PID: %s" % cam["pid"],
     ]
     rows.extend(_cam_process_metrics(cam["pid"]))
+    return "\n".join(rows)
+
+
+def active_cam_information():
+    cam = _active_cam()
+    if not cam:
+        return "No known active CAM process detected."
+    rows = [active_cam_summary()]
     if cam["family"] == "oscam":
         rows += ["", oscam_runtime_information(), "", oscam_webif_information()]
     return "\n".join(rows)
@@ -1501,7 +1509,7 @@ class GSUActiveCAM(Screen):
 
     def __init__(self, session):
         Screen.__init__(self, session)
-        initial_text = active_cam_information()
+        initial_text = active_cam_summary()
         active = _active_cam()
         if active and active.get("family") == "oscam":
             initial_text += "\n\n" + oscam_live_information()
@@ -1531,7 +1539,7 @@ class GSUActiveCAM(Screen):
             ["OkCancelActions", "ColorActions", "DirectionActions"], actions, -1)
 
     def _refresh(self):
-        text = active_cam_information()
+        text = active_cam_summary()
         active = _active_cam()
         if active and active.get("family") == "oscam":
             text += "\n\n" + oscam_live_information()
