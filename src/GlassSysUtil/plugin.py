@@ -434,6 +434,99 @@ def package_information():
     return "\n".join(rows)
 
 
+def network_diagnostics():
+    rows = []
+    gateway = _default_gateway()
+    rows.append("Default gateway: %s" % gateway)
+    if gateway != "N/A":
+        ping = _run(["ping", "-c", "1", "-W", "2", gateway], 4)
+        rows.append("Gateway reachability: %s" % ("OK" if "1 packets received" in ping or "1 received" in ping else "no reply"))
+
+    resolvers = []
+    for line in _read_lines("/etc/resolv.conf"):
+        fields = line.split()
+        if len(fields) >= 2 and fields[0] == "nameserver":
+            resolvers.append(fields[1])
+    rows.append("DNS servers: %s" % (", ".join(resolvers) if resolvers else "N/A"))
+
+    route = _run(["ip", "route"], 4)
+    if route:
+        rows += ["", "Routes:"]
+        rows.extend(route.splitlines()[:20])
+    return "\n".join(rows)
+
+
+def device_information():
+    rows = []
+    block_root = "/sys/class/block"
+    try:
+        devices = sorted(os.listdir(block_root))
+    except Exception:
+        devices = []
+    for name in devices:
+        if name.startswith(("loop", "ram", "mtdblock")):
+            continue
+        base = os.path.join(block_root, name)
+        size_raw = _read_text(os.path.join(base, "size"), "0")
+        try:
+            gib = int(size_raw) * 512.0 / 1073741824.0
+        except Exception:
+            gib = 0
+        model = _read_text(os.path.join(base, "device/model"), "")
+        removable = _read_text(os.path.join(base, "removable"), "0")
+        rows.append("%s  %.1f GiB%s%s" % (
+            name, gib,
+            "  removable" if removable == "1" else "",
+            "  %s" % model if model else ""))
+    return "\n".join(rows) if rows else "No block devices exposed by this image."
+
+
+def image_information():
+    rows = []
+    files = ("/etc/image-version", "/etc/issue", "/etc/os-release")
+    for path in files:
+        if os.path.isfile(path):
+            rows.append(path)
+            for line in _read_lines(path)[:20]:
+                text = line.strip()
+                if text:
+                    rows.append("  %s" % text)
+            rows.append("")
+    rows.append("Enigma2 binary: %s" % (_run(["which", "enigma2"], 3) or "not found"))
+    rows.append("Python: %s" % platform.python_version())
+    return "\n".join(rows)
+
+
+def cam_inventory_information():
+    rows = []
+    init_root = "/etc/init.d"
+    try:
+        names = sorted(name for name in os.listdir(init_root) if "softcam" in name.lower() or "cam" in name.lower())
+    except Exception:
+        names = []
+    if names:
+        rows.append("Init scripts:")
+        rows.extend("  %s" % name for name in names[:30])
+
+    binaries = []
+    for root in ("/usr/bin", "/usr/softcams", "/var/bin"):
+        if not os.path.isdir(root):
+            continue
+        try:
+            for name in os.listdir(root):
+                low = name.lower()
+                if any(token in low for token in ("oscam", "ncam", "cccam", "mgcam")):
+                    path = os.path.join(root, name)
+                    if os.path.isfile(path):
+                        binaries.append(path)
+        except Exception:
+            pass
+    if binaries:
+        rows += ["", "Detected CAM binaries:"]
+        rows.extend("  %s" % path for path in sorted(set(binaries))[:40])
+    return "\n".join(rows) if rows else "No known CAM components detected."
+
+
 class GSUInfo(Screen):
     skin = """
     <screen name="GSUInfo" position="center,center" size="1160,680" title="Glass System Utility">
@@ -457,16 +550,20 @@ class SysUtilMngMain(Screen):
         ("System & Hardware", "system"),
         ("Temperatures", "temps"),
         ("Network & Interfaces", "network"),
+        ("Network Diagnostics", "netdiag"),
         ("Storage & Filesystems", "storage"),
+        ("Block Devices", "devices"),
         ("Memory & Swap", "memory"),
         ("Services & Processes", "services"),
         ("Network Mounts (NFS/CIFS)", "mounts"),
+        ("CAM Inventory", "caminventory"),
         ("OSCam status", "oscam"),
         ("OSCam WebIF configuration", "oscamweb"),
         ("OSCam Runtime & Accounts", "oscamruntime"),
         ("Tuner information", "tuners"),
         ("Logs & Diagnostics", "logs"),
         ("Package information", "packages"),
+        ("Image & Runtime", "imageinfo"),
         ("Restart Enigma2 GUI", "restart"),
         ("About this build", "about"),
     ]
@@ -486,16 +583,20 @@ class SysUtilMngMain(Screen):
             "system": ("System & Hardware", system_information),
             "temps": ("Temperatures", temperature_information),
             "network": ("Network & Interfaces", network_information),
+            "netdiag": ("Network Diagnostics", network_diagnostics),
             "storage": ("Storage & Filesystems", storage_information),
+            "devices": ("Block Devices", device_information),
             "memory": ("Memory & Swap", memory_information),
             "services": ("Services & Processes", service_information),
             "mounts": ("Network Mounts", mount_information),
+            "caminventory": ("CAM Inventory", cam_inventory_information),
             "oscam": ("OSCam status", oscam_information),
             "oscamweb": ("OSCam WebIF configuration", oscam_webif_information),
             "oscamruntime": ("OSCam Runtime & Accounts", oscam_runtime_information),
             "tuners": ("Tuner information", tuner_information),
             "logs": ("Logs & Diagnostics", log_information),
             "packages": ("Package information", package_information),
+            "imageinfo": ("Image & Runtime", image_information),
         }
         if action in actions:
             title, fnc = actions[action]
