@@ -1501,14 +1501,18 @@ class GSUActiveCAM(Screen):
 
     def __init__(self, session):
         Screen.__init__(self, session)
-        self["text"] = ScrollLabel(active_cam_information()) if ScrollLabel is not None else Label(active_cam_information())
+        initial_text = active_cam_information()
+        active = _active_cam()
+        if active and active.get("family") == "oscam":
+            initial_text += "\n\n" + oscam_live_information()
+        self["text"] = ScrollLabel(initial_text) if ScrollLabel is not None else Label(initial_text)
         self["key_red"] = Label("Close")
         command, detail = _active_cam_restart_command()
         self.restart_command = command
         self.restart_detail = detail
         self["key_green"] = Label("Restart CAM" if command else "Restart unavailable")
         self["key_yellow"] = Label("Refresh")
-        self["key_blue"] = Label("Details")
+        self["key_blue"] = Label("Live / Details")
         actions = {
             "cancel": self.close,
             "red": self.close,
@@ -1528,6 +1532,9 @@ class GSUActiveCAM(Screen):
 
     def _refresh(self):
         text = active_cam_information()
+        active = _active_cam()
+        if active and active.get("family") == "oscam":
+            text += "\n\n" + oscam_live_information()
         try:
             self["text"].setText(text)
         except Exception:
