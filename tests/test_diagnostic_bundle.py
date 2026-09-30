@@ -73,7 +73,10 @@ class DiagnosticRedactionTests(unittest.TestCase):
         self.assertNotIn('["killall"', monitor)
         self.assertIn("threading.Thread", monitor)
         self.assertIn("GSU-CAM-Restart", monitor)
-        self.assertIn('"yellow": self._refresh', monitor)\n        self.assertIn('"blue": self.show_details', monitor)\n        self.assertIn("oscam_runtime_information()", monitor)\n
+        self.assertIn('"yellow": self._refresh', monitor)
+        self.assertIn('"blue": self.show_details', monitor)
+        self.assertIn("oscam_runtime_information()", monitor)
+
     def test_rejects_binary_or_oversized_log(self):
         with tempfile.NamedTemporaryFile(delete=False) as handle:
             path = handle.name
