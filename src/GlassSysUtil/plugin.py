@@ -20,7 +20,10 @@ from Screens.MessageBox import MessageBox
 from Screens.Screen import Screen
 from Components.ActionMap import ActionMap
 from Components.Label import Label
-from Components.ScrollLabel import ScrollLabel
+try:
+    from Components.ScrollLabel import ScrollLabel
+except ImportError:
+    ScrollLabel = None
 from Components.MenuList import MenuList
 
 VERSION = "13.24-w5"
@@ -750,12 +753,14 @@ class GSUInfo(Screen):
     def __init__(self, session, title, text):
         Screen.__init__(self, session)
         self.setTitle(title)
-        self["text"] = ScrollLabel(text)
-        self["actions"] = ActionMap(["OkCancelActions", "DirectionActions"], {
-            "ok": self.close, "cancel": self.close,
-            "up": self["text"].pageUp, "down": self["text"].pageDown,
-            "left": self["text"].pageUp, "right": self["text"].pageDown,
-        }, -1)
+        self["text"] = ScrollLabel(text) if ScrollLabel is not None else Label(text)
+        actions = {"ok": self.close, "cancel": self.close}
+        if ScrollLabel is not None:
+            actions.update({
+                "up": self["text"].pageUp, "down": self["text"].pageDown,
+                "left": self["text"].pageUp, "right": self["text"].pageDown,
+            })
+        self["actions"] = ActionMap(["OkCancelActions", "DirectionActions"], actions, -1)
 
 
 class SysUtilMngMain(Screen):
