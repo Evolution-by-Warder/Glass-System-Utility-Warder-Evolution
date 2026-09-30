@@ -71,6 +71,8 @@ class DiagnosticRedactionTests(unittest.TestCase):
         self.assertIn("openWithCallback", monitor)
         self.assertIn("_active_cam_restart_command", monitor)
         self.assertNotIn('["killall"', monitor)
+        self.assertIn("threading.Thread", monitor)
+        self.assertIn("GSU-CAM-Restart", monitor)
 
     def test_rejects_binary_or_oversized_log(self):
         with tempfile.NamedTemporaryFile(delete=False) as handle:
