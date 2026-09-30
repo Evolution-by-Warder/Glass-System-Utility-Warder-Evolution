@@ -635,7 +635,7 @@ def create_diagnostic_bundle():
             "Glass System Utility Warder Evolution diagnostic bundle\n"
             "GSU version: %s\n"
             "Generated: %s\n"
-            "Privacy: credentials, MAC addresses and stable identifiers are redacted; "
+            "Privacy: credentials and stable identifiers are redacted; diagnostic LAN/MAC data is preserved; "
             "CAM account/configuration files are excluded.\n"
         ) % (VERSION, time.strftime("%Y-%m-%d %H:%M:%S"))
         with open(os.path.join(workspace, "README.txt"), "w") as handle:
@@ -736,6 +736,21 @@ def _active_cam():
 
 
 
+def _process_runtime_seconds(pid):
+    """Read process age from /proc/<pid>/stat and system uptime."""
+    try:
+        stat = _read_text("/proc/%s/stat" % pid, "")
+        end = stat.rfind(")")
+        fields = stat[end + 2:].split()
+        # field 22 (starttime) becomes index 19 after removing pid/comm.
+        start_ticks = int(fields[19])
+        ticks = os.sysconf("SC_CLK_TCK")
+        uptime = float(_read_text("/proc/uptime", "0").split()[0])
+        return max(0, int(uptime - (start_ticks / float(ticks))))
+    except Exception:
+        return None
+
+
 def _cam_process_metrics(pid):
     rows = []
     status = {}
@@ -747,14 +762,12 @@ def _cam_process_metrics(pid):
         rows.append("Resident memory: %s" % status["VmRSS"])
     if status.get("VmSize"):
         rows.append("Virtual memory: %s" % status["VmSize"])
-    try:
-        seconds = int(time.time() - os.stat("/proc/%s" % pid).st_ctime)
-        days, seconds = divmod(max(0, seconds), 86400)
+    seconds = _process_runtime_seconds(pid)
+    if seconds is not None:
+        days, seconds = divmod(seconds, 86400)
         hours, seconds = divmod(seconds, 3600)
         minutes, seconds = divmod(seconds, 60)
         rows.append("Process runtime: %dd %02d:%02d:%02d" % (days, hours, minutes, seconds))
-    except Exception:
-        pass
     return rows
 
 def active_cam_information():
