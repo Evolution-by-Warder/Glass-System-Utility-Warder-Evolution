@@ -1512,7 +1512,7 @@ class GSUActiveCAM(Screen):
         self.restart_detail = detail
         self["key_green"] = Label("Restart CAM" if command else "Restart unavailable")
         self["key_yellow"] = Label("Refresh")
-        self["key_blue"] = Label("Live / Details")
+        self["key_blue"] = Label("Details")
         actions = {
             "cancel": self.close,
             "red": self.close,
