@@ -1361,7 +1361,9 @@ class GSUActiveCAM(Screen):
     <screen name="GSUActiveCAM" position="center,center" size="1040,700" title="Active CAM / OSCam Monitor">
         <widget name="text" position="30,30" size="980,570" font="Regular;24" />
         <widget name="key_red" position="35,625" size="300,45" font="Regular;24" />
-        <widget name="key_green" position="270,625" size="230,45" font="Regular;24" />\n        <widget name="key_yellow" position="520,625" size="220,45" font="Regular;24" />\n        <widget name="key_blue" position="760,625" size="220,45" font="Regular;24" />
+        <widget name="key_green" position="270,625" size="230,45" font="Regular;24" />
+        <widget name="key_yellow" position="520,625" size="220,45" font="Regular;24" />
+        <widget name="key_blue" position="760,625" size="220,45" font="Regular;24" />
     </screen>
     """
 
@@ -1372,11 +1374,15 @@ class GSUActiveCAM(Screen):
         command, detail = _active_cam_restart_command()
         self.restart_command = command
         self.restart_detail = detail
-        self["key_green"] = Label("Restart CAM" if command else "Restart unavailable")\n        self["key_yellow"] = Label("Refresh")\n        self["key_blue"] = Label("Details")
+        self["key_green"] = Label("Restart CAM" if command else "Restart unavailable")
+        self["key_yellow"] = Label("Refresh")
+        self["key_blue"] = Label("Details")
         actions = {
             "cancel": self.close,
             "red": self.close,
-            "green": self.restart_cam,\n            "yellow": self._refresh,\n            "blue": self.show_details,
+            "green": self.restart_cam,
+            "yellow": self._refresh,
+            "blue": self.show_details,
         }
         if ScrollLabel is not None:
             actions.update({
@@ -1401,6 +1407,16 @@ class GSUActiveCAM(Screen):
             self["key_green"].setText("Restart CAM" if command else "Restart unavailable")
         except Exception:
             pass
+
+    def show_details(self):
+        active = _active_cam()
+        if not active:
+            self.session.open(MessageBox, "No supported active CAM detected.", MessageBox.TYPE_INFO, timeout=6)
+            return
+        parts = [active_cam_information()]
+        if active.get("family") == "oscam":
+            parts.extend(["", oscam_runtime_information(), "", oscam_webif_information()])
+        self.session.open(GSUInfo, "CAM / OSCam Details", "\n".join(parts))
 
     def restart_cam(self):
         if not self.restart_command:
