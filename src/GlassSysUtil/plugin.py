@@ -1536,24 +1536,27 @@ class GSUInfo(Screen):
 
 
 class GSUActiveCAM(Screen):
-    """Focused CAM monitor: useful runtime data plus one explicit safe action."""
+    """Visual OSCam/CAM monitor with a compact live table and safe actions."""
     skin = """
-    <screen name="GSUActiveCAM" position="center,center" size="1040,700" title="Active CAM / OSCam Monitor">
-        <widget name="text" position="30,30" size="980,570" font="Regular;24" />
-        <widget name="key_red" position="35,625" size="210,45" font="Regular;24" foregroundColor="#ff3333" />
-        <widget name="key_green" position="270,625" size="230,45" font="Regular;24" foregroundColor="#33cc33" />
-        <widget name="key_yellow" position="520,625" size="220,45" font="Regular;24" foregroundColor="#e6d500" />
-        <widget name="key_blue" position="760,625" size="220,45" font="Regular;24" foregroundColor="#3399ff" />
+    <screen name="GSUActiveCAM" position="center,center" size="1240,700" title="Active CAM / OSCam Monitor">
+        <widget name="summary" position="25,20" size="1190,115" font="Regular;22" />
+        <widget name="live_status" position="25,138" size="1190,30" font="Regular;20" />
+        <widget name="table_header" position="25,175" size="1190,34" font="Console;18" />
+        <widget name="table" position="25,212" size="1190,385" font="Console;18" itemHeight="32" scrollbarMode="showOnDemand" />
+        <widget name="key_red" position="35,625" size="230,45" font="Regular;24" foregroundColor="#ff3333" />
+        <widget name="key_green" position="315,625" size="250,45" font="Regular;24" foregroundColor="#33cc33" />
+        <widget name="key_yellow" position="650,625" size="220,45" font="Regular;24" foregroundColor="#e6d500" />
+        <widget name="key_blue" position="960,625" size="220,45" font="Regular;24" foregroundColor="#3399ff" />
     </screen>
     """
+    TABLE_HEADER = "Reader/User  Type     Address         Port  Protocol  srvid:caid@provid     Channel            ECM      Idle     Status"
 
     def __init__(self, session):
         Screen.__init__(self, session)
-        initial_text = active_cam_summary()
-        active = _active_cam()
-        if active and active.get("family") == "oscam":
-            initial_text += "\n\n" + oscam_live_information()
-        self["text"] = ScrollLabel(initial_text) if ScrollLabel is not None else Label(initial_text)
+        self["summary"] = Label(active_cam_summary())
+        self["live_status"] = Label("")
+        self["table_header"] = Label(self.TABLE_HEADER)
+        self["table"] = MenuList([])
         self["key_red"] = Label("Close")
         command, detail = _active_cam_restart_command()
         self.restart_command = command
@@ -1561,30 +1564,36 @@ class GSUActiveCAM(Screen):
         self["key_green"] = Label("Restart CAM" if command else "Restart unavailable")
         self["key_yellow"] = Label("Refresh")
         self["key_blue"] = Label("Details")
-        actions = {
-            "cancel": self.close,
-            "red": self.close,
-            "green": self.restart_cam,
-            "yellow": self._refresh,
-            "blue": self.show_details,
-        }
-        if ScrollLabel is not None:
-            actions.update({
-                "up": self["text"].pageUp,
-                "down": self["text"].pageDown,
-                "left": self["text"].pageUp,
-                "right": self["text"].pageDown,
-            })
         self["actions"] = ActionMap(
-            ["OkCancelActions", "ColorActions", "DirectionActions"], actions, -1)
+            ["OkCancelActions", "ColorActions", "DirectionActions"], {
+                "cancel": self.close,
+                "red": self.close,
+                "green": self.restart_cam,
+                "yellow": self._refresh,
+                "blue": self.show_details,
+                "up": self["table"].up,
+                "down": self["table"].down,
+                "left": self["table"].pageUp,
+                "right": self["table"].pageDown,
+            }, -1)
+        self._refresh()
 
     def _refresh(self):
-        text = active_cam_summary()
-        active = _active_cam()
-        if active and active.get("family") == "oscam":
-            text += "\n\n" + oscam_live_information()
         try:
-            self["text"].setText(text)
+            self["summary"].setText(active_cam_summary())
+        except Exception:
+            pass
+        active = _active_cam()
+        table_rows, reason = ([], "No supported active OSCam detected.")
+        if active and active.get("family") == "oscam":
+            table_rows, reason = oscam_live_rows()
+        try:
+            self["table"].setList([_oscam_table_line(row) for row in table_rows])
+            if table_rows:
+                self["live_status"].setText("Live OSCam: %d client/reader row%s" %
+                                            (len(table_rows), "" if len(table_rows) == 1 else "s"))
+            else:
+                self["live_status"].setText("Live OSCam: %s" % reason)
         except Exception:
             pass
         command, detail = _active_cam_restart_command()
@@ -1602,7 +1611,7 @@ class GSUActiveCAM(Screen):
             return
         parts = [active_cam_information()]
         if active.get("family") == "oscam":
-            parts.extend(["", oscam_runtime_information(), "", oscam_webif_information()])
+            parts.extend(["", oscam_live_information(), "", oscam_runtime_information(), "", oscam_webif_information()])
         self.session.open(GSUInfo, "CAM / OSCam Details", "\n".join(parts))
 
     def restart_cam(self):
@@ -1618,7 +1627,6 @@ class GSUActiveCAM(Screen):
     def _restart_confirmed(self, answer):
         if not answer:
             return
-        # Execute only the already discovered image-provided service command.
         command = list(self.restart_command)
         before = _active_cam()
         before_pid = before["pid"] if before else ""
