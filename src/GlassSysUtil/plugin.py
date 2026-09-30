@@ -703,9 +703,21 @@ class GSUUpdater(object):
             self.session.open(MessageBox, "Update installation failed.\n\n%s" % result[-1200:],
                               MessageBox.TYPE_ERROR)
             return
-        self.session.open(MessageBox,
-                          "Update installed successfully.\nRestart Enigma2 GUI to activate the new version.",
-                          MessageBox.TYPE_INFO)
+        self.session.openWithCallback(
+            self._restart_after_update,
+            MessageBox,
+            "Update installed successfully.\nEnigma2 GUI will restart in 3 seconds.",
+            MessageBox.TYPE_INFO,
+            timeout=3)
+
+    def _restart_after_update(self, *args):
+        try:
+            from Screens.Standby import TryQuitMainloop
+            self.session.open(TryQuitMainloop, 3)
+        except Exception as exc:
+            self.session.open(MessageBox,
+                              "Update is installed, but automatic GUI restart failed.\n\n%s" % exc,
+                              MessageBox.TYPE_ERROR)
 
 
 def _auto_update_check(session):
