@@ -36,3 +36,23 @@ SHA-256: `d72e961f794d620537617622488a8dbad03a2e3f22ae2924296a0bfb00409138`.
 ## 13.26-w7 update-path candidate — 2026-09-30
 
 13.26-w7 is intentionally a minimal successor to the REAL RECEIVER PASS 13.25-w6 checkpoint. Its purpose is to validate the complete official GitHub Release self-update path from an installed w6 receiver without mixing unrelated feature changes into that test. Source/runtime behavior remains based on the tested w6 implementation; version/package metadata advance together to 13.26-w7. Publishing the public Release remains gated by explicit user approval.
+
+
+## 13.27-w8 real receiver updater result
+
+- RELEASE PUBLISHED PASS: official GitHub Release `v13.27-w8`, target `9bdb1e37a6d35755e5600634dea0500415dc29fc`.
+- REAL RECEIVER UPDATE DISCOVERY PASS: 13.25-w6 detected 13.27-w8.
+- DOWNLOAD / RELEASE VERIFICATION / OPKG INSTALL PASS on GigaBlue Quad 4K Pro, OpenATV 8, Python 3.14.
+- Receiver verification after the event: `opkg status` reported `Version: 13.27-w8` and `Status: install ok installed`; the installed version file also contained `13.27-w8`.
+- After Enigma2 restarted, About loaded Glass System Utility Warder Evolution 13.27-w8.
+- POST-INSTALL UI COMPLETION FAIL/REVIEW: OpenATV still registered a software crash while the updater transitioned from the progress dialog to its completion/restart UI.
+- Conclusion: the transport, verification and package-install path is proven; remaining work is isolated to modal-safe GUI completion/restart handling.
+- The published w8 release remains immutable.
+
+## 13.28-w9 updater completion candidate
+
+- Removes the post-install modal swap entirely.
+- Reuses the already-open progress MessageBox for success/error status.
+- Schedules the GUI restart independently after 3 seconds.
+- Avoids opening `TryQuitMainloop` as a nested modal; uses its quit action directly with a `quitMainloop(3)` fallback.
+- REAL RECEIVER status: REVIEW until update from installed 13.27-w8 is tested.
