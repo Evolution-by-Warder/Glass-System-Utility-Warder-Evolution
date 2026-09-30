@@ -1361,7 +1361,7 @@ class GSUActiveCAM(Screen):
     <screen name="GSUActiveCAM" position="center,center" size="1040,700" title="Active CAM / OSCam Monitor">
         <widget name="text" position="30,30" size="980,570" font="Regular;24" />
         <widget name="key_red" position="35,625" size="300,45" font="Regular;24" />
-        <widget name="key_green" position="370,625" size="300,45" font="Regular;24" />
+        <widget name="key_green" position="270,625" size="230,45" font="Regular;24" />\n        <widget name="key_yellow" position="520,625" size="220,45" font="Regular;24" />\n        <widget name="key_blue" position="760,625" size="220,45" font="Regular;24" />
     </screen>
     """
 
@@ -1372,11 +1372,11 @@ class GSUActiveCAM(Screen):
         command, detail = _active_cam_restart_command()
         self.restart_command = command
         self.restart_detail = detail
-        self["key_green"] = Label("Restart Active CAM" if command else "Restart unavailable")
+        self["key_green"] = Label("Restart CAM" if command else "Restart unavailable")\n        self["key_yellow"] = Label("Refresh")\n        self["key_blue"] = Label("Details")
         actions = {
             "cancel": self.close,
             "red": self.close,
-            "green": self.restart_cam,
+            "green": self.restart_cam,\n            "yellow": self._refresh,\n            "blue": self.show_details,
         }
         if ScrollLabel is not None:
             actions.update({
@@ -1398,7 +1398,7 @@ class GSUActiveCAM(Screen):
         self.restart_command = command
         self.restart_detail = detail
         try:
-            self["key_green"].setText("Restart Active CAM" if command else "Restart unavailable")
+            self["key_green"].setText("Restart CAM" if command else "Restart unavailable")
         except Exception:
             pass
 
