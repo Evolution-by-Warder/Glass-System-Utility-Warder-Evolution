@@ -11,6 +11,9 @@ import platform
 import shutil
 import socket
 import subprocess
+import json
+import urllib.request
+import urllib.error
 
 from Plugins.Plugin import PluginDescriptor
 from Screens.MessageBox import MessageBox
@@ -20,6 +23,8 @@ from Components.Label import Label
 from Components.MenuList import MenuList
 
 VERSION = "13.24-w5"
+UPDATE_API = "https://api.github.com/repos/Evolution-by-Warder/Glass-System-Utility-Warder-Evolution/releases/latest"
+UPDATE_MARKER = "/tmp/gsu-update-check"
 
 
 def _read_text(path, default="N/A"):
@@ -610,6 +615,110 @@ def diagnostic_summary():
     ))
 
 
+
+def _version_key(value):
+    """Compare Warder versions such as 13.24-w5 without float conversion."""
+    text = (value or "").strip().lower().lstrip("v")
+    parts = []
+    for chunk in text.replace("-", ".").split("."):
+        digits = "".join(ch for ch in chunk if ch.isdigit())
+        parts.append(int(digits) if digits else 0)
+    return tuple(parts)
+
+
+def _latest_release():
+    """Read the public GitHub release manifest. No GitHub credentials are used."""
+    try:
+        req = urllib.request.Request(
+            UPDATE_API,
+            headers={"User-Agent": "Glass-System-Utility-Warder-Evolution/%s" % VERSION,
+                     "Accept": "application/vnd.github+json"})
+        with urllib.request.urlopen(req, timeout=6) as response:
+            data = json.loads(response.read().decode("utf-8", "replace"))
+        tag = (data.get("tag_name") or "").strip()
+        assets = data.get("assets") or []
+        ipk = next((asset for asset in assets
+                    if (asset.get("name") or "").endswith(".ipk")
+                    and asset.get("browser_download_url")), None)
+        if not tag or not ipk:
+            return None
+        return {"version": tag.lstrip("v"),
+                "url": ipk.get("browser_download_url"),
+                "name": ipk.get("name")}
+    except Exception:
+        return None
+
+
+def _download_update(url, name):
+    """Download only an IPK asset from this project's official GitHub releases."""
+    if not url or not url.startswith("https://github.com/Evolution-by-Warder/Glass-System-Utility-Warder-Evolution/releases/download/"):
+        return ""
+    safe = os.path.basename(name or "")
+    if not safe.endswith(".ipk"):
+        return ""
+    target = os.path.join("/tmp", safe)
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Glass-System-Utility-Warder-Evolution/%s" % VERSION})
+        with urllib.request.urlopen(req, timeout=20) as response, open(target, "wb") as handle:
+            shutil.copyfileobj(response, handle)
+        return target if os.path.isfile(target) and os.path.getsize(target) > 0 else ""
+    except Exception:
+        try:
+            os.unlink(target)
+        except Exception:
+            pass
+        return ""
+
+
+class GSUUpdater(object):
+    def __init__(self, session):
+        self.session = session
+        self.release = None
+
+    def check(self, silent=True):
+        release = _latest_release()
+        if not release or _version_key(release["version"]) <= _version_key(VERSION):
+            if not silent:
+                self.session.open(MessageBox,
+                                  "Glass System Utility %s is up to date." % VERSION,
+                                  MessageBox.TYPE_INFO, timeout=5)
+            return
+        self.release = release
+        self.session.openWithCallback(
+            self._answer,
+            MessageBox,
+            "Glass System Utility %s is available.\nInstalled: %s\n\nInstall the update now?"
+            % (release["version"], VERSION),
+            MessageBox.TYPE_YESNO)
+
+    def _answer(self, answer):
+        if not answer or not self.release:
+            return
+        path = _download_update(self.release["url"], self.release["name"])
+        if not path:
+            self.session.open(MessageBox, "Update download failed.", MessageBox.TYPE_ERROR)
+            return
+        result = _run(["opkg", "install", path], 60)
+        if "error" in result.lower() or "failed" in result.lower():
+            self.session.open(MessageBox, "Update installation failed.\n\n%s" % result[-1200:],
+                              MessageBox.TYPE_ERROR)
+            return
+        self.session.open(MessageBox,
+                          "Update installed successfully.\nRestart Enigma2 GUI to activate the new version.",
+                          MessageBox.TYPE_INFO)
+
+
+def _auto_update_check(session):
+    """Once per GUI boot, check quietly and prompt only when a newer release exists."""
+    try:
+        if os.path.exists(UPDATE_MARKER):
+            return
+        with open(UPDATE_MARKER, "w") as handle:
+            handle.write(VERSION)
+        GSUUpdater(session).check(silent=True)
+    except Exception:
+        pass
+
 class GSUInfo(Screen):
     skin = """
     <screen name="GSUInfo" position="center,center" size="1160,680" title="Glass System Utility">
@@ -650,6 +759,7 @@ class SysUtilMngMain(Screen):
         ("Package information", "packages"),
         ("Image & Runtime", "imageinfo"),
         ("Diagnostic Summary", "summary"),
+        ("Check for updates", "update"),
         ("Restart Enigma2 GUI", "restart"),
         ("About this build", "about"),
     ]
@@ -690,6 +800,8 @@ class SysUtilMngMain(Screen):
         if action in actions:
             title, fnc = actions[action]
             self._info(title, fnc())
+        elif action == "update":
+            GSUUpdater(self.session).check(silent=False)
         elif action == "restart":
             try:
                 from Screens.Standby import TryQuitMainloop
@@ -709,6 +821,14 @@ def main(session, **kwargs):
     session.open(SysUtilMngMain)
 
 
+def sessionAutostart(reason, **kwargs):
+    # Network check only after Enigma2 session exists; failures stay silent.
+    if reason == 0:
+        session = kwargs.get("session")
+        if session is not None:
+            _auto_update_check(session)
+
+
 def startViaMenu(menuid, **kwargs):
     if menuid == "setup":
         return [("Glass System Utility", main, "glass_sys_utils", None)]
@@ -723,4 +843,5 @@ def Plugins(path=None, **kwargs):
         PluginDescriptor(name="Glass System Utility",
                          description="Glass System Utility Warder Evolution",
                          where=PluginDescriptor.WHERE_MENU, fnc=startViaMenu),
+        PluginDescriptor(where=PluginDescriptor.WHERE_SESSIONSTART, fnc=sessionAutostart),
     ]
