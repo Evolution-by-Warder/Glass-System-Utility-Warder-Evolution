@@ -179,3 +179,16 @@ REAL RECEIVER PASS after CAM Monitor UI correction:
 - no regression observed in CAM runtime display.
 
 The previously recorded CAM restart E2E PASS remains valid because the follow-up candidate changes only the action-label presentation. The 13.29-w10 feature set is now receiver-approved for release preparation.
+
+
+### 13.29-w10 live OSCam monitor extension
+
+The receiver-approved CAM monitor is being extended toward the useful OSCamInfo-style workflow without copying its UI or exposing credentials:
+- local OSCam WebIF status API is queried only through loopback and only when WebIF authentication is not configured;
+- GSU never reads or sends WebIF credentials for the live monitor;
+- nested OSCam JSON status layouts are normalized defensively and bounded to 32 rows;
+- useful diagnostic fields include reader/user identity, type, protocol, LAN/local address and port, srvid/CAID/PROVID, last channel, status, ECM time and idle time when exposed;
+- live rows are integrated into the existing single CAM monitor and Details screen rather than adding menu clutter;
+- if live API access is unavailable or authenticated, the existing process/runtime/config diagnostics remain functional.
+
+Real receiver validation is required before this extension can be included in the w10 release checkpoint.
