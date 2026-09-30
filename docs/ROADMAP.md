@@ -224,3 +224,32 @@ A coherent visual-monitor batch is now complete:
 - safe restart and deeper Details behavior are unchanged.
 
 CI is green for the implementation commits. Next gate is one real-receiver visual/data validation; no release should be published before that check.
+
+
+### CURRENT recovery checkpoint — 2026-09-30 before maintainer offline
+
+Authoritative production branch: `warder-master-production`.
+CURRENT recovery commit: this documentation commit; source state immediately below is the last tested-by-CI implementation state.
+
+Current product identity remains `13.29-w10`; **do not publish v13.29-w10 yet**.
+
+OSCam monitor continuity:
+- earlier receiver tests proved active `oscam-uni` detection, Refresh, Details and safe restart E2E; restart changed PID and recovered TV without GUI crash;
+- conventional red/green/yellow/blue action-label colors were receiver-approved;
+- the first live-API experiment proved the receiver's local OSCam API is reachable and exposes five live client/reader records, but raw/text presentation was rejected as unusable;
+- current implementation replaces raw presentation with a bounded widescreen table, nested-field normalization, clean empty cells, role/status presentation, normalized ECM/idle values, five-second refresh, preserved row selection and refresh re-entry guard;
+- no WebIF password is read or sent; authenticated WebIF falls back to existing safe diagnostics;
+- raw Python/JSON structures must never be rendered in the user-facing monitor.
+
+Latest implementation commit before this recovery record:
+`29b2893b42e8ddf16987071acc6849445e25d8be` — refresh re-entry guard.
+Its GitHub Actions build run `36761827898` is PASS.
+
+Next action after resume:
+1. build/test from the current production HEAD if documentation-only commits changed HEAD;
+2. provide one coherent receiver candidate, not incremental IPKs;
+3. validate the visual table and real field mapping on GigaBlue Quad 4K Pro;
+4. refine only from observed receiver data;
+5. publish `v13.29-w10` only after this visual/live OSCam gate is REAL RECEIVER PASS.
+
+Do not roll back to the raw live-status experiment and do not create a new release/version merely for testing.
