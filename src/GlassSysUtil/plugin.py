@@ -169,7 +169,8 @@ def hardware_identity_information():
     if freq_values:
         rows.append("CPU frequency: %.0f-%.0f MHz" % (min(freq_values), max(freq_values)))
 
-    return "\n".join(rows)
+    return "
+".join(rows)
 
 
 def system_information():
@@ -182,7 +183,8 @@ def system_information():
             cpu = line.split(":", 1)[1].strip()
             if cpu:
                 break
-    return "\n".join((
+    return "
+".join((
         "Glass System Utility Warder Evolution %s" % VERSION, "",
         "Receiver: %s %s" % (brand, model),
         "Hostname: %s" % socket.gethostname(),
@@ -214,7 +216,8 @@ def network_information():
         rows.append("%s  [%s]" % (name, state))
         rows.append("  IPv4: %s" % _ipv4_for_interface(name))
         rows.append("  MAC:  %s" % mac)
-    return "\n".join(rows)
+    return "
+".join(rows)
 
 
 def storage_information():
@@ -231,12 +234,15 @@ def storage_information():
             usage = shutil.disk_usage(mountpoint)
             used = usage.total - usage.free
             pct = (used * 100.0 / usage.total) if usage.total else 0
-            rows.append("%s -> %s [%s]\n  %.1f / %.1f GiB  (%.0f%%)" % (
+            rows.append("%s -> %s [%s]
+  %.1f / %.1f GiB  (%.0f%%)" % (
                 device, mountpoint, fstype, used / 1073741824.0,
                 usage.total / 1073741824.0, pct))
         except Exception:
             rows.append("%s -> %s [%s]" % (device, mountpoint, fstype))
-    return "\n\n".join(rows) if rows else "No physical storage mounts found."
+    return "
+
+".join(rows) if rows else "No physical storage mounts found."
 
 
 def memory_information():
@@ -247,7 +253,8 @@ def memory_information():
             key, value = line.split(":", 1)
             if key in wanted:
                 values[key] = value.strip()
-    return "\n".join("%s: %s" % (key, values.get(key, "N/A")) for key in wanted)
+    return "
+".join("%s: %s" % (key, values.get(key, "N/A")) for key in wanted)
 
 
 def service_information():
@@ -259,7 +266,8 @@ def service_information():
             if argv:
                 rows.append("%s (PID %s)" % (os.path.basename(argv[0]), pid))
     rows = sorted(set(rows), key=lambda value: value.lower())
-    return "\n".join(rows) if rows else "No known GSU service processes detected."
+    return "
+".join(rows) if rows else "No known GSU service processes detected."
 
 
 def mount_information():
@@ -268,8 +276,11 @@ def mount_information():
     for line in _read_lines("/proc/mounts"):
         fields = line.split()
         if len(fields) >= 3 and fields[2].lower() in network_types:
-            rows.append("%s\n  -> %s [%s]" % (fields[0], fields[1], fields[2]))
-    return "\n\n".join(rows) if rows else "No active NFS/CIFS mounts."
+            rows.append("%s
+  -> %s [%s]" % (fields[0], fields[1], fields[2]))
+    return "
+
+".join(rows) if rows else "No active NFS/CIFS mounts."
 
 
 def oscam_information():
@@ -302,7 +313,8 @@ def oscam_information():
     rows.append("Config: %s" % (found if found else "not found"))
     if config_dir:
         rows.append("Config dir: %s" % config_dir)
-    return "\n".join(rows)
+    return "
+".join(rows)
 
 
 def _proc_cmdline(pid):
@@ -370,7 +382,8 @@ def oscam_webif_information():
     allowed = webif.get("httpallowed", "not restricted in config")
     user_set = bool(webif.get("httpuser"))
     pass_set = bool(webif.get("httppwd"))
-    return "\n".join((
+    return "
+".join((
         "Config: %s" % conf,
         "",
         "WebIF port: %s" % port,
@@ -420,7 +433,8 @@ def tuner_information():
                     # deliberately ignored.
                     value = _read_text(candidate, "")
                     if value and len(value) <= 160 and all(
-                            ord(ch) >= 32 or ch in "\r\n\t" for ch in value):
+                            ord(ch) >= 32 or ch in "\r
+\t" for ch in value):
                         value = " ".join(value.split())
                         if value:
                             details.append("%s=%s" % (name, value))
@@ -442,7 +456,8 @@ def tuner_information():
 
     if not nim_sockets and not discovered and not adapters:
         return "Tuner data not exposed through detected system interfaces."
-    return "\n".join(rows)
+    return "
+".join(rows)
 
 
 def log_information():
@@ -462,7 +477,8 @@ def log_information():
                 rows.append(path)
     dmesg = _run(["dmesg"], 4)
     rows.append("Kernel log: %s" % ("available" if dmesg else "not available"))
-    return "\n".join(rows) if rows else "No known diagnostic logs found."
+    return "
+".join(rows) if rows else "No known diagnostic logs found."
 
 
 def _redact_diagnostic_text(text):
@@ -589,7 +605,8 @@ def health_check_information():
         rows.append("[INFO] Tuner interfaces: not exposed through detected system interfaces")
 
     rows += ["", "Health Check is read-only. INFO means a capability is absent, optional, or not enough evidence exists to call it a fault."]
-    return "\n".join(rows)
+    return "
+".join(rows)
 
 def create_diagnostic_bundle():
     """Create a bounded, redacted support bundle without changing system state."""
@@ -615,7 +632,8 @@ def create_diagnostic_bundle():
         }
         for name, report in reports.items():
             with open(os.path.join(workspace, name), "w") as handle:
-                handle.write(_redact_diagnostic_text(report) + "\n")
+                handle.write(_redact_diagnostic_text(report) + "
+")
 
         # Include only bounded text logs.  OSCam configuration/account files
         # are intentionally never copied into a support bundle.
@@ -629,14 +647,20 @@ def create_diagnostic_bundle():
             data = _safe_diagnostic_file(path)
             if data:
                 with open(os.path.join(workspace, "log-%02d.txt" % index), "w") as handle:
-                    handle.write("Source: %s\n\n%s" % (path, data))
+                    handle.write("Source: %s
+
+%s" % (path, data))
 
         manifest = (
-            "Glass System Utility Warder Evolution diagnostic bundle\n"
-            "GSU version: %s\n"
-            "Generated: %s\n"
+            "Glass System Utility Warder Evolution diagnostic bundle
+"
+            "GSU version: %s
+"
+            "Generated: %s
+"
             "Privacy: credentials, MAC addresses and stable identifiers are redacted; "
-            "CAM account/configuration files are excluded.\n"
+            "CAM account/configuration files are excluded.
+"
         ) % (VERSION, time.strftime("%Y-%m-%d %H:%M:%S"))
         with open(os.path.join(workspace, "README.txt"), "w") as handle:
             handle.write(manifest)
@@ -720,7 +744,8 @@ def _temperature_values():
 def temperature_information():
     rows = ["%s: %.1f C" % (label, value) for label, value in _temperature_values()]
     if rows:
-        return "\n".join(rows)
+        return "
+".join(rows)
     return "Temperature data not exposed through detected system interfaces."
 
 
@@ -769,7 +794,8 @@ def active_cam_information():
     rows.extend(_cam_process_metrics(cam["pid"]))
     if cam["family"] == "oscam":
         rows += ["", oscam_runtime_information(), "", oscam_webif_information()]
-    return "\n".join(rows)
+    return "
+".join(rows)
 
 
 def _active_cam_restart_command():
@@ -814,7 +840,8 @@ def oscam_runtime_information():
         reader_count = sum(1 for line in _read_lines(server) if line.strip().lower() == "[reader]")
         user_count = sum(1 for line in _read_lines(users) if line.strip().lower() in ("[account]", "[user]"))
         rows += ["", "Readers configured: %d" % reader_count, "Accounts configured: %d" % user_count]
-    return "\n".join(rows)
+    return "
+".join(rows)
 
 
 def package_information():
@@ -832,7 +859,8 @@ def package_information():
         rows.append("  Version: %s" % (version or "N/A"))
         rows.append("  Status: %s" % (status or "N/A"))
     rows += ["", "Available upgrades: not checked here (repository queries may block this screen)."]
-    return "\n".join(rows)
+    return "
+".join(rows)
 
 
 def network_diagnostics():
@@ -854,7 +882,8 @@ def network_diagnostics():
     if route:
         rows += ["", "Routes:"]
         rows.extend(route.splitlines()[:20])
-    return "\n".join(rows)
+    return "
+".join(rows)
 
 
 
@@ -888,7 +917,8 @@ def time_health_information():
             if peers:
                 rows += ["", "NTP peers:"]
                 rows.extend(peers.splitlines()[:16])
-    return "\n".join(rows)
+    return "
+".join(rows)
 
 def device_information():
     rows = []
@@ -912,7 +942,8 @@ def device_information():
             name, gib,
             "  removable" if removable == "1" else "",
             "  %s" % model if model else ""))
-    return "\n".join(rows) if rows else "No block devices exposed by this image."
+    return "
+".join(rows) if rows else "No block devices exposed by this image."
 
 
 def image_information():
@@ -928,7 +959,8 @@ def image_information():
             rows.append("")
     rows.append("Enigma2 binary: %s" % (_run(["which", "enigma2"], 3) or "not found"))
     rows.append("Python: %s" % platform.python_version())
-    return "\n".join(rows)
+    return "
+".join(rows)
 
 
 def cam_inventory_information():
@@ -958,12 +990,14 @@ def cam_inventory_information():
     if binaries:
         rows += ["", "Detected CAM binaries:"]
         rows.extend("  %s" % path for path in sorted(set(binaries))[:40])
-    return "\n".join(rows) if rows else "No known CAM components detected."
+    return "
+".join(rows) if rows else "No known CAM components detected."
 
 
 def listening_ports_information():
     output = _run(["ss", "-lntup"], 5) or _run(["netstat", "-lntup"], 5)
-    return "\n".join(output.splitlines()[:45]) if output else "No listener information available."
+    return "
+".join(output.splitlines()[:45]) if output else "No listener information available."
 
 
 def filesystem_health_information():
@@ -980,7 +1014,8 @@ def filesystem_health_information():
             rows.append("%s -> %s [%s, %s] free %.1f%%" % (device, mountpoint, fstype, state, free_pct))
         except Exception:
             rows.append("%s -> %s [%s, %s]" % (device, mountpoint, fstype, state))
-    return "\n".join(rows) if rows else "No physical filesystems found."
+    return "
+".join(rows) if rows else "No physical filesystems found."
 
 
 def capability_information():
@@ -1003,7 +1038,8 @@ def capability_information():
     ]
     rows = ["Detected runtime capabilities", ""]
     rows.extend("%-20s %s" % (name + ":", "YES" if present else "no") for name, present in probes)
-    return "\n".join(rows)
+    return "
+".join(rows)
 
 
 def diagnostic_summary():
@@ -1018,7 +1054,8 @@ def diagnostic_summary():
         if ":" in line:
             key, value = line.split(":", 1)
             mem[key] = value.strip()
-    return "\n".join((
+    return "
+".join((
         "GSU diagnostic summary", "",
         "Receiver: %s" % _read_text("/proc/stb/info/model", platform.machine()),
         "Python: %s" % platform.python_version(),
@@ -1120,7 +1157,8 @@ def _download_update(release):
         if received != int(release["size"]):
             raise ValueError("Downloaded file size does not match GitHub metadata")
         with open(target, "rb") as handle:
-            if handle.read(8) != b"!<arch>\n":
+            if handle.read(8) != b"!<arch>
+":
                 raise ValueError("Downloaded file is not a valid IPK archive")
         return target
     except Exception:
@@ -1234,12 +1272,17 @@ class GSUUpdater(object):
         self.release = release
         self.session.openWithCallback(
             self._answer, MessageBox,
-            "Glass System Utility %s is available.\nInstalled: %s\n\nInstall the update now?"
+            "Glass System Utility %s is available.
+Installed: %s
+
+Install the update now?"
             % (release["version"], VERSION), MessageBox.TYPE_YESNO)
 
     def _finish_check_error(self, detail):
         if not self.silent:
-            self.session.open(MessageBox, "Unable to check for updates.\n\n%s" % detail,
+            self.session.open(MessageBox, "Unable to check for updates.
+
+%s" % detail,
                               MessageBox.TYPE_INFO, timeout=8)
 
     def _answer(self, answer):
@@ -1275,12 +1318,15 @@ class GSUUpdater(object):
         if progress is None:
             return
         if not success:
-            self._set_progress_text(progress, "Update installation failed.\n\n%s" % detail)
+            self._set_progress_text(progress, "Update installation failed.
+
+%s" % detail)
             return
 
         self._set_progress_text(
             progress,
-            "Update installed successfully.\nEnigma2 GUI will restart in 3 seconds.")
+            "Update installed successfully.
+Enigma2 GUI will restart in 3 seconds.")
         self._schedule_gui_restart()
 
     def _set_progress_text(self, progress, message):
@@ -1361,7 +1407,9 @@ class GSUActiveCAM(Screen):
     <screen name="GSUActiveCAM" position="center,center" size="1040,700" title="Active CAM / OSCam Monitor">
         <widget name="text" position="30,30" size="980,570" font="Regular;24" />
         <widget name="key_red" position="35,625" size="300,45" font="Regular;24" />
-        <widget name="key_green" position="270,625" size="230,45" font="Regular;24" />\n        <widget name="key_yellow" position="520,625" size="220,45" font="Regular;24" />\n        <widget name="key_blue" position="760,625" size="220,45" font="Regular;24" />
+        <widget name="key_green" position="270,625" size="230,45" font="Regular;24" />
+        <widget name="key_yellow" position="520,625" size="220,45" font="Regular;24" />
+        <widget name="key_blue" position="760,625" size="220,45" font="Regular;24" />
     </screen>
     """
 
@@ -1372,11 +1420,15 @@ class GSUActiveCAM(Screen):
         command, detail = _active_cam_restart_command()
         self.restart_command = command
         self.restart_detail = detail
-        self["key_green"] = Label("Restart CAM" if command else "Restart unavailable")\n        self["key_yellow"] = Label("Refresh")\n        self["key_blue"] = Label("Details")
+        self["key_green"] = Label("Restart CAM" if command else "Restart unavailable")
+        self["key_yellow"] = Label("Refresh")
+        self["key_blue"] = Label("Details")
         actions = {
             "cancel": self.close,
             "red": self.close,
-            "green": self.restart_cam,\n            "yellow": self._refresh,\n            "blue": self.show_details,
+            "green": self.restart_cam,
+            "yellow": self._refresh,
+            "blue": self.show_details,
         }
         if ScrollLabel is not None:
             actions.update({
@@ -1409,7 +1461,9 @@ class GSUActiveCAM(Screen):
         self.session.openWithCallback(
             self._restart_confirmed,
             MessageBox,
-            "%s?\n\nThe currently active CAM will be briefly interrupted." % self.restart_detail,
+            "%s?
+
+The currently active CAM will be briefly interrupted." % self.restart_detail,
             MessageBox.TYPE_YESNO)
 
     def _restart_confirmed(self, answer):
@@ -1434,7 +1488,9 @@ class GSUActiveCAM(Screen):
                 self._refresh()
                 if rc != 0:
                     detail = output[-800:] if output else "restart command returned status %s" % rc
-                    self.session.open(MessageBox, "Active CAM restart failed.\n\n%s" % detail,
+                    self.session.open(MessageBox, "Active CAM restart failed.
+
+%s" % detail,
                                       MessageBox.TYPE_ERROR, timeout=10)
                 elif verified:
                     changed = " (new PID %s)" % verified["pid"] if verified["pid"] != before_pid else ""
@@ -1537,10 +1593,13 @@ class SysUtilMngMain(Screen):
         elif action == "diagbundle":
             try:
                 path = create_diagnostic_bundle()
-                self.session.open(MessageBox, "Diagnostic bundle created:\n%s" % path,
+                self.session.open(MessageBox, "Diagnostic bundle created:
+%s" % path,
                                   MessageBox.TYPE_INFO, timeout=10)
             except Exception as exc:
-                self.session.open(MessageBox, "Unable to create diagnostic bundle.\n\n%s" % exc,
+                self.session.open(MessageBox, "Unable to create diagnostic bundle.
+
+%s" % exc,
                                   MessageBox.TYPE_ERROR, timeout=10)
         elif action == "update":
             GSUUpdater(self.session).check(silent=False)
@@ -1552,9 +1611,14 @@ class SysUtilMngMain(Screen):
                 self.session.open(MessageBox, str(exc), MessageBox.TYPE_ERROR)
         elif action == "about":
             self._info("About", (
-                "Glass System Utility Warder Evolution %s\n\n"
-                "Modern Python 3 source core.\n"
-                "Read-only system, network, storage, service, mount, OSCam, tuner and log diagnostics enabled.\n\n"
+                "Glass System Utility Warder Evolution %s
+
+"
+                "Modern Python 3 source core.
+"
+                "Read-only system, network, storage, service, mount, OSCam, tuner and log diagnostics enabled.
+
+"
                 "State-changing legacy functions remain gated until separately migrated and tested."
             ) % VERSION)
 
