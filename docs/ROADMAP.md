@@ -253,3 +253,19 @@ Next action after resume:
 5. publish `v13.29-w10` only after this visual/live OSCam gate is REAL RECEIVER PASS.
 
 Do not roll back to the raw live-status experiment and do not create a new release/version merely for testing.
+
+
+### OSCam monitor continuation after CURRENT checkpoint
+
+Post-checkpoint hardening completed:
+- a privacy-safe OSCam API schema diagnostic records **field names/structure only**, never values;
+- credential-like branches (password/passwd/pwd/token/secret/key/boxkey/deskey/rsakey/user/username/account) are excluded from schema diagnostics;
+- the safe schema is available only inside CAM/OSCam Details to help map receiver-specific OSCam JSON layouts without asking the maintainer to expose credentials or raw payloads;
+- the live refresh re-entry flag is now reset in a `finally` block so an unexpected parser/UI exception cannot permanently freeze future refreshes.
+
+Relevant implementation commits:
+- `70cd8b5ff2482cdff7114dec28b10f38aea8f553` safe schema collector;
+- `d66fdf697f27ca097e03607aa668268e30ee8838` Details integration;
+- `97553505f69554dcf22ebc483d84c0be75c267db` exception-safe refresh lifecycle.
+
+All source-triggered GitHub Actions runs for this batch are PASS. The release gate remains unchanged: one coherent receiver candidate must validate actual visual/live field mapping before v13.29-w10 publication.
