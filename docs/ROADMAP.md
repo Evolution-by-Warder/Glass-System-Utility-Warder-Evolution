@@ -77,3 +77,23 @@ SHA-256: `d72e961f794d620537617622488a8dbad03a2e3f22ae2924296a0bfb00409138`.
 With the self-update path proven on real hardware, development resumes at roadmap stage 3. Tuner diagnostics now use capability-based discovery across Enigma2's `/proc/bus/nim_sockets`, exposed frontend interfaces and Linux DVB device adapters. The implementation remains bounded and read-only and does not branch on receiver vendor/model.
 
 Next in this stage: diagnostic export/support bundle design with explicit secret redaction before any state-changing administration is introduced.
+
+
+## Modern user-needs review — 2026-09-30
+
+Post-w9 development is not limited to reproducing the historical Glass System Utility feature set. Current Enigma2 user support patterns are used to guide new work while keeping GSU capability-driven and image-neutral.
+
+Priority themes for future candidates:
+- Health Check / Troubleshooter: one read-only overview of system, Enigma2 process, memory, storage, network, DNS/connectivity, mounts, tuners, temperatures, services and CAM status.
+- Network and Mount Doctor: distinguish interface/link, addressing, gateway/DNS, server reachability, configured shares, active mounts, filesystem availability and recording-target problems.
+- Storage Health: capacity, filesystem, mount state and available SMART/NVMe health information where the receiver exposes it.
+- Enigma2 Runtime Health: process memory and uptime observations, crash/debug-log discovery and diagnostics useful for hangs or long-running resource growth.
+- Time Health: detect available time-sync implementation and report clock/NTP/chrony state without assuming a particular image.
+- Tuner / Signal Diagnostics: continue capability-based frontend discovery and expose useful signal/frontend state where supported.
+- Support Bundle: local, user-initiated diagnostic archive with authentication secrets and cryptographic keys redacted. Useful diagnostic identifiers such as interface MAC addresses remain available. Nothing is uploaded automatically.
+- Service Dashboard: read-only status for relevant services actually detected on the receiver rather than a fixed vendor list.
+- Existing image facilities should be diagnosed or integrated where practical instead of needlessly duplicating mature backup, flashing or package-management functionality.
+
+Design rule: show what helps diagnosis, protect what grants access, and never transmit diagnostic data without an explicit user action.
+
+REAL RECEIVER validation remains mandatory before state-changing administration is promoted as production-ready.
