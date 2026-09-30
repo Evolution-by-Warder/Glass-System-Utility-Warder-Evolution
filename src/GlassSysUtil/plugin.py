@@ -341,6 +341,99 @@ def log_information():
     return "\n".join(rows) if rows else "No known diagnostic logs found."
 
 
+def temperature_information():
+    rows = []
+    roots = ("/sys/class/thermal", "/sys/class/hwmon")
+    seen = set()
+    for root in roots:
+        if not os.path.isdir(root):
+            continue
+        for base, dirs, files in os.walk(root):
+            for name in files:
+                if not (name.startswith("temp") and name.endswith("_input")) and name != "temp":
+                    continue
+                path = os.path.join(base, name)
+                raw = _read_text(path, "")
+                try:
+                    value = float(raw)
+                    if value > 1000:
+                        value /= 1000.0
+                    if -20 <= value <= 150:
+                        key = os.path.realpath(path)
+                        if key not in seen:
+                            seen.add(key)
+                            label = _read_text(path.replace("_input", "_label"), os.path.basename(base))
+                            rows.append("%s: %.1f C" % (label, value))
+                except Exception:
+                    pass
+    for path in ("/proc/stb/sensors/temp0/value", "/proc/stb/fp/temp_sensor"):
+        if os.path.isfile(path):
+            value = _read_text(path, "")
+            if value:
+                rows.append("%s: %s" % (path, value))
+    return "\n".join(rows[:20]) if rows else "No temperature sensors exposed by this image."
+
+
+def oscam_runtime_information():
+    rows = []
+    version_files = (
+        "/var/volatile/tmp/.oscam/oscam.version",
+        "/var/tmp/.oscam/oscam.version",
+        "/tmp/.oscam/oscam.version",
+    )
+    version_file = next((path for path in version_files if os.path.isfile(path)), "")
+    if version_file:
+        rows.append("Runtime version file: %s" % version_file)
+        for line in _read_lines(version_file)[:30]:
+            text = line.strip()
+            if text and not any(secret in text.lower() for secret in ("password", "passwd", "pwd=")):
+                rows.append(text)
+    else:
+        rows.append("OSCam runtime version file: not found")
+
+    proc = _run(["pgrep", "-a", "-i", "oscam"], 4)
+    matches = [line.strip() for line in proc.splitlines() if line.strip()]
+    config_dir = ""
+    for line in matches:
+        fields = line.split()
+        for index, field in enumerate(fields):
+            if field == "--config-dir" and index + 1 < len(fields):
+                config_dir = fields[index + 1]
+                break
+            if field.startswith("--config-dir="):
+                config_dir = field.split("=", 1)[1]
+                break
+        if config_dir:
+            break
+    if config_dir:
+        server = os.path.join(config_dir, "oscam.server")
+        users = os.path.join(config_dir, "oscam.user")
+        reader_count = sum(1 for line in _read_lines(server) if line.strip().lower() == "[reader]")
+        user_count = sum(1 for line in _read_lines(users) if line.strip().lower() in ("[account]", "[user]"))
+        rows += ["", "Readers configured: %d" % reader_count, "Accounts configured: %d" % user_count]
+    return "\n".join(rows)
+
+
+def package_information():
+    rows = []
+    for package in ("enigma2", "enigma2-plugin-glasssysutil"):
+        output = _run(["opkg", "status", package], 5)
+        version = ""
+        status = ""
+        for line in output.splitlines():
+            if line.startswith("Version:"):
+                version = line.split(":", 1)[1].strip()
+            elif line.startswith("Status:"):
+                status = line.split(":", 1)[1].strip()
+        rows.append("%s" % package)
+        rows.append("  Version: %s" % (version or "N/A"))
+        rows.append("  Status: %s" % (status or "N/A"))
+    upgradable = _run(["opkg", "list-upgradable"], 8)
+    count = len([line for line in upgradable.splitlines() if " - " in line])
+    rows += ["", "Packages with upgrades available: %d" % count]
+    return "\n".join(rows)
+
+
 class GSUInfo(Screen):
     skin = """
     <screen name="GSUInfo" position="center,center" size="1160,680" title="Glass System Utility">
@@ -362,6 +455,7 @@ class SysUtilMngMain(Screen):
     """
     MENU = [
         ("System & Hardware", "system"),
+        ("Temperatures", "temps"),
         ("Network & Interfaces", "network"),
         ("Storage & Filesystems", "storage"),
         ("Memory & Swap", "memory"),
@@ -369,8 +463,10 @@ class SysUtilMngMain(Screen):
         ("Network Mounts (NFS/CIFS)", "mounts"),
         ("OSCam status", "oscam"),
         ("OSCam WebIF configuration", "oscamweb"),
+        ("OSCam Runtime & Accounts", "oscamruntime"),
         ("Tuner information", "tuners"),
         ("Logs & Diagnostics", "logs"),
+        ("Package information", "packages"),
         ("Restart Enigma2 GUI", "restart"),
         ("About this build", "about"),
     ]
@@ -388,6 +484,7 @@ class SysUtilMngMain(Screen):
         action = self.MENU[index][1]
         actions = {
             "system": ("System & Hardware", system_information),
+            "temps": ("Temperatures", temperature_information),
             "network": ("Network & Interfaces", network_information),
             "storage": ("Storage & Filesystems", storage_information),
             "memory": ("Memory & Swap", memory_information),
@@ -395,8 +492,10 @@ class SysUtilMngMain(Screen):
             "mounts": ("Network Mounts", mount_information),
             "oscam": ("OSCam status", oscam_information),
             "oscamweb": ("OSCam WebIF configuration", oscam_webif_information),
+            "oscamruntime": ("OSCam Runtime & Accounts", oscam_runtime_information),
             "tuners": ("Tuner information", tuner_information),
             "logs": ("Logs & Diagnostics", log_information),
+            "packages": ("Package information", package_information),
         }
         if action in actions:
             title, fnc = actions[action]
