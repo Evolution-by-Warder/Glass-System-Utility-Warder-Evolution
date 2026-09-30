@@ -1353,9 +1353,7 @@ class SysUtilMngMain(Screen):
         ("Network Mounts (NFS/CIFS)", "mounts"),
         ("CAM Inventory", "caminventory"),
         ("Active CAM / OSCam Monitor", "cammonitor"),
-        ("OSCam status", "oscam"),
-        ("OSCam WebIF configuration", "oscamweb"),
-        ("OSCam Runtime & Accounts", "oscamruntime"),
+
         ("Tuner information", "tuners"),
         ("Logs & Diagnostics", "logs"),
         ("Package information", "packages"),
@@ -1396,9 +1394,7 @@ class SysUtilMngMain(Screen):
             "mounts": ("Network Mounts", mount_information),
             "caminventory": ("CAM Inventory", cam_inventory_information),
             "cammonitor": ("Active CAM / OSCam Monitor", active_cam_information),
-            "oscam": ("OSCam status", oscam_information),
-            "oscamweb": ("OSCam WebIF configuration", oscam_webif_information),
-            "oscamruntime": ("OSCam Runtime & Accounts", oscam_runtime_information),
+
             "tuners": ("Tuner information", tuner_information),
             "logs": ("Logs & Diagnostics", log_information),
             "packages": ("Package information", package_information),
