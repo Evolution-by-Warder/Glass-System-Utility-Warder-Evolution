@@ -63,8 +63,11 @@ class DiagnosticRedactionTests(unittest.TestCase):
 
 
     def test_cam_monitor_requires_confirmation_and_image_restart_path(self):
-        import inspect
-        monitor = inspect.getsource(gsu.GSUActiveCAM)
+        with open(PLUGIN_PATH, "r", encoding="utf-8") as handle:
+            source = handle.read()
+        start = source.index("class GSUActiveCAM")
+        end = source.index("class SysUtilMngMain", start)
+        monitor = source[start:end]
         self.assertIn("openWithCallback", monitor)
         self.assertIn("_active_cam_restart_command", monitor)
         self.assertNotIn('["killall"', monitor)
