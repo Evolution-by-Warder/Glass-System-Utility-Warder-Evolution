@@ -791,6 +791,39 @@ def network_diagnostics():
     return "\n".join(rows)
 
 
+
+def time_health_information():
+    """Report clock and detected time-sync facilities without assuming an image."""
+    rows = ["Local time: %s" % time.strftime("%Y-%m-%d %H:%M:%S %Z")]
+    rows.append("UTC time: %s" % time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()))
+
+    detected = []
+    for name in ("chronyd", "ntpd", "ntpdate", "systemd-timesyncd"):
+        matches = _find_processes(name)
+        if matches:
+            detected.append("%s (running)" % name)
+    for binary in ("chronyc", "ntpq", "timedatectl"):
+        path = _run(["which", binary], 2)
+        if path:
+            detected.append("%s (available)" % binary)
+    rows.append("Time sync: %s" % (", ".join(detected) if detected else "no known time-sync facility detected"))
+
+    # Prefer status commands only when the corresponding client exists.
+    chronyc = _run(["which", "chronyc"], 2)
+    if chronyc:
+        tracking = _run(["chronyc", "tracking"], 4)
+        if tracking:
+            rows += ["", "chrony tracking:"]
+            rows.extend(tracking.splitlines()[:16])
+    else:
+        ntpq = _run(["which", "ntpq"], 2)
+        if ntpq:
+            peers = _run(["ntpq", "-pn"], 4)
+            if peers:
+                rows += ["", "NTP peers:"]
+                rows.extend(peers.splitlines()[:16])
+    return "\n".join(rows)
+
 def device_information():
     rows = []
     block_root = "/sys/class/block"
@@ -1267,6 +1300,7 @@ class SysUtilMngMain(Screen):
         ("Temperatures", "temps"),
         ("Network & Interfaces", "network"),
         ("Network Diagnostics", "netdiag"),
+        ("Time & Synchronization", "timehealth"),
         ("Storage & Filesystems", "storage"),
         ("Filesystem Health", "fshealth"),
         ("Block Devices", "devices"),
@@ -1308,6 +1342,7 @@ class SysUtilMngMain(Screen):
             "temps": ("Temperatures", temperature_information),
             "network": ("Network & Interfaces", network_information),
             "netdiag": ("Network Diagnostics", network_diagnostics),
+            "timehealth": ("Time & Synchronization", time_health_information),
             "storage": ("Storage & Filesystems", storage_information),
             "fshealth": ("Filesystem Health", filesystem_health_information),
             "devices": ("Block Devices", device_information),
