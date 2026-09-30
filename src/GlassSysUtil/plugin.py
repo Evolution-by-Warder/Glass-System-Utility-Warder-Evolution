@@ -723,6 +723,49 @@ def temperature_information():
         return "\n".join(rows)
     return "Temperature data not exposed through detected system interfaces."
 
+
+def _active_cam():
+    """Return a conservative description of the active CAM process."""
+    for needle in ("oscam", "ncam", "cccam", "mgcamd"):
+        matches = _find_processes(needle)
+        if matches:
+            pid, argv = matches[0]
+            binary = os.path.basename(argv[0]) if argv else needle
+            return {"family": needle, "name": binary, "pid": pid, "matches": matches}
+    return None
+
+
+def active_cam_information():
+    cam = _active_cam()
+    if not cam:
+        return "No known active CAM process detected."
+    rows = [
+        "Active CAM: %s" % cam["name"],
+        "Family: %s" % cam["family"],
+        "PID: %s" % cam["pid"],
+    ]
+    if cam["family"] == "oscam":
+        rows += ["", oscam_runtime_information(), "", oscam_webif_information()]
+    return "\n".join(rows)
+
+
+def _active_cam_restart_command():
+    """Discover an image-provided restart path; never fall back to killall."""
+    cam = _active_cam()
+    if not cam:
+        return None, "No active CAM detected."
+
+    name = cam["name"]
+    candidates = [
+        ("/etc/init.d/softcam.%s" % name, ["/etc/init.d/softcam.%s" % name, "restart"]),
+        ("/etc/init.d/%s" % name, ["/etc/init.d/%s" % name, "restart"]),
+        ("/etc/init.d/softcam", ["/etc/init.d/softcam", "restart"]),
+    ]
+    for path, argv in candidates:
+        if os.path.isfile(path) and os.access(path, os.X_OK):
+            return argv, "Restart %s using %s" % (name, path)
+    return None, "No safe image-provided restart mechanism detected for %s." % name
+
 def oscam_runtime_information():
     rows = []
     version_files = (
@@ -1309,6 +1352,7 @@ class SysUtilMngMain(Screen):
         ("Listening Ports", "ports"),
         ("Network Mounts (NFS/CIFS)", "mounts"),
         ("CAM Inventory", "caminventory"),
+        ("Active CAM / OSCam Monitor", "cammonitor"),
         ("OSCam status", "oscam"),
         ("OSCam WebIF configuration", "oscamweb"),
         ("OSCam Runtime & Accounts", "oscamruntime"),
@@ -1351,6 +1395,7 @@ class SysUtilMngMain(Screen):
             "ports": ("Listening Ports", listening_ports_information),
             "mounts": ("Network Mounts", mount_information),
             "caminventory": ("CAM Inventory", cam_inventory_information),
+            "cammonitor": ("Active CAM / OSCam Monitor", active_cam_information),
             "oscam": ("OSCam status", oscam_information),
             "oscamweb": ("OSCam WebIF configuration", oscam_webif_information),
             "oscamruntime": ("OSCam Runtime & Accounts", oscam_runtime_information),
