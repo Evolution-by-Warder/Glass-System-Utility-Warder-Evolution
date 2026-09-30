@@ -505,6 +505,34 @@ def _oscam_service_parts(flat):
     )
 
 
+def _oscam_normalize_ecm(value):
+    value = _oscam_display(value)
+    if not value:
+        return ""
+    try:
+        number = float(value)
+        if number < 10:
+            return "%d ms" % round(number * 1000)
+        return "%d ms" % round(number)
+    except Exception:
+        return value
+
+
+def _oscam_normalize_idle(value):
+    value = _oscam_display(value)
+    if not value:
+        return ""
+    try:
+        seconds = int(float(value))
+        if seconds < 60:
+            return "%ds" % seconds
+        if seconds < 3600:
+            return "%dm%02ds" % (seconds // 60, seconds % 60)
+        return "%dh%02dm" % (seconds // 3600, (seconds % 3600) // 60)
+    except Exception:
+        return value
+
+
 def oscam_live_rows():
     """Return sanitized, display-ready OSCam client rows plus a status message."""
     payload, reason = _oscam_live_status()
@@ -529,8 +557,8 @@ def oscam_live_rows():
             "provid": provid,
             "channel": channel,
             "status": _oscam_find_scalar(flat, "status", "connection", "state"),
-            "ecm": _oscam_find_scalar(flat, "ecmtime", "ecm_time", "lastresponsetime", "lastresponse"),
-            "idle": _oscam_find_scalar(flat, "idle", "idletime"),
+            "ecm": _oscam_normalize_ecm(_oscam_find_scalar(flat, "ecmtime", "ecm_time", "lastresponsetime", "lastresponse")),
+            "idle": _oscam_normalize_idle(_oscam_find_scalar(flat, "idle", "idletime")),
         })
     return rows, "" if rows else "API reachable, no client rows recognized."
 
