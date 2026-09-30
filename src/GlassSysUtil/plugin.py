@@ -606,6 +606,7 @@ def filesystem_health_information():
 def capability_information():
     """Report interfaces actually exposed by the running receiver/image."""
     probes = [
+        ("Temperature data", any(os.path.isfile(path) for path, label in _temperature_candidates())),
         ("Thermal sysfs", os.path.isdir("/sys/class/thermal")),
         ("Hardware monitor", os.path.isdir("/sys/class/hwmon")),
         ("Network sysfs", os.path.isdir("/sys/class/net")),
@@ -755,6 +756,32 @@ class GSUUpdater(object):
                 pass
             self.session.open(MessageBox, "Update verification failed (size mismatch).", MessageBox.TYPE_ERROR)
             return
+
+        # Ask opkg to parse the downloaded package before installation.
+        rc_info, package_info = _run_status(["opkg", "info", path], 15)
+        if rc_info != 0:
+            try:
+                os.unlink(path)
+            except Exception:
+                pass
+            self.session.open(MessageBox, "Update verification failed (invalid IPK).", MessageBox.TYPE_ERROR)
+            return
+        pkg_name = ""
+        pkg_version = ""
+        for line in package_info.splitlines():
+            if line.startswith("Package:"):
+                pkg_name = line.split(":", 1)[1].strip()
+            elif line.startswith("Version:"):
+                pkg_version = line.split(":", 1)[1].strip()
+        if pkg_name != "enigma2-plugin-glasssysutil" or _version_key(pkg_version) != _version_key(self.release["version"]):
+            try:
+                os.unlink(path)
+            except Exception:
+                pass
+            self.session.open(MessageBox, "Update verification failed (package identity/version mismatch).",
+                              MessageBox.TYPE_ERROR)
+            return
+
         rc, result = _run_status(["opkg", "install", path], 60)
         if rc != 0:
             self.session.open(MessageBox, "Update installation failed.\n\n%s" % result[-1200:],
