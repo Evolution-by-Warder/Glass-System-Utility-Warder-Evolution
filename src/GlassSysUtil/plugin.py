@@ -491,6 +491,106 @@ def _safe_diagnostic_file(path, limit=131072):
         return ""
 
 
+
+def health_check_information():
+    """Build a conservative, read-only health overview from exposed capabilities."""
+    rows = ["GSU Health Check", ""]
+
+    # Memory pressure: MemAvailable is more useful than MemFree on Linux.
+    mem = {}
+    for line in _read_lines("/proc/meminfo"):
+        if ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        fields = value.split()
+        if fields and fields[0].isdigit():
+            mem[key] = int(fields[0])
+    total = mem.get("MemTotal", 0)
+    available = mem.get("MemAvailable", mem.get("MemFree", 0))
+    if total:
+        pct = available * 100.0 / total
+        state = "PASS" if pct >= 15 else ("WARNING" if pct >= 7 else "WARNING")
+        rows.append("[%s] Memory: %.0f%% available" % (state, pct))
+    else:
+        rows.append("[INFO] Memory: data not exposed")
+
+    # Filesystems: warn only about mounted physical filesystems that are genuinely tight.
+    storage_seen = False
+    storage_warning = False
+    for line in _read_lines("/proc/mounts"):
+        fields = line.split()
+        if len(fields) < 3 or not fields[0].startswith("/dev/"):
+            continue
+        storage_seen = True
+        try:
+            usage = shutil.disk_usage(fields[1])
+            free_pct = usage.free * 100.0 / usage.total if usage.total else 100.0
+            if free_pct < 5:
+                storage_warning = True
+        except Exception:
+            pass
+    if storage_seen:
+        rows.append("[%s] Storage: %s" % (
+            "WARNING" if storage_warning else "PASS",
+            "one or more filesystems below 5% free" if storage_warning else "mounted filesystems have usable free space"))
+    else:
+        rows.append("[INFO] Storage: no physical filesystem mounts detected")
+
+    # Network capability/state. Loopback is deliberately ignored.
+    interfaces = []
+    try:
+        interfaces = [name for name in sorted(os.listdir("/sys/class/net")) if name != "lo"]
+    except Exception:
+        pass
+    up = [name for name in interfaces if _read_text("/sys/class/net/%s/operstate" % name, "") == "up"]
+    gateway = _default_gateway()
+    resolvers = [line.split()[1] for line in _read_lines("/etc/resolv.conf")
+                 if len(line.split()) >= 2 and line.split()[0] == "nameserver"]
+    if up:
+        rows.append("[PASS] Network link: %s" % ", ".join(up))
+    elif interfaces:
+        rows.append("[WARNING] Network link: no detected interface is up")
+    else:
+        rows.append("[INFO] Network link: interfaces not exposed")
+    rows.append("[%s] Default gateway: %s" % ("PASS" if gateway and gateway != "N/A" else "INFO", gateway or "N/A"))
+    rows.append("[%s] DNS configuration: %s" % (
+        "PASS" if resolvers else "WARNING", ", ".join(resolvers) if resolvers else "no resolver configured"))
+
+    # Enigma2 is expected while this screen is running; report rather than mutate anything.
+    e2 = _find_processes("enigma2")
+    rows.append("[%s] Enigma2 process: %s" % ("PASS" if e2 else "WARNING", "running" if e2 else "not detected"))
+
+    temps = _temperature_values()
+    if temps:
+        hottest = max(value for label, value in temps)
+        state = "PASS" if hottest < 80 else ("WARNING" if hottest < 95 else "WARNING")
+        rows.append("[%s] Temperature: hottest detected %.1f C" % (state, hottest))
+    else:
+        rows.append("[INFO] Temperature: measurement not exposed")
+
+    mounts = [line for line in _read_lines("/proc/mounts")
+              if len(line.split()) >= 3 and line.split()[2].lower() in ("nfs", "nfs4", "cifs", "smbfs")]
+    rows.append("[INFO] Network mounts: %d active" % len(mounts))
+
+    cams = []
+    for name in ("oscam", "ncam", "cccam", "mgcamd"):
+        if _find_processes(name):
+            cams.append(name)
+    rows.append("[INFO] CAM: %s" % (", ".join(sorted(set(cams))) if cams else "no known CAM process detected"))
+
+    nim = _read_lines("/proc/bus/nim_sockets")
+    try:
+        dvb = sorted(os.listdir("/sys/class/dvb"))
+    except Exception:
+        dvb = []
+    if nim or dvb:
+        rows.append("[PASS] Tuner interfaces: detected")
+    else:
+        rows.append("[INFO] Tuner interfaces: not exposed through detected system interfaces")
+
+    rows += ["", "Health Check is read-only. INFO means a capability is absent, optional, or not enough evidence exists to call it a fault."]
+    return "\n".join(rows)
+
 def create_diagnostic_bundle():
     """Create a bounded, redacted support bundle without changing system state."""
     stamp = time.strftime("%Y%m%d-%H%M%S")
@@ -1183,6 +1283,7 @@ class SysUtilMngMain(Screen):
         ("Package information", "packages"),
         ("Image & Runtime", "imageinfo"),
         ("Diagnostic Summary", "summary"),
+        ("Health Check", "healthcheck"),
         ("Create Diagnostic Bundle", "diagbundle"),
         ("Detected Capabilities", "capabilities"),
         ("Check for updates", "update"),
@@ -1223,6 +1324,7 @@ class SysUtilMngMain(Screen):
             "packages": ("Package information", package_information),
             "imageinfo": ("Image & Runtime", image_information),
             "summary": ("Diagnostic Summary", diagnostic_summary),
+            "healthcheck": ("Health Check", health_check_information),
             "capabilities": ("Detected Capabilities", capability_information),
         }
         if action in actions:
