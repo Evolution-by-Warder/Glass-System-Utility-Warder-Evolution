@@ -603,6 +603,26 @@ def filesystem_health_information():
     return "\n".join(rows) if rows else "No physical filesystems found."
 
 
+def capability_information():
+    """Report interfaces actually exposed by the running receiver/image."""
+    probes = [
+        ("Thermal sysfs", os.path.isdir("/sys/class/thermal")),
+        ("Hardware monitor", os.path.isdir("/sys/class/hwmon")),
+        ("Network sysfs", os.path.isdir("/sys/class/net")),
+        ("Block sysfs", os.path.isdir("/sys/class/block")),
+        ("Tuner procfs", os.path.exists("/proc/bus/nim_sockets") or os.path.isdir("/proc/stb/frontend")),
+        ("Enigma2 STB procfs", os.path.isdir("/proc/stb")),
+        ("Mount table", os.path.isfile("/proc/mounts")),
+        ("opkg", bool(shutil.which("opkg"))),
+        ("iproute2", bool(shutil.which("ip"))),
+        ("socket status", bool(shutil.which("ss") or shutil.which("netstat"))),
+        ("process lookup", bool(shutil.which("pgrep"))),
+    ]
+    rows = ["Detected runtime capabilities", ""]
+    rows.extend("%-20s %s" % (name + ":", "YES" if present else "no") for name, present in probes)
+    return "\n".join(rows)
+
+
 def diagnostic_summary():
     oscam = bool(_run(["pgrep", "-a", "-i", "oscam"], 3))
     network_mounts = 0
@@ -790,6 +810,7 @@ class SysUtilMngMain(Screen):
         ("Package information", "packages"),
         ("Image & Runtime", "imageinfo"),
         ("Diagnostic Summary", "summary"),
+        ("Detected Capabilities", "capabilities"),
         ("Check for updates", "update"),
         ("Restart Enigma2 GUI", "restart"),
         ("About this build", "about"),
@@ -827,6 +848,7 @@ class SysUtilMngMain(Screen):
             "packages": ("Package information", package_information),
             "imageinfo": ("Image & Runtime", image_information),
             "summary": ("Diagnostic Summary", diagnostic_summary),
+            "capabilities": ("Detected Capabilities", capability_information),
         }
         if action in actions:
             title, fnc = actions[action]
