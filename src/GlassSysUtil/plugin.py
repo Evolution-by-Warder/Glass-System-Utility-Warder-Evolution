@@ -481,6 +481,30 @@ def _oscam_flat_pick(flat, *names):
     return "-"
 
 
+def _oscam_find_scalar(flat, *tokens):
+    """Find a scalar by exact leaf first, then conservative suffix/token matching."""
+    direct = _oscam_flat_pick(flat, *tokens)
+    if direct != "-":
+        return direct
+    wanted = tuple(token.lower() for token in tokens)
+    for key, value in flat.items():
+        low = key.lower()
+        leaf = low.rsplit(".", 1)[-1]
+        if leaf in wanted or any(low.endswith("." + token) for token in wanted):
+            return str(value)
+    return "-"
+
+
+def _oscam_service_parts(flat):
+    """Map common OSCam API service field spellings without exposing raw payloads."""
+    return (
+        _oscam_find_scalar(flat, "srvid", "serviceid", "service_id", "sid"),
+        _oscam_find_scalar(flat, "caid"),
+        _oscam_find_scalar(flat, "provid", "providerid", "provider_id", "prid"),
+        _oscam_find_scalar(flat, "lastchannel", "channel", "srvname", "servicename", "service"),
+    )
+
+
 def oscam_live_rows():
     """Return sanitized, display-ready OSCam client rows plus a status message."""
     payload, reason = _oscam_live_status()
@@ -489,25 +513,37 @@ def oscam_live_rows():
     rows = []
     for item in _oscam_status_rows(payload):
         flat = _oscam_flatten_scalars(item)
-        raw_type = _oscam_flat_pick(flat, "type", "typ")
+        raw_type = _oscam_find_scalar(flat, "type", "typ")
         type_map = {"s": "server", "h": "http", "p": "proxy",
                     "r": "reader", "c": "client"}
         row_type = type_map.get(raw_type.lower(), raw_type)
+        srvid, caid, provid, channel = _oscam_service_parts(flat)
         rows.append({
-            "name": _oscam_flat_pick(flat, "name", "user", "label", "reader", "username"),
+            "name": _oscam_find_scalar(flat, "name", "user", "label", "reader", "username"),
             "type": row_type,
-            "address": _oscam_flat_pick(flat, "ip", "address", "host", "hostname"),
-            "port": _oscam_flat_pick(flat, "port", "remoteport"),
-            "protocol": _oscam_flat_pick(flat, "protocol", "proto"),
-            "srvid": _oscam_flat_pick(flat, "srvid", "serviceid", "sid"),
-            "caid": _oscam_flat_pick(flat, "caid"),
-            "provid": _oscam_flat_pick(flat, "provid", "provider", "prid"),
-            "channel": _oscam_flat_pick(flat, "lastchannel", "channel", "srvname", "servicename"),
-            "status": _oscam_flat_pick(flat, "status", "connection", "state"),
-            "ecm": _oscam_flat_pick(flat, "ecmtime", "ecm_time", "lastresponsetime"),
-            "idle": _oscam_flat_pick(flat, "idle", "idletime"),
+            "address": _oscam_find_scalar(flat, "ip", "address", "host", "hostname"),
+            "port": _oscam_find_scalar(flat, "port", "remoteport"),
+            "protocol": _oscam_find_scalar(flat, "protocol", "proto"),
+            "srvid": srvid,
+            "caid": caid,
+            "provid": provid,
+            "channel": channel,
+            "status": _oscam_find_scalar(flat, "status", "connection", "state"),
+            "ecm": _oscam_find_scalar(flat, "ecmtime", "ecm_time", "lastresponsetime", "lastresponse"),
+            "idle": _oscam_find_scalar(flat, "idle", "idletime"),
         })
     return rows, "" if rows else "API reachable, no client rows recognized."
+
+
+def _oscam_display(value):
+    return "" if value in (None, "", "-") else str(value)
+
+
+def _oscam_service_display(row):
+    srvid, caid, provid = (_oscam_display(row[key]) for key in ("srvid", "caid", "provid"))
+    if not any((srvid, caid, provid)):
+        return ""
+    return "%s:%s@%s" % (srvid or "----", caid or "----", provid or "------")
 
 
 def _oscam_table_cell(value, width):
@@ -518,20 +554,20 @@ def _oscam_table_cell(value, width):
 
 
 def _oscam_table_line(row):
-    service = "%s:%s@%s" % (row["srvid"], row["caid"], row["provid"])
+    service = _oscam_service_display(row)
     name = row["name"]
     if row["type"] not in ("-", "") and row["type"] not in name:
         name = "%s/%s" % (name, row["type"])
     return " ".join((
         _oscam_table_cell(name, 13),
-        _oscam_table_cell(row["address"], 15),
-        _oscam_table_cell(row["port"], 5),
-        _oscam_table_cell(row["protocol"], 10),
+        _oscam_table_cell(_oscam_display(row["address"]), 15),
+        _oscam_table_cell(_oscam_display(row["port"]), 5),
+        _oscam_table_cell(_oscam_display(row["protocol"]), 10),
         _oscam_table_cell(service, 21),
-        _oscam_table_cell(row["channel"], 20),
-        _oscam_table_cell(row["ecm"], 8),
-        _oscam_table_cell(row["idle"], 8),
-        _oscam_table_cell(row["status"], 12),
+        _oscam_table_cell(_oscam_display(row["channel"]), 20),
+        _oscam_table_cell(_oscam_display(row["ecm"]), 8),
+        _oscam_table_cell(_oscam_display(row["idle"]), 8),
+        _oscam_table_cell(_oscam_display(row["status"]), 12),
     ))
 
 def oscam_live_information():
