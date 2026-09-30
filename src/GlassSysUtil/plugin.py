@@ -182,8 +182,7 @@ def system_information():
             cpu = line.split(":", 1)[1].strip()
             if cpu:
                 break
-    return "
-".join((
+    return "\\n".join((
         "Glass System Utility Warder Evolution %s" % VERSION, "",
         "Receiver: %s %s" % (brand, model),
         "Hostname: %s" % socket.gethostname(),
@@ -215,8 +214,7 @@ def network_information():
         rows.append("%s  [%s]" % (name, state))
         rows.append("  IPv4: %s" % _ipv4_for_interface(name))
         rows.append("  MAC:  %s" % mac)
-    return "
-".join(rows)
+    return "\\n".join(rows)
 
 
 def storage_information():
@@ -252,8 +250,7 @@ def memory_information():
             key, value = line.split(":", 1)
             if key in wanted:
                 values[key] = value.strip()
-    return "
-".join("%s: %s" % (key, values.get(key, "N/A")) for key in wanted)
+    return "\\n".join("%s: %s" % (key, values.get(key, "N/A")) for key in wanted)
 
 
 def service_information():
@@ -265,8 +262,7 @@ def service_information():
             if argv:
                 rows.append("%s (PID %s)" % (os.path.basename(argv[0]), pid))
     rows = sorted(set(rows), key=lambda value: value.lower())
-    return "
-".join(rows) if rows else "No known GSU service processes detected."
+    return "\\n".join(rows) if rows else "No known GSU service processes detected."
 
 
 def mount_information():
@@ -312,8 +308,7 @@ def oscam_information():
     rows.append("Config: %s" % (found if found else "not found"))
     if config_dir:
         rows.append("Config dir: %s" % config_dir)
-    return "
-".join(rows)
+    return "\\n".join(rows)
 
 
 def _proc_cmdline(pid):
@@ -381,8 +376,7 @@ def oscam_webif_information():
     allowed = webif.get("httpallowed", "not restricted in config")
     user_set = bool(webif.get("httpuser"))
     pass_set = bool(webif.get("httppwd"))
-    return "
-".join((
+    return "\\n".join((
         "Config: %s" % conf,
         "",
         "WebIF port: %s" % port,
@@ -455,8 +449,7 @@ def tuner_information():
 
     if not nim_sockets and not discovered and not adapters:
         return "Tuner data not exposed through detected system interfaces."
-    return "
-".join(rows)
+    return "\\n".join(rows)
 
 
 def log_information():
@@ -476,8 +469,7 @@ def log_information():
                 rows.append(path)
     dmesg = _run(["dmesg"], 4)
     rows.append("Kernel log: %s" % ("available" if dmesg else "not available"))
-    return "
-".join(rows) if rows else "No known diagnostic logs found."
+    return "\\n".join(rows) if rows else "No known diagnostic logs found."
 
 
 def _redact_diagnostic_text(text):
@@ -604,8 +596,7 @@ def health_check_information():
         rows.append("[INFO] Tuner interfaces: not exposed through detected system interfaces")
 
     rows += ["", "Health Check is read-only. INFO means a capability is absent, optional, or not enough evidence exists to call it a fault."]
-    return "
-".join(rows)
+    return "\\n".join(rows)
 
 def create_diagnostic_bundle():
     """Create a bounded, redacted support bundle without changing system state."""
@@ -743,8 +734,7 @@ def _temperature_values():
 def temperature_information():
     rows = ["%s: %.1f C" % (label, value) for label, value in _temperature_values()]
     if rows:
-        return "
-".join(rows)
+        return "\\n".join(rows)
     return "Temperature data not exposed through detected system interfaces."
 
 
@@ -793,8 +783,7 @@ def active_cam_information():
     rows.extend(_cam_process_metrics(cam["pid"]))
     if cam["family"] == "oscam":
         rows += ["", oscam_runtime_information(), "", oscam_webif_information()]
-    return "
-".join(rows)
+    return "\\n".join(rows)
 
 
 def _active_cam_restart_command():
@@ -839,8 +828,7 @@ def oscam_runtime_information():
         reader_count = sum(1 for line in _read_lines(server) if line.strip().lower() == "[reader]")
         user_count = sum(1 for line in _read_lines(users) if line.strip().lower() in ("[account]", "[user]"))
         rows += ["", "Readers configured: %d" % reader_count, "Accounts configured: %d" % user_count]
-    return "
-".join(rows)
+    return "\\n".join(rows)
 
 
 def package_information():
@@ -858,8 +846,7 @@ def package_information():
         rows.append("  Version: %s" % (version or "N/A"))
         rows.append("  Status: %s" % (status or "N/A"))
     rows += ["", "Available upgrades: not checked here (repository queries may block this screen)."]
-    return "
-".join(rows)
+    return "\\n".join(rows)
 
 
 def network_diagnostics():
@@ -881,8 +868,7 @@ def network_diagnostics():
     if route:
         rows += ["", "Routes:"]
         rows.extend(route.splitlines()[:20])
-    return "
-".join(rows)
+    return "\\n".join(rows)
 
 
 
@@ -916,8 +902,7 @@ def time_health_information():
             if peers:
                 rows += ["", "NTP peers:"]
                 rows.extend(peers.splitlines()[:16])
-    return "
-".join(rows)
+    return "\\n".join(rows)
 
 def device_information():
     rows = []
@@ -941,8 +926,7 @@ def device_information():
             name, gib,
             "  removable" if removable == "1" else "",
             "  %s" % model if model else ""))
-    return "
-".join(rows) if rows else "No block devices exposed by this image."
+    return "\\n".join(rows) if rows else "No block devices exposed by this image."
 
 
 def image_information():
@@ -958,8 +942,7 @@ def image_information():
             rows.append("")
     rows.append("Enigma2 binary: %s" % (_run(["which", "enigma2"], 3) or "not found"))
     rows.append("Python: %s" % platform.python_version())
-    return "
-".join(rows)
+    return "\\n".join(rows)
 
 
 def cam_inventory_information():
@@ -989,14 +972,12 @@ def cam_inventory_information():
     if binaries:
         rows += ["", "Detected CAM binaries:"]
         rows.extend("  %s" % path for path in sorted(set(binaries))[:40])
-    return "
-".join(rows) if rows else "No known CAM components detected."
+    return "\\n".join(rows) if rows else "No known CAM components detected."
 
 
 def listening_ports_information():
     output = _run(["ss", "-lntup"], 5) or _run(["netstat", "-lntup"], 5)
-    return "
-".join(output.splitlines()[:45]) if output else "No listener information available."
+    return "\\n".join(output.splitlines()[:45]) if output else "No listener information available."
 
 
 def filesystem_health_information():
@@ -1013,8 +994,7 @@ def filesystem_health_information():
             rows.append("%s -> %s [%s, %s] free %.1f%%" % (device, mountpoint, fstype, state, free_pct))
         except Exception:
             rows.append("%s -> %s [%s, %s]" % (device, mountpoint, fstype, state))
-    return "
-".join(rows) if rows else "No physical filesystems found."
+    return "\\n".join(rows) if rows else "No physical filesystems found."
 
 
 def capability_information():
@@ -1037,8 +1017,7 @@ def capability_information():
     ]
     rows = ["Detected runtime capabilities", ""]
     rows.extend("%-20s %s" % (name + ":", "YES" if present else "no") for name, present in probes)
-    return "
-".join(rows)
+    return "\\n".join(rows)
 
 
 def diagnostic_summary():
@@ -1053,8 +1032,7 @@ def diagnostic_summary():
         if ":" in line:
             key, value = line.split(":", 1)
             mem[key] = value.strip()
-    return "
-".join((
+    return "\\n".join((
         "GSU diagnostic summary", "",
         "Receiver: %s" % _read_text("/proc/stb/info/model", platform.machine()),
         "Python: %s" % platform.python_version(),
