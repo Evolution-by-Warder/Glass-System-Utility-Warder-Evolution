@@ -939,6 +939,42 @@ class GSUUpdater(object):
             except Exception:
                 pass
             self.progress = None
+
+        # Closing a modal dialog is asynchronous on some Enigma2 images
+        # (notably current OpenATV).  Opening the result MessageBox in the
+        # same eTimer callback can therefore raise "Modal open are allowed
+        # only from a screen which is modal".  Defer the next modal until
+        # Enigma2 has processed the close.
+        self.result = ("install-ui", success, detail)
+        self._defer_install_result()
+
+    def _defer_install_result(self):
+        if eTimer is None:
+            self._show_install_result()
+            return
+        try:
+            self.timer = eTimer()
+            callback = self._show_install_result
+            self._install_ui_callback = callback
+            if hasattr(self.timer, "callback"):
+                self.timer.callback.append(callback)
+            else:
+                self.timer.timeout.get().append(callback)
+            self.timer.start(100, True)
+        except Exception:
+            self._show_install_result()
+
+    def _show_install_result(self):
+        try:
+            if self.timer is not None:
+                self.timer.stop()
+        except Exception:
+            pass
+        state = self.result
+        self.result = None
+        if not state or state[0] != "install-ui":
+            return
+        success, detail = state[1], state[2]
         if not success:
             self.session.open(MessageBox, "Update installation failed.\n\n%s" % detail,
                               MessageBox.TYPE_ERROR)
