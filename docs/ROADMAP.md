@@ -147,3 +147,25 @@ SHA-256: `c1ca485b2ceb0709df41ca2cbfcaf7ee7be82654a0d1268741ae5bc1991e6262`.
 The downloaded CI artifact was independently inspected after the workflow completed: deterministic ar member order is correct, package identity is `enigma2-plugin-glasssysutil`, package version is `13.29-w10`, and the embedded SHA-256 sidecar matches the independently calculated digest.
 
 This is the receiver-test candidate only. Do not publish `v13.29-w10` until the real receiver checklist passes.
+
+
+### 13.29-w10 real receiver validation — GigaBlue Quad 4K Pro — 2026-09-30
+
+Receiver environment: GigaBlue Quad 4K Pro, OpenATV 8.0 beta/current, Python 3.14.
+
+REAL RECEIVER PASS:
+- package installation and plugin startup;
+- Health Check: memory, storage, eth0, gateway, DNS, Enigma2 process, live temperature, CAM and tuner capability detection;
+- Time & Synchronization: local/UTC time and running chronyd detected;
+- Tuner Information: Enigma2 NIM sockets, DVB-S2X FBC frontends, /proc/stb/frontend, /sys/class/dvb and DVB adapters detected;
+- Diagnostic Support Bundle: local tar.gz created successfully in /tmp;
+- Active CAM / OSCam Monitor: oscam-uni detected with PID/runtime/memory and OSCam runtime/config/WebIF metadata;
+- CAM Monitor Refresh: runtime refreshed without GUI freeze;
+- CAM / OSCam Details: opens and scrolls correctly;
+- Restart CAM: confirmation showed the discovered image-provided path /etc/init.d/softcam.oscam-uni; restart completed asynchronously; old PID 2898 changed to PID 8203; GSU verified the restarted CAM; process runtime reset; decrypted TV picture returned; no Enigma2 crash or GUI freeze.
+
+REAL UI REVIEW:
+- CAM Monitor action labels are currently white. Before release, restore conventional key colors: Close=red, Restart CAM=green, Refresh=yellow, Details=blue.
+- Tuner diagnostics are functionally correct but deliberately technical; a future UX pass may add a concise human-readable summary while retaining raw technical details.
+
+Release status: HOLD for the CAM Monitor key-color UI correction and one final receiver smoke test. Do not publish the current candidate as v13.29-w10.
