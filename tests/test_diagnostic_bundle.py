@@ -63,7 +63,7 @@ class DiagnosticRedactionTests(unittest.TestCase):
 
 
     def test_cam_monitor_requires_confirmation_and_image_restart_path(self):
-        with open(PLUGIN_PATH, "r", encoding="utf-8") as handle:
+        with open(PLUGIN, "r", encoding="utf-8") as handle:
             source = handle.read()
         start = source.index("class GSUActiveCAM")
         end = source.index("class SysUtilMngMain", start)
