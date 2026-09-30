@@ -77,6 +77,20 @@ class DiagnosticRedactionTests(unittest.TestCase):
         self.assertIn('"blue": self.show_details', monitor)
         self.assertIn("oscam_runtime_information()", monitor)
 
+
+    def test_process_runtime_uses_proc_starttime_not_directory_ctime(self):
+        import inspect
+        source = inspect.getsource(gsu._process_runtime_seconds)
+        self.assertIn("/proc/%s/stat", source)
+        self.assertIn("/proc/uptime", source)
+        self.assertNotIn("st_ctime", source)
+
+    def test_bundle_manifest_matches_practical_privacy_policy(self):
+        import inspect
+        source = inspect.getsource(gsu.create_diagnostic_bundle)
+        self.assertIn("diagnostic LAN/MAC data is preserved", source)
+        self.assertNotIn("MAC addresses and stable identifiers are redacted", source)
+
     def test_rejects_binary_or_oversized_log(self):
         with tempfile.NamedTemporaryFile(delete=False) as handle:
             path = handle.name
