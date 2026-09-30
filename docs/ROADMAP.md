@@ -70,3 +70,10 @@ SHA-256: `d72e961f794d620537617622488a8dbad03a2e3f22ae2924296a0bfb00409138`.
 - Automatic GUI restart PASS: receiver restarted cleanly before a third test screenshot could be captured.
 - This closes the post-install modal-lifecycle blocker seen in w7 and w8.
 - Release v13.28-w9 remains immutable.
+
+
+## Post-w9 read-only development
+
+With the self-update path proven on real hardware, development resumes at roadmap stage 3. Tuner diagnostics now use capability-based discovery across Enigma2's `/proc/bus/nim_sockets`, exposed frontend interfaces and Linux DVB device adapters. The implementation remains bounded and read-only and does not branch on receiver vendor/model.
+
+Next in this stage: diagnostic export/support bundle design with explicit secret redaction before any state-changing administration is introduced.
