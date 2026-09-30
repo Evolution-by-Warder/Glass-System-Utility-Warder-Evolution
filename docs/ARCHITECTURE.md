@@ -32,3 +32,16 @@ Glass System Utility Warder Evolution detects capabilities from the running Linu
 - A missing interface means only that the current kernel/image does not expose that capability through a detected path; it does not prove the physical hardware lacks it.
 - Vendor-specific handling is a fallback only when there is no reliable capability-based interface.
 - Read-only discovery is preferred; state-changing operations remain separately gated and tested.
+
+
+## Self-update channel
+
+GSU uses the project's official public GitHub Releases as its update authority.
+
+- At most one silent network check is attempted per Enigma2 GUI boot.
+- If no newer release exists or the network is unavailable, startup is not interrupted.
+- A newer version is offered to the user; installation is never performed without confirmation.
+- Only `.ipk` assets hosted under this repository's official GitHub release-download path are accepted.
+- The downloaded package is installed through `opkg`; a GUI restart is requested after a successful update.
+- A manual **Check for updates** action is also available from the plugin.
+- Development commits are not treated as releases. Publishing a GitHub Release is the explicit act that makes a build available to installed receivers.
