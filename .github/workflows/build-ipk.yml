@@ -11,6 +11,8 @@ on:
       - ".github/workflows/build-ipk.yml"
   workflow_dispatch:
 
+# CI trigger: 13.28-w9 authoritative candidate
+
 jobs:
   build:
     runs-on: ubuntu-latest
