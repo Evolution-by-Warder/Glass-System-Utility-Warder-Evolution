@@ -581,13 +581,40 @@ def _oscam_table_cell(value, width):
     return value.ljust(width)
 
 
+def _oscam_row_role(row):
+    typ = (row.get("type") or "").lower()
+    name = (row.get("name") or "").lower()
+    protocol = (row.get("protocol") or "").lower()
+    address = _oscam_display(row.get("address"))
+    if typ in ("reader", "proxy", "reader/proxy", "p") or "reader" in typ:
+        return "R"
+    if typ in ("client", "c") or "client" in typ:
+        return "C"
+    if typ in ("server", "s"):
+        return "S"
+    if typ in ("http", "h") or protocol == "http":
+        return "W"
+    if address in ("127.0.0.1", "::1") or name == "root":
+        return "L"
+    return " "
+
+
+def _oscam_status_display(row):
+    status = _oscam_display(row.get("status"))
+    if status:
+        return status.upper()
+    idle = _oscam_display(row.get("idle"))
+    return "IDLE" if idle else ""
+
+
 def _oscam_table_line(row):
     service = _oscam_service_display(row)
-    name = row["name"]
-    if row["type"] not in ("-", "") and row["type"] not in name:
-        name = "%s/%s" % (name, row["type"])
+    name = _oscam_display(row["name"])
+    role = _oscam_row_role(row)
+    if role.strip():
+        name = "%s %s" % (role, name)
     return " ".join((
-        _oscam_table_cell(name, 13),
+        _oscam_table_cell(name, 14),
         _oscam_table_cell(_oscam_display(row["address"]), 15),
         _oscam_table_cell(_oscam_display(row["port"]), 5),
         _oscam_table_cell(_oscam_display(row["protocol"]), 10),
@@ -595,8 +622,9 @@ def _oscam_table_line(row):
         _oscam_table_cell(_oscam_display(row["channel"]), 20),
         _oscam_table_cell(_oscam_display(row["ecm"]), 8),
         _oscam_table_cell(_oscam_display(row["idle"]), 8),
-        _oscam_table_cell(_oscam_display(row["status"]), 12),
+        _oscam_table_cell(_oscam_status_display(row), 12),
     ))
+
 
 def oscam_live_information():
     """Readable text fallback for Details/support output."""
@@ -1648,7 +1676,7 @@ class GSUActiveCAM(Screen):
         <widget name="key_blue" position="1180,680" size="220,45" font="Regular;24" foregroundColor="#3399ff" />
     </screen>
     """
-    TABLE_HEADER = "Reader/User   Address         Port  Protocol   srvid:caid@provid      Channel              ECM      Idle     Status"
+    TABLE_HEADER = "  Reader/User   Address         Port  Protocol   srvid:caid@provid      Channel              ECM      Idle     Status"
 
     def __init__(self, session):
         Screen.__init__(self, session)
