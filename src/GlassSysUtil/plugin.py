@@ -1416,13 +1416,31 @@ class GSUActiveCAM(Screen):
         if not answer:
             return
         # Execute only the already discovered image-provided service command.
+        before = _active_cam()
+        before_pid = before["pid"] if before else ""
         rc, output = _run_status(self.restart_command, 12)
-        if rc == 0:
-            self._refresh()
-            self.session.open(MessageBox, "Active CAM restart completed.", MessageBox.TYPE_INFO, timeout=6)
-        else:
+        if rc != 0:
             detail = output[-800:] if output else "restart command returned status %s" % rc
             self.session.open(MessageBox, "Active CAM restart failed.\n\n%s" % detail,
+                              MessageBox.TYPE_ERROR, timeout=10)
+            return
+
+        # A successful service command is not enough: verify that a CAM is
+        # actually present afterwards.  Keep the UI bounded and deterministic.
+        verified = None
+        for _attempt in range(5):
+            time.sleep(0.4)
+            verified = _active_cam()
+            if verified:
+                break
+        self._refresh()
+        if verified:
+            changed = " (new PID %s)" % verified["pid"] if verified["pid"] != before_pid else ""
+            self.session.open(MessageBox, "Active CAM restart verified%s." % changed,
+                              MessageBox.TYPE_INFO, timeout=6)
+        else:
+            self.session.open(MessageBox,
+                              "Restart command completed, but no active CAM was detected afterwards.",
                               MessageBox.TYPE_ERROR, timeout=10)
 
 class SysUtilMngMain(Screen):
