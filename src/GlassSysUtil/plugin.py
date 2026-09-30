@@ -452,37 +452,63 @@ def _oscam_client_type(row):
     return mapping.get(raw.lower(), raw)
 
 
-def oscam_live_information():
-    """Compact live OSCam monitor derived from the local credential-free WebIF API."""
+def oscam_live_rows():
+    """Return sanitized, display-ready OSCam client rows plus a status message."""
     payload, reason = _oscam_live_status()
     if payload is None:
-        return "Live OSCam status: %s\nExisting CAM diagnostics remain available." % reason
-    rows = _oscam_status_rows(payload)
-    if not rows:
-        return "Live OSCam status: API reachable, no client rows recognized."
+        return [], reason
+    rows = []
+    for item in _oscam_status_rows(payload):
+        rows.append({
+            "name": _oscam_pick(item, "name", "user", "label", "reader"),
+            "type": _oscam_client_type(item),
+            "address": _oscam_pick(item, "ip", "address"),
+            "port": _oscam_pick(item, "port"),
+            "protocol": _oscam_pick(item, "protocol", "proto"),
+            "srvid": _oscam_pick(item, "srvid"),
+            "caid": _oscam_pick(item, "caid"),
+            "provid": _oscam_pick(item, "provid", "provider"),
+            "channel": _oscam_pick(item, "lastchannel", "channel", "srvname"),
+            "status": _oscam_pick(item, "status", "connection"),
+            "ecm": _oscam_pick(item, "ecmtime", "ecm_time"),
+            "idle": _oscam_pick(item, "idle", "idletime"),
+        })
+    return rows, "" if rows else "API reachable, no client rows recognized."
 
-    out = ["Live OSCam clients/readers", ""]
-    for item in rows:
-        name = _oscam_pick(item, "name", "user", "label", "reader")
-        typ = _oscam_client_type(item)
-        protocol = _oscam_pick(item, "protocol", "proto")
-        address = _oscam_pick(item, "ip", "address")
-        port = _oscam_pick(item, "port")
-        caid = _oscam_pick(item, "caid")
-        provid = _oscam_pick(item, "provid", "provider")
-        srvid = _oscam_pick(item, "srvid")
-        channel = _oscam_pick(item, "lastchannel", "channel", "srvname")
-        status = _oscam_pick(item, "status", "connection")
-        idle = _oscam_pick(item, "idle", "idletime")
-        ecm = _oscam_pick(item, "ecmtime", "ecm_time")
-        out.append("%s  [%s]  %s" % (name, typ, status))
-        if protocol != "-" or address != "-" or port != "-":
-            out.append("  %s  %s:%s" % (protocol, address, port))
-        if caid != "-" or srvid != "-" or provid != "-" or channel != "-":
-            out.append("  %s:%s@%s  %s" % (srvid, caid, provid, channel))
-        if ecm != "-" or idle != "-":
-            out.append("  ECM: %s  Idle: %s" % (ecm, idle))
+
+def _oscam_table_cell(value, width):
+    value = str(value or "-").replace("\n", " ").replace("\r", " ")
+    if len(value) > width:
+        value = value[:max(1, width - 1)] + "~"
+    return value.ljust(width)
+
+
+def _oscam_table_line(row):
+    service = "%s:%s@%s" % (row["srvid"], row["caid"], row["provid"])
+    return " ".join((
+        _oscam_table_cell(row["name"], 12),
+        _oscam_table_cell(row["type"], 8),
+        _oscam_table_cell(row["address"], 15),
+        _oscam_table_cell(row["port"], 5),
+        _oscam_table_cell(row["protocol"], 9),
+        _oscam_table_cell(service, 20),
+        _oscam_table_cell(row["channel"], 18),
+        _oscam_table_cell(row["ecm"], 8),
+        _oscam_table_cell(row["idle"], 8),
+        _oscam_table_cell(row["status"], 12),
+    ))
+
+
+def oscam_live_information():
+    """Readable text fallback for Details/support output."""
+    rows, reason = oscam_live_rows()
+    if not rows:
+        return "Live OSCam status: %s\nExisting CAM diagnostics remain available." % reason
+    out = ["Live OSCam clients/readers", "",
+           "Reader/User  Type     Address         Port  Protocol  srvid:caid@provid     Channel            ECM      Idle     Status"]
+    out.extend(_oscam_table_line(row) for row in rows)
     return "\n".join(out)
+
 
 def oscam_webif_information():
     matches = _find_processes("oscam")
