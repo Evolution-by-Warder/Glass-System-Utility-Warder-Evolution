@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Glass System Utility Warder Evolution
-
-Modern source-core baseline. Original Glass System Utility authorship is
-respected; Warder Evolution identifies the modernization work.
+Modern source core. Original Glass System Utility authorship is respected.
 """
 
 from __future__ import absolute_import
@@ -12,7 +10,7 @@ import os
 import platform
 import shutil
 import socket
-import time
+import subprocess
 
 from Plugins.Plugin import PluginDescriptor
 from Screens.MessageBox import MessageBox
@@ -21,8 +19,7 @@ from Components.ActionMap import ActionMap
 from Components.Label import Label
 from Components.MenuList import MenuList
 
-
-VERSION = "13.21-w2"
+VERSION = "13.22-w3"
 
 
 def _read_text(path, default="N/A"):
@@ -32,6 +29,23 @@ def _read_text(path, default="N/A"):
         return value or default
     except Exception:
         return default
+
+
+def _read_lines(path):
+    try:
+        with open(path, "r") as handle:
+            return handle.readlines()
+    except Exception:
+        return []
+
+
+def _run(argv, timeout=3):
+    try:
+        proc = subprocess.run(argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                              text=True, timeout=timeout, check=False)
+        return (proc.stdout or "").strip()
+    except Exception:
+        return ""
 
 
 def _uptime():
@@ -45,14 +59,46 @@ def _uptime():
         return "N/A"
 
 
+def _default_gateway():
+    for line in _read_lines("/proc/net/route")[1:]:
+        fields = line.split()
+        if len(fields) >= 4 and fields[1] == "00000000":
+            try:
+                raw = bytes.fromhex(fields[2])
+                return socket.inet_ntoa(raw[::-1])
+            except Exception:
+                pass
+    return "N/A"
+
+
+def _ipv4_for_interface(name):
+    ip = _run(["ip", "-4", "-o", "addr", "show", "dev", name])
+    for line in ip.splitlines():
+        fields = line.split()
+        if "inet" in fields:
+            try:
+                return fields[fields.index("inet") + 1]
+            except Exception:
+                pass
+    return "N/A"
+
+
 def system_information():
-    image = _read_text("/etc/image-version", "N/A")
     model = _read_text("/proc/stb/info/model", platform.machine())
+    brand = _read_text("/proc/stb/info/brand", "")
+    image = _read_text("/etc/image-version", "N/A")
+    cpu = "N/A"
+    for line in _read_lines("/proc/cpuinfo"):
+        if ":" in line and line.lower().startswith(("model name", "processor")):
+            cpu = line.split(":", 1)[1].strip()
+            if cpu:
+                break
     return "\n".join((
-        "Glass System Utility Warder Evolution %s" % VERSION,
-        "",
-        "Model: %s" % model,
+        "Glass System Utility Warder Evolution %s" % VERSION, "",
+        "Receiver: %s %s" % (brand, model),
         "Hostname: %s" % socket.gethostname(),
+        "CPU: %s" % cpu,
+        "Architecture: %s" % platform.machine(),
         "Kernel: %s" % platform.release(),
         "Python: %s" % platform.python_version(),
         "Uptime: %s" % _uptime(),
@@ -61,89 +107,129 @@ def system_information():
 
 
 def network_information():
-    root = "/sys/class/net"
-    rows = []
+    rows = ["Default gateway: %s" % _default_gateway()]
+    resolvers = []
+    for line in _read_lines("/etc/resolv.conf"):
+        fields = line.split()
+        if len(fields) >= 2 and fields[0] == "nameserver":
+            resolvers.append(fields[1])
+    rows.append("DNS: %s" % (", ".join(resolvers) if resolvers else "N/A"))
+    rows.append("")
     try:
-        names = sorted(os.listdir(root))
+        names = sorted(os.listdir("/sys/class/net"))
     except Exception:
         names = []
     for name in names:
-        state = _read_text(os.path.join(root, name, "operstate"), "unknown")
-        mac = _read_text(os.path.join(root, name, "address"), "N/A")
-        rows.append("%s: %s  %s" % (name, state, mac))
-    return "\n".join(rows) if rows else "No network interfaces found."
+        state = _read_text("/sys/class/net/%s/operstate" % name, "unknown")
+        mac = _read_text("/sys/class/net/%s/address" % name, "N/A")
+        rows.append("%s  [%s]" % (name, state))
+        rows.append("  IPv4: %s" % _ipv4_for_interface(name))
+        rows.append("  MAC:  %s" % mac)
+    return "\n".join(rows)
 
 
 def storage_information():
-    rows = []
-    seen = set()
-    try:
-        with open("/proc/mounts", "r") as handle:
-            mounts = handle.readlines()
-    except Exception:
-        mounts = []
-    for line in mounts:
+    rows, seen = [], set()
+    for line in _read_lines("/proc/mounts"):
         fields = line.split()
-        if len(fields) < 2:
+        if len(fields) < 3:
             continue
-        device, mountpoint = fields[:2]
+        device, mountpoint, fstype = fields[:3]
         if mountpoint in seen or not device.startswith("/dev/"):
             continue
         seen.add(mountpoint)
         try:
             usage = shutil.disk_usage(mountpoint)
-            rows.append("%s  %s\n  %.1f / %.1f GiB used" % (
-                device, mountpoint,
-                (usage.total - usage.free) / float(1024 ** 3),
-                usage.total / float(1024 ** 3)))
+            used = usage.total - usage.free
+            pct = (used * 100.0 / usage.total) if usage.total else 0
+            rows.append("%s -> %s [%s]\n  %.1f / %.1f GiB  (%.0f%%)" % (
+                device, mountpoint, fstype, used / 1073741824.0,
+                usage.total / 1073741824.0, pct))
         except Exception:
-            rows.append("%s  %s" % (device, mountpoint))
+            rows.append("%s -> %s [%s]" % (device, mountpoint, fstype))
     return "\n\n".join(rows) if rows else "No physical storage mounts found."
 
 
 def memory_information():
-    wanted = ("MemTotal", "MemAvailable", "MemFree", "SwapTotal", "SwapFree")
+    wanted = ("MemTotal", "MemAvailable", "MemFree", "Buffers", "Cached", "SwapTotal", "SwapFree")
     values = {}
-    try:
-        with open("/proc/meminfo", "r") as handle:
-            for line in handle:
-                key, value = line.split(":", 1)
-                if key in wanted:
-                    values[key] = value.strip()
-    except Exception:
-        pass
+    for line in _read_lines("/proc/meminfo"):
+        if ":" in line:
+            key, value = line.split(":", 1)
+            if key in wanted:
+                values[key] = value.strip()
     return "\n".join("%s: %s" % (key, values.get(key, "N/A")) for key in wanted)
+
+
+def service_information():
+    rows = []
+    patterns = ("enigma2", "oscam", "cccam", "ncam", "mgcamd", "samba", "smbd",
+                "nmbd", "dropbear", "sshd", "vsftpd", "rpcbind")
+    proc = _run(["ps", "w"], 4) or _run(["ps"], 4)
+    for line in proc.splitlines():
+        low = line.lower()
+        if any(name in low for name in patterns) and "grep" not in low:
+            rows.append(line.strip())
+    return "\n".join(rows) if rows else "No known GSU service processes detected."
+
+
+def mount_information():
+    rows = []
+    network_types = ("nfs", "nfs4", "cifs", "smbfs")
+    for line in _read_lines("/proc/mounts"):
+        fields = line.split()
+        if len(fields) >= 3 and fields[2].lower() in network_types:
+            rows.append("%s\n  -> %s [%s]" % (fields[0], fields[1], fields[2]))
+    return "\n\n".join(rows) if rows else "No active NFS/CIFS mounts."
+
+
+def oscam_information():
+    rows = []
+    proc = _run(["ps", "w"], 4) or _run(["ps"], 4)
+    matches = [line.strip() for line in proc.splitlines()
+               if "oscam" in line.lower() and "grep" not in line.lower()]
+    rows.append("Process: %s" % ("RUNNING" if matches else "not detected"))
+    if matches:
+        rows.extend(matches[:4])
+    rows.append("")
+    candidates = [
+        "/etc/tuxbox/config/oscam.conf",
+        "/etc/tuxbox/config/oscam/oscam.conf",
+        "/usr/keys/oscam.conf",
+        "/var/keys/oscam.conf",
+    ]
+    found = [path for path in candidates if os.path.isfile(path)]
+    rows.append("Config: %s" % (found[0] if found else "not found in common paths"))
+    return "\n".join(rows)
 
 
 class GSUInfo(Screen):
     skin = """
-    <screen name="GSUInfo" position="center,center" size="1050,620" title="Glass System Utility">
-        <widget name="text" position="30,30" size="990,560" font="Regular;26" />
+    <screen name="GSUInfo" position="center,center" size="1160,680" title="Glass System Utility">
+        <widget name="text" position="30,30" size="1100,620" font="Regular;25" />
     </screen>
     """
-
     def __init__(self, session, title, text):
         Screen.__init__(self, session)
         self.setTitle(title)
         self["text"] = Label(text)
-        self["actions"] = ActionMap(["OkCancelActions"], {
-            "ok": self.close,
-            "cancel": self.close,
-        }, -1)
+        self["actions"] = ActionMap(["OkCancelActions"], {"ok": self.close, "cancel": self.close}, -1)
 
 
 class SysUtilMngMain(Screen):
     skin = """
-    <screen name="SysUtilMngMain" position="center,center" size="900,600" title="Glass System Utility Warder Evolution">
-        <widget name="menu" position="30,30" size="840,520" font="Regular;28" itemHeight="44" />
+    <screen name="SysUtilMngMain" position="center,center" size="980,690" title="Glass System Utility Warder Evolution">
+        <widget name="menu" position="35,35" size="910,610" font="Regular;28" itemHeight="46" />
     </screen>
     """
-
     MENU = [
-        ("System information", "system"),
-        ("Network information", "network"),
-        ("Storage information", "storage"),
-        ("Memory information", "memory"),
+        ("System & Hardware", "system"),
+        ("Network & Interfaces", "network"),
+        ("Storage & Filesystems", "storage"),
+        ("Memory & Swap", "memory"),
+        ("Services & Processes", "services"),
+        ("Network Mounts (NFS/CIFS)", "mounts"),
+        ("OSCam status", "oscam"),
         ("Restart Enigma2 GUI", "restart"),
         ("About this build", "about"),
     ]
@@ -151,22 +237,26 @@ class SysUtilMngMain(Screen):
     def __init__(self, session):
         Screen.__init__(self, session)
         self["menu"] = MenuList([item[0] for item in self.MENU])
-        self["actions"] = ActionMap(["OkCancelActions"], {
-            "ok": self.ok,
-            "cancel": self.close,
-        }, -1)
+        self["actions"] = ActionMap(["OkCancelActions"], {"ok": self.ok, "cancel": self.close}, -1)
+
+    def _info(self, title, text):
+        self.session.open(GSUInfo, title, text)
 
     def ok(self):
         index = self["menu"].getSelectedIndex()
         action = self.MENU[index][1]
-        if action == "system":
-            self.session.open(GSUInfo, "System information", system_information())
-        elif action == "network":
-            self.session.open(GSUInfo, "Network information", network_information())
-        elif action == "storage":
-            self.session.open(GSUInfo, "Storage information", storage_information())
-        elif action == "memory":
-            self.session.open(GSUInfo, "Memory information", memory_information())
+        actions = {
+            "system": ("System & Hardware", system_information),
+            "network": ("Network & Interfaces", network_information),
+            "storage": ("Storage & Filesystems", storage_information),
+            "memory": ("Memory & Swap", memory_information),
+            "services": ("Services & Processes", service_information),
+            "mounts": ("Network Mounts", mount_information),
+            "oscam": ("OSCam status", oscam_information),
+        }
+        if action in actions:
+            title, fnc = actions[action]
+            self._info(title, fnc())
         elif action == "restart":
             try:
                 from Screens.Standby import TryQuitMainloop
@@ -174,25 +264,30 @@ class SysUtilMngMain(Screen):
             except Exception as exc:
                 self.session.open(MessageBox, str(exc), MessageBox.TYPE_ERROR)
         elif action == "about":
-            text = (
+            self._info("About", (
                 "Glass System Utility Warder Evolution %s\n\n"
-                "Modern Python 3 source-core baseline.\n"
-                "No minor-version-specific bytecode selection.\n\n"
-                "Legacy write, CAM and mount functions are migrated separately."
-            ) % VERSION
-            self.session.open(GSUInfo, "About", text)
+                "Modern Python 3 source core.\n"
+                "Read-only system, network, storage, service, mount and OSCam diagnostics enabled.\n\n"
+                "State-changing legacy functions remain gated until separately migrated and tested."
+            ) % VERSION)
 
 
 def main(session, **kwargs):
     session.open(SysUtilMngMain)
 
 
+def startViaMenu(menuid, **kwargs):
+    if menuid == "setup":
+        return [("Glass System Utility", main, "glass_sys_utils", None)]
+    return []
+
+
 def Plugins(path=None, **kwargs):
     return [
-        PluginDescriptor(
-            name="Glass System Utility",
-            description="Glass System Utility Warder Evolution",
-            where=PluginDescriptor.WHERE_PLUGINMENU,
-            fnc=main,
-        )
+        PluginDescriptor(name="Glass System Utility",
+                         description="Glass System Utility Warder Evolution",
+                         where=PluginDescriptor.WHERE_PLUGINMENU, fnc=main),
+        PluginDescriptor(name="Glass System Utility",
+                         description="Glass System Utility Warder Evolution",
+                         where=PluginDescriptor.WHERE_MENU, fnc=startViaMenu),
     ]
