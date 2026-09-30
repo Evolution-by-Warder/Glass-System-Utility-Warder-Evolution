@@ -675,9 +675,15 @@ def _latest_release():
                     and asset.get("browser_download_url")), None)
         if not tag or not ipk:
             return None
-        return {"version": tag.lstrip("v"),
+        version = tag.lstrip("v")
+        name = ipk.get("name") or ""
+        # Release asset must visibly belong to the version being offered.
+        if version not in name:
+            return None
+        return {"version": version,
                 "url": ipk.get("browser_download_url"),
-                "name": ipk.get("name")}
+                "name": name,
+                "size": int(ipk.get("size") or 0)}
     except Exception:
         return None
 
@@ -693,8 +699,18 @@ def _download_update(url, name):
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "Glass-System-Utility-Warder-Evolution/%s" % VERSION})
         with urllib.request.urlopen(req, timeout=20) as response, open(target, "wb") as handle:
+            final_url = response.geturl()
+            content_type = (response.headers.get("Content-Type") or "").lower()
+            if not (final_url.startswith("https://github.com/") or
+                    final_url.startswith("https://objects.githubusercontent.com/") or
+                    final_url.startswith("https://release-assets.githubusercontent.com/")):
+                raise ValueError("Unexpected update host")
+            if "text/html" in content_type:
+                raise ValueError("Unexpected HTML response")
             shutil.copyfileobj(response, handle)
-        return target if os.path.isfile(target) and os.path.getsize(target) > 0 else ""
+        if not os.path.isfile(target) or os.path.getsize(target) < 256:
+            return ""
+        return target
     except Exception:
         try:
             os.unlink(target)
@@ -730,6 +746,14 @@ class GSUUpdater(object):
         path = _download_update(self.release["url"], self.release["name"])
         if not path:
             self.session.open(MessageBox, "Update download failed.", MessageBox.TYPE_ERROR)
+            return
+        expected_size = int(self.release.get("size") or 0)
+        if expected_size and os.path.getsize(path) != expected_size:
+            try:
+                os.unlink(path)
+            except Exception:
+                pass
+            self.session.open(MessageBox, "Update verification failed (size mismatch).", MessageBox.TYPE_ERROR)
             return
         rc, result = _run_status(["opkg", "install", path], 60)
         if rc != 0:
