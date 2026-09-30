@@ -1703,10 +1703,14 @@ class GSUActiveCAM(Screen):
                 "left": self["table"].pageUp,
                 "right": self["table"].pageDown,
             }, -1)
+        self._refresh_in_progress = False
         self._refresh()
         self._start_auto_refresh()
 
     def _refresh(self):
+        if getattr(self, "_refresh_in_progress", False):
+            return
+        self._refresh_in_progress = True
         try:
             self["summary"].setText(active_cam_summary())
         except Exception:
@@ -1740,6 +1744,7 @@ class GSUActiveCAM(Screen):
             self["key_green"].setText("Restart CAM" if command else "Restart unavailable")
         except Exception:
             pass
+        self._refresh_in_progress = False
 
     def _start_auto_refresh(self):
         if eTimer is None:
