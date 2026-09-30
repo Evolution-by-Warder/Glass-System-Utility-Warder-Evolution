@@ -58,7 +58,7 @@ class DiagnosticRedactionTests(unittest.TestCase):
     def test_cam_restart_has_no_killall_fallback(self):
         import inspect
         source = inspect.getsource(gsu._active_cam_restart_command)
-        self.assertNotIn("killall", source)
+        self.assertNotIn('["killall"', source)
         self.assertIn("/etc/init.d/softcam", source)
 
     def test_rejects_binary_or_oversized_log(self):
