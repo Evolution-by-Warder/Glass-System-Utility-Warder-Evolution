@@ -97,3 +97,17 @@ Priority themes for future candidates:
 Design rule: show what helps diagnosis, protect what grants access, and never transmit diagnostic data without an explicit user action.
 
 REAL RECEIVER validation remains mandatory before state-changing administration is promoted as production-ready.
+
+
+## 13.29-w10 development candidate
+
+The w10 line is the first post-w9 feature candidate. It is intentionally unreleased while receiver validation is pending.
+
+Included so far:
+- expanded capability-based tuner diagnostics;
+- local diagnostic support bundle with bounded text-log collection and privacy filtering;
+- practical privacy policy: authentication secrets and stable private identifiers are filtered while useful interface identifiers such as MAC addresses remain visible;
+- first read-only GSU Health Check covering memory, mounted physical storage, network link/configuration, Enigma2 process presence, exposed temperatures, network mounts, detected CAM processes and tuner interfaces;
+- modern user-needs roadmap based on recurring Enigma2 support themes rather than historical feature parity alone.
+
+Status: STATIC/CI validation in progress; REAL RECEIVER REVIEW required before release.
