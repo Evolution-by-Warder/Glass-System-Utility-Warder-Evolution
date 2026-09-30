@@ -1,0 +1,151 @@
+name: Publish GSU Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected_version:
+        description: "Exact version to publish, for example 13.29-w10"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gsu-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout production branch
+        uses: actions/checkout@v4
+        with:
+          ref: warder-master-production
+
+      - name: Validate release identity
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(tr -d '\r\n' < src/GlassSysUtil/version)"
+          EXPECTED="${{ inputs.expected_version }}"
+          test -n "$VERSION"
+          test "$VERSION" = "$EXPECTED"
+          grep -Fqx "Version: $VERSION" packaging/CONTROL/control
+          grep -Fq "$VERSION" packaging/CONTROL/postinst
+          TAG="v$VERSION"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists; refusing to replace an immutable release." >&2
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Validate source
+        run: |
+          set -euo pipefail
+          python3 -m py_compile src/GlassSysUtil/plugin.py
+          test -s src/GlassSysUtil/plugin.py
+          test -s src/GlassSysUtil/__init__.py
+          test -s src/GlassSysUtil/SysMgt.png
+          file --mime-type src/GlassSysUtil/SysMgt.png | grep -Fq 'image/png'
+          grep -q 'def _temperature_candidates' src/GlassSysUtil/plugin.py
+          grep -q 'def _temperature_values' src/GlassSysUtil/plugin.py
+          grep -q 'def _auto_update_check' src/GlassSysUtil/plugin.py
+          grep -q 'Check for updates' src/GlassSysUtil/plugin.py
+          grep -q 'ScrollLabel' src/GlassSysUtil/plugin.py
+          grep -q 'WHERE_SESSIONSTART' src/GlassSysUtil/plugin.py
+          python3 -m unittest discover -s tests -p 'test_*.py'
+
+      - name: Build and validate deterministic IPK
+        id: build
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.meta.outputs.version }}"
+          WORK="$PWD/.release-build"
+          ROOT="$WORK/root"
+          CONTROL="$WORK/control"
+          PLUGIN="$ROOT/usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil"
+          IPK="$GITHUB_WORKSPACE/enigma2-plugin-glasssysutil_${VERSION}_all.ipk"
+          mkdir -p "$PLUGIN" "$CONTROL"
+          cp src/GlassSysUtil/plugin.py src/GlassSysUtil/__init__.py src/GlassSysUtil/version src/GlassSysUtil/SysMgt.png "$PLUGIN/"
+          cp packaging/CONTROL/control packaging/CONTROL/postinst "$CONTROL/"
+          chmod 755 "$CONTROL/postinst"
+          printf '2.0\n' > "$WORK/debian-binary"
+          tar --sort=name --mtime='@0' --owner=0 --group=0 --numeric-owner -cf - -C "$CONTROL" . | gzip -n > "$WORK/control.tar.gz"
+          tar --sort=name --mtime='@0' --owner=0 --group=0 --numeric-owner -cf - -C "$ROOT" usr | gzip -n > "$WORK/data.tar.gz"
+          (cd "$WORK" && ar rcD "$IPK" debian-binary control.tar.gz data.tar.gz)
+          test "$(ar t "$IPK" | tr '\n' ' ')" = "debian-binary control.tar.gz data.tar.gz "
+          test "$(ar p "$IPK" debian-binary)" = "2.0"
+          ar p "$IPK" control.tar.gz | tar -xzOf - ./control | grep -Fqx "Package: enigma2-plugin-glasssysutil"
+          ar p "$IPK" control.tar.gz | tar -xzOf - ./control | grep -Fqx "Version: $VERSION"
+          ar p "$IPK" data.tar.gz | tar -tzf - | grep -Fq 'usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/plugin.py'
+          ar p "$IPK" data.tar.gz | tar -tzf - | grep -Fq 'usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/SysMgt.png'
+          SHA256="$(sha256sum "$IPK" | awk '{print $1}')"
+          printf '%s  %s\n' "$SHA256" "$(basename "$IPK")" | tee "$IPK.sha256"
+          echo "ipk=$IPK" >> "$GITHUB_OUTPUT"
+          echo "sha256=$SHA256" >> "$GITHUB_OUTPUT"
+
+      - name: Publish immutable GitHub Release
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.meta.outputs.version }}"
+          TAG="${{ steps.meta.outputs.tag }}"
+          SHA="${{ steps.meta.outputs.sha }}"
+          IPK="${{ steps.build.outputs.ipk }}"
+          DIGEST="${{ steps.build.outputs.sha256 }}"
+          cat > release-notes.md <<EOF
+          Glass System Utility Warder Evolution $VERSION
+
+          Production source commit:
+          $SHA
+
+          IPK:
+          $(basename "$IPK")
+
+          SHA-256:
+          $DIGEST
+          EOF
+          gh release create "$TAG" "$IPK" "$IPK.sha256" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$SHA" \
+            --title "Glass System Utility Warder Evolution $VERSION" \
+            --notes-file release-notes.md
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Verify published release
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.meta.outputs.tag }}"
+          IPK="${{ steps.build.outputs.ipk }}"
+          EXPECTED="${{ steps.build.outputs.sha256 }}"
+          NAME="$(basename "$IPK")"
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json isDraft,isPrerelease,tagName,targetCommitish,assets > release.json
+          python3 - <<'PY'
+          import json, os
+          data=json.load(open("release.json"))
+          assert data["isDraft"] is False
+          assert data["isPrerelease"] is False
+          assert data["tagName"] == os.environ["TAG"]
+          assert data["targetCommitish"] == os.environ["TARGET"]
+          assets={a["name"]:a for a in data["assets"]}
+          assert os.environ["NAME"] in assets
+          digest=assets[os.environ["NAME"]].get("digest")
+          if digest:
+              assert digest == "sha256:" + os.environ["EXPECTED"]
+          PY
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.meta.outputs.tag }}
+          TARGET: ${{ steps.meta.outputs.sha }}
+          NAME: enigma2-plugin-glasssysutil_${{ steps.meta.outputs.version }}_all.ipk
+          EXPECTED: ${{ steps.build.outputs.sha256 }}
