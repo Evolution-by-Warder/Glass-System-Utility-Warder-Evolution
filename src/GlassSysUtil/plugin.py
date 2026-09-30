@@ -400,23 +400,36 @@ def _oscam_live_status():
 
 
 def _oscam_status_rows(payload):
-    """Normalize known OSCam status JSON layouts without assuming one build."""
-    if not isinstance(payload, dict):
-        return []
-    candidates = []
-    for key in ("status", "clients", "client"):
-        value = payload.get(key)
-        if isinstance(value, list):
-            candidates.extend(value)
-        elif isinstance(value, dict):
-            for subkey in ("client", "clients", "status"):
-                nested = value.get(subkey)
-                if isinstance(nested, list):
-                    candidates.extend(nested)
-                elif isinstance(nested, dict):
-                    candidates.append(nested)
-    return [row for row in candidates if isinstance(row, dict)][:32]
+    """Normalize OSCam status JSON across nested WebIF API layouts."""
+    found = []
+    seen = set()
 
+    def visit(value, depth=0):
+        if depth > 6 or len(found) >= 32:
+            return
+        if isinstance(value, list):
+            for item in value:
+                visit(item, depth + 1)
+            return
+        if not isinstance(value, dict):
+            return
+
+        keys = set(str(key).lower() for key in value.keys())
+        row_markers = {"name", "user", "label", "reader", "protocol", "proto",
+                       "caid", "srvid", "status", "connection", "ip", "address"}
+        if len(keys.intersection(row_markers)) >= 2:
+            marker = id(value)
+            if marker not in seen:
+                seen.add(marker)
+                found.append(value)
+                if len(found) >= 32:
+                    return
+        for nested in value.values():
+            if isinstance(nested, (dict, list)):
+                visit(nested, depth + 1)
+
+    visit(payload)
+    return found[:32]
 
 def _oscam_pick(row, *names):
     for name in names:
