@@ -1,0 +1,73 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Glass System Utility Warder Evolution\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: de\n"
+
+msgid "Glass System Utility"
+msgstr "Glass System Utility"
+
+msgid "Glass System Utility Warder Evolution"
+msgstr "Glass System Utility Warder Evolution"
+
+msgid "Health Check"
+msgstr "Systemprüfung"
+
+msgid "Service Dashboard"
+msgstr "Dienstübersicht"
+
+msgid "Active CAM / OSCam Monitor"
+msgstr "Aktiver CAM / OSCam-Monitor"
+
+msgid "Network Health"
+msgstr "Netzwerkstatus"
+
+msgid "Network Mount Doctor"
+msgstr "Netzwerkfreigaben-Diagnose"
+
+msgid "Storage Health"
+msgstr "Speicherstatus"
+
+msgid "Enigma2 Runtime Health"
+msgstr "Enigma2-Laufzeitstatus"
+
+msgid "Tuner information"
+msgstr "Tunerinformationen"
+
+msgid "Temperatures"
+msgstr "Temperaturen"
+
+msgid "System & Hardware"
+msgstr "System & Hardware"
+
+msgid "Network & Interfaces"
+msgstr "Netzwerk & Schnittstellen"
+
+msgid "Storage & Filesystems"
+msgstr "Speicher & Dateisysteme"
+
+msgid "Memory & Swap"
+msgstr "Arbeitsspeicher & Swap"
+
+msgid "Services & Processes"
+msgstr "Dienste & Prozesse"
+
+msgid "Network Mounts (NFS/CIFS)"
+msgstr "Netzwerkfreigaben (NFS/CIFS)"
+
+msgid "Logs & Diagnostics"
+msgstr "Protokolle & Diagnose"
+
+msgid "Create Diagnostic Bundle"
+msgstr "Diagnosepaket erstellen"
+
+msgid "Check for updates"
+msgstr "Nach Updates suchen"
+
+msgid "Restart Enigma2 GUI"
+msgstr "Enigma2 GUI neu starten"
+
+msgid "About this build"
+msgstr "Über diese Version"
+
