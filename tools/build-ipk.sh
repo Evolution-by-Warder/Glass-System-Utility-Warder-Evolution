@@ -19,6 +19,9 @@ PLUGIN="$ROOTFS/usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil"
 mkdir -p "$PLUGIN" "$CONTROL" "$OUT"
 cp "$ROOT/src/GlassSysUtil/plugin.py" "$ROOT/src/GlassSysUtil/__init__.py" \
    "$ROOT/src/GlassSysUtil/version" "$ROOT/src/GlassSysUtil/SysMgt.png" "$PLUGIN/"
+if [ -d "$ROOT/src/GlassSysUtil/locale" ]; then
+    cp -R "$ROOT/src/GlassSysUtil/locale" "$PLUGIN/"
+fi
 cp "$ROOT/packaging/CONTROL/control" "$ROOT/packaging/CONTROL/postinst" "$CONTROL/"
 chmod 755 "$CONTROL/postinst"
 printf '2.0\n' > "$WORK/debian-binary"
