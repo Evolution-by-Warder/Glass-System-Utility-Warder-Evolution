@@ -416,3 +416,20 @@ SHA-256: `9ce67d7058608a98e3376d64954e07f7d491943f4a9d3af7f10acd625c9dec9b`
 The release includes compiled SK/CS/DE/PL/IT/ES/FR gettext catalogs, English fallback, Enigma2-language-driven catalog selection, canonical product display name, and asynchronous update discovery on GSU open.
 
 Status: **PUBLISHED / CI PASS / awaiting REAL RECEIVER validation**. Do not mark REAL RECEIVER PASS until installation/update and runtime behavior are verified on the GigaBlue Quad 4K Pro.
+
+
+## 13.34-w15 REAL RECEIVER PASS — 2026-10-01
+
+Validated on the primary GigaBlue Quad 4K Pro / OpenATV 8.x receiver after updating to published v13.34-w15.
+
+Confirmed:
+- canonical display name `Glass System Utility - Warder Evolution`;
+- Slovak Enigma2-language-driven main-menu localization and correct diacritics;
+- main screen opens normally and the background update integration causes no visible blocking/crash;
+- Service Dashboard opens without the former CAM-record crash and correctly reports Enigma2, oscam-uni, chronyd, mounts and listeners;
+- Active CAM / OSCam Monitor remains stable and preserves the approved aligned table, live oscam-uni data, CONNECTED reader state, DVBAPI service name and ECM/idle/status fields;
+- manual update check reports `Glass System Utility 13.34-w15 je aktuálny.`
+
+Status: **REAL RECEIVER PASS / recovery-reference checkpoint**.
+
+Known non-blocking follow-up: localization is not yet complete inside every diagnostic content screen (for example Service Dashboard title/body remains English). Handle as a later localization batch without changing the approved OSCam table layout.
