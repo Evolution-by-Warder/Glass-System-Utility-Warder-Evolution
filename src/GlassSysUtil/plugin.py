@@ -3100,48 +3100,98 @@ class SysUtilMngMain(Screen):
 
 
 class GSUOriginalStatusCenter(Screen):
+    """Original GSU maintenance-center visual shell with modern safe providers."""
     skin = """
-    <screen name="GlassStatusCenter" position="center,center" size="930,650" title="GSU" backgroundColor="#31000000">
+    <screen name="GlassOriginalMaintenanceCenter" position="center,center" size="930,790" title="GSU" backgroundColor="#31000000">
         <widget name="titleline" position="30,20" size="870,45" font="Regular;29" foregroundColor="#e6d500" halign="center" transparent="1"/>
         <eLabel position="0,80" size="930,2" backgroundColor="#888888"/>
-        <widget name="body" position="35,100" size="860,400" font="Regular;23" transparent="1"/>
-        <eLabel position="0,515" size="930,2" backgroundColor="#888888"/>
-        <widget name="info" position="35,525" size="860,55" font="Regular;20" foregroundColor="#888888" halign="center" valign="center" transparent="1"/>
-        <widget name="red" position="0,605" size="310,35" font="Regular;25" foregroundColor="red" halign="center" transparent="1"/>
-        <widget name="green" position="310,605" size="310,35" font="Regular;25" foregroundColor="green" halign="center" transparent="1"/>
-        <widget name="yellow" position="620,605" size="310,35" font="Regular;25" foregroundColor="yellow" halign="center" transparent="1"/>
+        <widget name="body" position="35,100" size="860,485" font="Regular;23" transparent="1"/>
+        <eLabel position="0,600" size="930,2" backgroundColor="#888888"/>
+        <widget name="info" position="35,615" size="860,70" font="Regular;20" foregroundColor="#888888" halign="center" valign="center" transparent="1"/>
+        <eLabel position="0,705" size="232,2" backgroundColor="red"/>
+        <eLabel position="232,705" size="233,2" backgroundColor="green"/>
+        <eLabel position="465,705" size="232,2" backgroundColor="yellow"/>
+        <eLabel position="697,705" size="233,2" backgroundColor="blue"/>
+        <widget name="red" position="0,725" size="232,40" font="Regular;25" foregroundColor="red" halign="center" transparent="1"/>
+        <widget name="green" position="232,725" size="233,40" font="Regular;25" foregroundColor="green" halign="center" transparent="1"/>
+        <widget name="yellow" position="465,725" size="232,40" font="Regular;25" foregroundColor="yellow" halign="center" transparent="1"/>
+        <widget name="blue" position="697,725" size="233,40" font="Regular;25" foregroundColor="blue" halign="center" transparent="1"/>
     </screen>
     """
     def __init__(self, session, title, provider, help_text):
         Screen.__init__(self, session)
         self._provider = provider
-        self["titleline"] = Label(title); self["body"] = Label(""); self["info"] = Label(help_text)
-        self["red"] = Label(_("Exit")); self["green"] = Label(_("OK")); self["yellow"] = Label(_("Refresh"))
-        self["actions"] = ActionMap(["OkCancelActions", "ColorActions"], {"cancel": self.close, "red": self.close, "green": self.refresh, "ok": self.refresh, "yellow": self.refresh}, -1)
-        self.setTitle(title); self.onShown.append(self.refresh)
+        self["titleline"] = Label(title)
+        self["body"] = Label("")
+        self["info"] = Label(help_text)
+        self["red"] = Label(_("Exit"))
+        self["green"] = Label(_("OK"))
+        self["yellow"] = Label(_("Refresh"))
+        self["blue"] = Label(_("Help"))
+        self["actions"] = ActionMap(["OkCancelActions", "ColorActions"], {
+            "cancel": self.close, "red": self.close,
+            "green": self.refresh, "ok": self.refresh, "yellow": self.refresh,
+            "blue": self.show_help,
+        }, -1)
+        self.setTitle(title)
+        self.onShown.append(self.refresh)
+
     def refresh(self):
-        try: self["body"].setText(self._provider())
-        except Exception as error: self["body"].setText(_("Unable to read status: %s") % error)
+        try:
+            self["body"].setText(self._provider())
+        except Exception as error:
+            self["body"].setText(_("Unable to read status: %s") % error)
+
+    def show_help(self):
+        self.session.open(GSUInfo, self.getTitle(), self["info"].getText())
+
 
 class GSUSwapManager(GSUOriginalStatusCenter):
-    def __init__(self, session): GSUOriginalStatusCenter.__init__(self, session, _("Swap Manager"), swap_manager_information, _("Original swap controls are retained; state changes remain gated until receiver validation."))
+    def __init__(self, session):
+        GSUOriginalStatusCenter.__init__(self, session, _("Swap Manager"), swap_manager_information,
+                                         _("Original swap controls are retained; state changes remain gated until receiver validation."))
+
+
 class GSUDeviceManager(GSUOriginalStatusCenter):
-    def __init__(self, session): GSUOriginalStatusCenter.__init__(self, session, _("Device Manager"), device_manager_information, _("Device detection is live; destructive actions remain safety-gated."))
+    def __init__(self, session):
+        GSUOriginalStatusCenter.__init__(self, session, _("Device Manager"), device_manager_information,
+                                         _("Device detection is live; destructive actions remain safety-gated."))
+
+
 class GSUCrondManager(GSUOriginalStatusCenter):
-    def __init__(self, session): GSUOriginalStatusCenter.__init__(self, session, _("Crond Manager"), cron_manager_information, _("Cron state is live; editing remains gated until receiver validation."))
+    def __init__(self, session):
+        GSUOriginalStatusCenter.__init__(self, session, _("Crond Manager"), cron_manager_information,
+                                         _("Cron state is live; editing remains gated until receiver validation."))
+
+
 class GSUTextEditorCenter(GSUOriginalStatusCenter):
-    def __init__(self, session): GSUOriginalStatusCenter.__init__(self, session, _("Text editor"), text_editor_information, _("Original editor workflow is retained; arbitrary writes remain safety-gated."))
+    def __init__(self, session):
+        GSUOriginalStatusCenter.__init__(self, session, _("Text editor"), text_editor_information,
+                                         _("Original editor workflow is retained; arbitrary writes remain safety-gated."))
+
+
 class GSUChannelSettingsCenter(GSUOriginalStatusCenter):
-    def __init__(self, session): GSUOriginalStatusCenter.__init__(self, session, _("Channel settings"), channel_settings_information, _("Channel capability is detected without modifying bouquets."))
+    def __init__(self, session):
+        GSUOriginalStatusCenter.__init__(self, session, _("Channel settings"), channel_settings_information,
+                                         _("Channel capability is detected without modifying bouquets."))
+
+
 class GSURootPasswordCenter(GSUOriginalStatusCenter):
-    def __init__(self, session): GSUOriginalStatusCenter.__init__(self, session, _("Reset root user password"), root_password_information, _("Password mutation remains disabled until a receiver-safe confirmation flow is validated."))
+    def __init__(self, session):
+        GSUOriginalStatusCenter.__init__(self, session, _("Reset root user password"), root_password_information,
+                                         _("Password mutation remains disabled until a receiver-safe confirmation flow is validated."))
 
 
 class GSUAutoInstallCenter(GSUOriginalStatusCenter):
-    def __init__(self, session): GSUOriginalStatusCenter.__init__(self, session, _("Automatic installations"), automatic_installation_information, _("Original automatic-installation workflow is retained without reviving unsafe remote installers."))
+    def __init__(self, session):
+        GSUOriginalStatusCenter.__init__(self, session, _("Automatic installations"), automatic_installation_information,
+                                         _("Original automatic-installation workflow is retained without reviving unsafe remote installers."))
+
 
 class GSUOSDECMCenter(GSUOriginalStatusCenter):
-    def __init__(self, session): GSUOriginalStatusCenter.__init__(self, session, _("OSD ECM Information"), osd_ecm_information, _("OSD ECM uses the modern live service/CAM backend; display mutation remains gated."))
+    def __init__(self, session):
+        GSUOriginalStatusCenter.__init__(self, session, _("OSD ECM Information"), osd_ecm_information,
+                                         _("OSD ECM uses the modern live service/CAM backend; display mutation remains gated."))
 
 
 class GSUPackageCenter(Screen):
