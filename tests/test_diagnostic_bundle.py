@@ -491,6 +491,35 @@ class MainMenuFocusTests(unittest.TestCase):
             self.assertNotIn('("' + label + '",', menu)
 
 
+class OriginalVisualContractTests(unittest.TestCase):
+    def test_main_screen_keeps_original_geometry_and_widget_names(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        start = source.index("class SysUtilMngMain")
+        end = source.index("class GSUPackageCenter", start)
+        body = source[start:end]
+        self.assertIn('size="930,790"', body)
+        for widget in ('name="list"', 'name="info"', 'name="red"', 'name="green"',
+                       'name="yellow"', 'name="blue"'):
+            self.assertIn(widget, body)
+        self.assertIn('position="30,0" size="412,600"', body)
+        self.assertIn('position="0,607" size="930,2"', body)
+
+    def test_original_fullscreen_information_centers_are_preserved(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        system = source[source.index("class GSUSystemDashboard"):source.index("class GSUChannelDashboard")]
+        channel = source[source.index("class GSUChannelDashboard"):source.index("class GSUECMInformation")]
+        self.assertIn('name="GlassSysInfo"', system)
+        self.assertIn('size="1920,1080"', system)
+        self.assertIn('name="Channel Info Center"', channel)
+        self.assertIn('size="1920,1080"', channel)
+
+    def test_original_package_center_is_a_screen_not_flat_info(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        self.assertIn("class GSUPackageCenter(Screen)", source)
+        self.assertIn('name="GlassIpkScriptCenter"', source)
+        self.assertIn("self.session.open(GSUPackageCenter)", source)
+
+
 class LocalizationContractTests(unittest.TestCase):
     def test_localization_follows_enigma2_language(self):
         root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
