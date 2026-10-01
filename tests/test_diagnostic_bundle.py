@@ -265,6 +265,23 @@ class NetworkHealthTests(unittest.TestCase):
         self.assertEqual(source.count('"nethealth": (_("Network Health"), network_health_information)'), 1)
 
 
+class OriginalSystemDashboardTests(unittest.TestCase):
+    def test_resource_meters_and_protocol_indicators_exist(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        for token in ("original_resource_dashboard_information", "_percent_bar",
+                      "original_protocol_indicators", '"FTP"', '"Telnet"', '"VPN"',
+                      '"Samba"', '"NFS"', '"protocols"'):
+            self.assertIn(token, source)
+
+    def test_resource_dashboard_is_read_only(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        start = source.index("def original_resource_dashboard_information")
+        end = source.index("def original_protocol_indicators", start)
+        body = source[start:end]
+        for forbidden in ("subprocess.", "os.system(", "write(", "mount ", "swapon", "swapoff"):
+            self.assertNotIn(forbidden, body)
+
+
 class ChannelTechnicalDataTests(unittest.TestCase):
     def test_channel_dashboard_uses_live_enigma2_service_contract(self):
         source = open(PLUGIN, encoding="utf-8").read()
