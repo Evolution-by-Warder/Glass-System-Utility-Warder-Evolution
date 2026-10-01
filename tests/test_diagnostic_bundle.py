@@ -265,6 +265,23 @@ class NetworkHealthTests(unittest.TestCase):
         self.assertEqual(source.count('"nethealth": (_("Network Health"), network_health_information)'), 1)
 
 
+class ChannelTechnicalDataTests(unittest.TestCase):
+    def test_channel_dashboard_uses_live_enigma2_service_contract(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        for token in ("current_service_technical_information", "frontendInfo()", "getAll(True)",
+                      "sProvider", "sServiceref", "sVideoPID", "sAudioPID", "sPCRPID",
+                      "sPMTPID", "sCAIDs", "channel_technical_summary"):
+            self.assertIn(token, source)
+
+    def test_channel_probe_is_read_only(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        start = source.index("def current_service_technical_information")
+        end = source.index("def channel_technical_summary", start)
+        body = source[start:end]
+        for forbidden in ("os.system(", "subprocess.", "killall", "write(", "setFrontend"):
+            self.assertNotIn(forbidden, body)
+
+
 class OriginalGSURestorationTests(unittest.TestCase):
     def test_original_dashboards_and_cam_manager_exist(self):
         source = open(PLUGIN, encoding="utf-8").read()
