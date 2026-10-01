@@ -455,3 +455,4 @@ msgstr "Diagnostic bundle created:\n%s"
 
 msgid "Unable to create diagnostic bundle.\n\n%s"
 msgstr "Unable to create diagnostic bundle.\n\n%s"
+\nmsgid "OSCam Information"\nmsgstr "Informace OSCam"\n\nmsgid "CAM/SRV Manager"\nmsgstr "Správce CAM/SRV"\n\nmsgid "ECM Information"\nmsgstr "ECM informace"\n\nmsgid "Swap Manager"\nmsgstr "Správa swapu"\n\nmsgid "IPK/DEB and user scripts"\nmsgstr "IPK/DEB a uživatelské skripty"\n\nmsgid "Legacy & Maintenance"\nmsgstr "Starší funkce a údržba"\n
