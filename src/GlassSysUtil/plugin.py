@@ -1815,7 +1815,8 @@ class GSUActiveCAM(Screen):
         Screen.__init__(self, session)
         self["summary"] = Label(active_cam_summary())
         self["live_status"] = Label("")
-        if List is not None:
+        self._table_uses_list_source = List is not None
+        if self._table_uses_list_source:
             self["table"] = List([])
         else:
             self["table"] = MenuList([])
@@ -1863,7 +1864,7 @@ class GSUActiveCAM(Screen):
                     selected = self["table"].getSelectionIndex()
                 except Exception:
                     pass
-                self["table"].setList([tuple([row] + list(_oscam_table_values(row).values())) for row in table_rows] if List is not None else [_oscam_table_line(row) for row in table_rows])
+                self["table"].setList([tuple([row] + list(_oscam_table_values(row).values())) for row in table_rows] if self._table_uses_list_source else [_oscam_table_line(row) for row in table_rows])
                 if table_rows:
                     try:
                         self["table"].moveToIndex(min(selected, len(table_rows) - 1))
@@ -1919,7 +1920,7 @@ class GSUActiveCAM(Screen):
                         selected = self["table"].getSelectionIndex()
                     except Exception:
                         pass
-                    self["table"].setList([tuple([row] + list(_oscam_table_values(row).values())) for row in rows] if List is not None else [_oscam_table_line(row) for row in rows])
+                    self["table"].setList([tuple([row] + list(_oscam_table_values(row).values())) for row in rows] if self._table_uses_list_source else [_oscam_table_line(row) for row in rows])
                     if rows:
                         try:
                             self["table"].moveToIndex(min(selected, len(rows) - 1))
