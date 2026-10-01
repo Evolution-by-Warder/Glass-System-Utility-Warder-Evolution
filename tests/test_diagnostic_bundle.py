@@ -565,6 +565,41 @@ class OriginalRemainingWorkflowTests(unittest.TestCase):
             self.assertNotIn(forbidden, body)
 
 
+class RestoredInformationCenterContractTests(unittest.TestCase):
+    def test_ecm_center_keeps_original_character_sections(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        start = source.index("class GSUECMInformation")
+        end = source.index("class GSUCamSrvManager", start)
+        body = source[start:end]
+        self.assertIn('size="930,790"', body)
+        for widget in ('name="service_context"', 'name="ca_context"', 'name="ecm_context"'):
+            self.assertIn(widget, body)
+        for token in ("Reader / User", "Protocol", "Channel", "ECM", "Idle", "Status"):
+            self.assertIn(token, body)
+
+    def test_channel_center_has_dedicated_service_id_ca_block(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        start = source.index("class GSUChannelDashboard")
+        end = source.index("class GSUECMInformation", start)
+        body = source[start:end]
+        self.assertIn('name="ids"', body)
+        for token in ('"video"', '"audio"', '"pcr"', '"pmt"', '"txt"', '"tsid"', '"onid"', '"sid"'):
+            self.assertIn(token, body)
+        self.assertIn("CAIDs: %s", body)
+
+    def test_cam_srv_landing_keeps_full_live_context_and_safe_restart(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        start = source.index("class GSUCamSrvManager")
+        end = source.index("class GSUActiveCAM", start)
+        body = source[start:end]
+        for token in ("Address: %s", "Port: %s", "Protocol: %s", "Service: %s",
+                      "Channel: %s", "ECM: %s", "Idle: %s", "Status: %s",
+                      "_active_cam_restart_command()"):
+            self.assertIn(token, body)
+        self.assertNotIn("killall", body)
+
+
+
 class LocalizationContractTests(unittest.TestCase):
     def test_localization_follows_enigma2_language(self):
         root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
