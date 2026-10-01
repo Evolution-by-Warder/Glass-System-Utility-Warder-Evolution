@@ -338,6 +338,39 @@ class ChannelTechnicalDataTests(unittest.TestCase):
             self.assertNotIn(forbidden, body)
 
 
+class CombinedSystemAuditTests(unittest.TestCase):
+    def test_system_dashboard_uses_restored_gsu_resource_widgets(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        start = source.index("class GSUSystemDashboard")
+        end = source.index("class GSUChannelDashboard", start)
+        body = source[start:end]
+        self.assertIn("original_resource_dashboard_information()", body)
+        self.assertIn("original_protocol_indicators()", body)
+
+    def test_channel_button_opens_cam_manager_not_raw_oscam(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        start = source.index("class GSUChannelDashboard")
+        end = source.index("class GSUECMInformation", start)
+        body = source[start:end]
+        self.assertIn("self.session.open(GSUCamSrvManager)", body)
+        self.assertNotIn("self.session.open(GSUActiveCAM)", body)
+
+    def test_oscam_monitor_has_distinct_identity(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        start = source.index("class GSUActiveCAM")
+        end = source.index("class SysUtilMngMain", start)
+        body = source[start:end]
+        self.assertIn('self.setTitle(_("OSCam Information"))', body)
+
+    def test_frontend_display_formatters_are_read_only(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        start = source.index("def _format_orbital_position")
+        end = source.index("def cam_srv_context_information", start)
+        body = source[start:end]
+        for forbidden in ("subprocess.", "os.system(", "write(", "setFrontend", "tune("):
+            self.assertNotIn(forbidden, body)
+
+
 class MainMenuConsolidationTests(unittest.TestCase):
     def test_main_menu_has_no_duplicate_maintenance_entries(self):
         source = open(PLUGIN, encoding="utf-8").read()
