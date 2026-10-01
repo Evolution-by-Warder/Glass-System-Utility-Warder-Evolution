@@ -2384,19 +2384,20 @@ class GSUInfo(Screen):
 class GSUSystemDashboard(Screen):
     """Dense original-style system dashboard; all probes remain read-only."""
     skin = """
-    <screen name="GSUSystemDashboard" position="center,center" size="1450,780" title="System Information">
-        <eLabel position="25,18" size="680,38" text="System / Hardware" font="Regular;25" foregroundColor="#e6d500" />
-        <eLabel position="745,18" size="680,38" text="Memory / Storage / Temperature" font="Regular;25" foregroundColor="#e6d500" />
-        <widget name="system" position="25,65" size="680,265" font="Regular;21" />
-        <widget name="resources" position="745,65" size="680,215" font="Regular;21" />
-        <widget name="protocols" position="745,286" size="680,44" font="Regular;20" foregroundColor="#33cc33" />
-        <eLabel position="25,350" size="680,38" text="Services / Processes" font="Regular;25" foregroundColor="#3399ff" />
-        <eLabel position="745,350" size="680,38" text="Health / Mounts" font="Regular;25" foregroundColor="#3399ff" />
-        <widget name="services" position="25,397" size="680,280" font="Regular;20" />
-        <widget name="health" position="745,397" size="680,280" font="Regular;20" />
-        <widget name="key_red" position="35,710" size="250,45" font="Regular;24" foregroundColor="#ff3333" />
-        <widget name="key_yellow" position="600,710" size="250,45" font="Regular;24" foregroundColor="#e6d500" />
-        <widget name="key_blue" position="1160,710" size="250,45" font="Regular;24" foregroundColor="#3399ff" />
+    <screen name="GlassSysInfo" position="0,0" size="1920,1080" title="GlassSysInfo" backgroundColor="#31000000" flags="wfNoBorder">
+        <eLabel position="75,45" size="760,40" text="Memory / Storage / Temperature" font="Regular;28" foregroundColor="#666666" transparent="1"/>
+        <widget name="resources" position="75,100" size="760,430" font="Regular;25" transparent="1"/>
+        <eLabel position="75,555" size="760,40" text="System / Hardware" font="Regular;28" foregroundColor="#666666" transparent="1"/>
+        <widget name="system" position="75,610" size="760,315" font="Regular;23" transparent="1"/>
+        <eLabel position="925,45" size="900,40" text="Process Info" font="Regular;28" foregroundColor="#666666" transparent="1"/>
+        <widget name="services" position="925,100" size="900,350" font="Regular;23" transparent="1"/>
+        <eLabel position="925,475" size="900,40" text="Dmesg / Health Info" font="Regular;28" foregroundColor="#666666" transparent="1"/>
+        <widget name="health" position="925,530" size="900,395" font="Regular;22" transparent="1"/>
+        <eLabel position="75,945" size="150,35" text="Protocols:" font="Regular;25" foregroundColor="#666666" transparent="1"/>
+        <widget name="protocols" position="230,945" size="1150,40" font="Regular;24" foregroundColor="#33cc33" transparent="1"/>
+        <widget name="key_red" position="75,1010" size="300,45" font="Regular;27" foregroundColor="red" halign="center" transparent="1"/>
+        <widget name="key_yellow" position="810,1010" size="300,45" font="Regular;27" foregroundColor="yellow" halign="center" transparent="1"/>
+        <widget name="key_blue" position="1545,1010" size="300,45" font="Regular;27" foregroundColor="blue" halign="center" transparent="1"/>
     </screen>
     """
     def __init__(self, session):
@@ -2424,15 +2425,16 @@ class GSUSystemDashboard(Screen):
 class GSUChannelDashboard(Screen):
     """Original-style current-channel dashboard using live Enigma2 and CAM data."""
     skin = """
-    <screen name="GSUChannelDashboard" position="center,center" size="1450,780" title="Channel Information">
-        <widget name="channel" position="25,20" size="1400,52" font="Regular;30" foregroundColor="#e6d500" />
-        <eLabel position="25,90" size="680,38" text="ECM / CAM" font="Regular;25" foregroundColor="#3399ff" />
-        <eLabel position="745,90" size="680,38" text="Tuner / Frontend" font="Regular;25" foregroundColor="#3399ff" />
-        <widget name="ecm" position="25,138" size="680,510" font="Regular;21" />
-        <widget name="tuner" position="745,138" size="680,510" font="Regular;20" />
-        <widget name="key_red" position="35,710" size="250,45" font="Regular;24" foregroundColor="#ff3333" />
-        <widget name="key_green" position="590,710" size="280,45" font="Regular;24" foregroundColor="#33cc33" />
-        <widget name="key_yellow" position="1160,710" size="250,45" font="Regular;24" foregroundColor="#e6d500" />
+    <screen name="Channel Info Center" position="0,0" size="1920,1080" title="Channel Info Center" backgroundColor="#31000000" flags="wfNoBorder">
+        <widget name="channel" position="75,45" size="1770,55" font="Regular;32" foregroundColor="#e6d500" halign="center" transparent="1"/>
+        <eLabel position="75,135" size="820,42" text="ECM Information" font="Regular;27" foregroundColor="#666666" transparent="1"/>
+        <widget name="ecm" position="75,190" size="820,650" font="Regular;24" transparent="1"/>
+        <eLabel position="1000,135" size="845,42" text="Transponder / Service Information" font="Regular;27" foregroundColor="#666666" transparent="1"/>
+        <widget name="tuner" position="1000,190" size="845,650" font="Regular;23" transparent="1"/>
+        <eLabel position="75,870" size="1770,2" backgroundColor="#888888"/>
+        <widget name="key_red" position="75,970" size="350,45" font="Regular;27" foregroundColor="red" halign="center" transparent="1"/>
+        <widget name="key_green" position="785,970" size="350,45" font="Regular;27" foregroundColor="green" halign="center" transparent="1"/>
+        <widget name="key_yellow" position="1495,970" size="350,45" font="Regular;27" foregroundColor="yellow" halign="center" transparent="1"/>
     </screen>
     """
     def __init__(self, session):
