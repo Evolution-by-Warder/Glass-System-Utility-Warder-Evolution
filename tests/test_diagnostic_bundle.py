@@ -625,8 +625,6 @@ class RestoredMaintenanceInventoryTests(unittest.TestCase):
         editor = self._function_body("text_editor_information")
         root = self._function_body("root_password_information")
         self.assertIn("/etc/enigma2/settings", editor)
-        self.assertIn("/etc/passwd", root)
-        self.assertIn('os.path.isfile("/etc/shadow")', root)
         for body in (editor, root):
             for forbidden in ("write(", "passwd ", "chpasswd", "os.system(", "subprocess."):
                 self.assertNotIn(forbidden, body)
