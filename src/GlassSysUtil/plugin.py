@@ -2678,21 +2678,32 @@ class GSUCamSrvManager(Screen):
         self["service"].setText("\n".join(rows))
         command, detail = _active_cam_restart_command()
         active = _active_cam()
-        live_summary = _("Live ECM: unavailable")
+        status_rows = [active_cam_summary() if active else _("No supported active CAM detected.")]
         if active and active.get("family") == "oscam":
             live, reason = oscam_live_rows()
             if live:
                 values = _oscam_table_values(live[0])
-                live_summary = _("Live ECM: %s | %s | %s") % (
-                    values["name"] or "N/A", values["ecm"] or "N/A", values["status"] or "N/A")
+                status_rows += [
+                    "",
+                    _("Reader / User: %s") % (values["name"] or "N/A"),
+                    _("Address: %s") % (values["address"] or "N/A"),
+                    _("Port: %s") % (values["port"] or "N/A"),
+                    _("Protocol: %s") % (values["protocol"] or "N/A"),
+                    _("Service: %s") % (values["service"] or "N/A"),
+                    _("Channel: %s") % (values["channel"] or technical.get("name") or "N/A"),
+                    _("ECM: %s") % (values["ecm"] or "N/A"),
+                    _("Idle: %s") % (values["idle"] or "N/A"),
+                    _("Status: %s") % (values["status"] or "N/A"),
+                ]
             elif reason:
-                live_summary = reason
-        self["status"].setText("\n".join((
-            live_summary,
+                status_rows += ["", reason]
+        status_rows += [
+            "",
             _("CAM restart: %s") % (_("available") if command else _("unavailable")),
             detail or _("No image-supported restart command exposed."),
             _("Stop / activate / download / delete actions remain disabled until receiver validation."),
-        )))
+        ]
+        self["status"].setText("\n".join(status_rows))
 
 
 class GSUActiveCAM(Screen):
