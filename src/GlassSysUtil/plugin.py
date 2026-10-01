@@ -3051,25 +3051,63 @@ class SysUtilMngMain(Screen):
         elif action == "ecminfo":
             self.session.open(GSUECMInformation)
         elif action == "devicemanager":
-            self._info(_("Device Manager"), device_manager_information())
+            self.session.open(GSUDeviceManager)
         elif action == "swapmanager":
-            self._info(_("Swap Manager"), swap_manager_information())
+            self.session.open(GSUSwapManager)
         elif action == "packagetools":
             self.session.open(GSUPackageCenter)
         elif action in ("cccaminfo", "mboxinfo"):
             self._info(self.MENU[self["list"].getSelectedIndex()][0], conditional_legacy_cam_information())
         elif action == "channelsettings":
-            self._info(_("Channel settings"), channel_settings_information())
+            self.session.open(GSUChannelSettingsCenter)
         elif action == "crond":
-            self._info(_("Crond Manager"), cron_manager_information())
+            self.session.open(GSUCrondManager)
         elif action == "texteditor":
-            self._info(_("Text editor"), text_editor_information())
+            self.session.open(GSUTextEditorCenter)
         elif action == "rootpassword":
-            self._info(_("Reset root user password"), root_password_information())
+            self.session.open(GSURootPasswordCenter)
         elif action in ("osdecm", "autoinstall"):
             self._info(self.MENU[self["list"].getSelectedIndex()][0],
                        _("This original GSU function is retained in the migration map and remains gated until its Python 3.14 implementation is receiver-validated."))
 
+
+
+class GSUOriginalStatusCenter(Screen):
+    skin = """
+    <screen name="GlassStatusCenter" position="center,center" size="930,650" title="GSU" backgroundColor="#31000000">
+        <widget name="titleline" position="30,20" size="870,45" font="Regular;29" foregroundColor="#e6d500" halign="center" transparent="1"/>
+        <eLabel position="0,80" size="930,2" backgroundColor="#888888"/>
+        <widget name="body" position="35,100" size="860,400" font="Regular;23" transparent="1"/>
+        <eLabel position="0,515" size="930,2" backgroundColor="#888888"/>
+        <widget name="info" position="35,525" size="860,55" font="Regular;20" foregroundColor="#888888" halign="center" valign="center" transparent="1"/>
+        <widget name="red" position="0,605" size="310,35" font="Regular;25" foregroundColor="red" halign="center" transparent="1"/>
+        <widget name="green" position="310,605" size="310,35" font="Regular;25" foregroundColor="green" halign="center" transparent="1"/>
+        <widget name="yellow" position="620,605" size="310,35" font="Regular;25" foregroundColor="yellow" halign="center" transparent="1"/>
+    </screen>
+    """
+    def __init__(self, session, title, provider, help_text):
+        Screen.__init__(self, session)
+        self._provider = provider
+        self["titleline"] = Label(title); self["body"] = Label(""); self["info"] = Label(help_text)
+        self["red"] = Label(_("Exit")); self["green"] = Label(_("OK")); self["yellow"] = Label(_("Refresh"))
+        self["actions"] = ActionMap(["OkCancelActions", "ColorActions"], {"cancel": self.close, "red": self.close, "green": self.refresh, "ok": self.refresh, "yellow": self.refresh}, -1)
+        self.setTitle(title); self.onShown.append(self.refresh)
+    def refresh(self):
+        try: self["body"].setText(self._provider())
+        except Exception as error: self["body"].setText(_("Unable to read status: %s") % error)
+
+class GSUSwapManager(GSUOriginalStatusCenter):
+    def __init__(self, session): GSUOriginalStatusCenter.__init__(self, session, _("Swap Manager"), swap_manager_information, _("Original swap controls are retained; state changes remain gated until receiver validation."))
+class GSUDeviceManager(GSUOriginalStatusCenter):
+    def __init__(self, session): GSUOriginalStatusCenter.__init__(self, session, _("Device Manager"), device_manager_information, _("Device detection is live; destructive actions remain safety-gated."))
+class GSUCrondManager(GSUOriginalStatusCenter):
+    def __init__(self, session): GSUOriginalStatusCenter.__init__(self, session, _("Crond Manager"), cron_manager_information, _("Cron state is live; editing remains gated until receiver validation."))
+class GSUTextEditorCenter(GSUOriginalStatusCenter):
+    def __init__(self, session): GSUOriginalStatusCenter.__init__(self, session, _("Text editor"), text_editor_information, _("Original editor workflow is retained; arbitrary writes remain safety-gated."))
+class GSUChannelSettingsCenter(GSUOriginalStatusCenter):
+    def __init__(self, session): GSUOriginalStatusCenter.__init__(self, session, _("Channel settings"), channel_settings_information, _("Channel capability is detected without modifying bouquets."))
+class GSURootPasswordCenter(GSUOriginalStatusCenter):
+    def __init__(self, session): GSUOriginalStatusCenter.__init__(self, session, _("Reset root user password"), root_password_information, _("Password mutation remains disabled until a receiver-safe confirmation flow is validated."))
 
 
 class GSUPackageCenter(Screen):
