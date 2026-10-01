@@ -331,3 +331,12 @@ This supersedes the previous receiver candidate source while keeping version `13
 - Rebalanced the fixed-column table to give Status more room while preserving independent Address/Port/Protocol/service cells.
 - Added a capability-safe Enigma2 current-service-name fallback only for DVBAPI/client rows when OSCam omits the channel label; OSCam-provided channel names remain authoritative when present.
 - Release acceptance: in-plugin update from w11, automatic GUI restart, Status visible without clipping, and current watched service visible in Channel for DVBAPI.
+
+
+### 13.31-w12 REAL RECEIVER PASS
+- GigaBlue Quad 4K Pro / OpenATV 8.x: in-plugin update from 13.30-w11 completed and GUI restarted normally.
+- Active CAM / OSCam Monitor receiver smoke test PASS.
+- Fixed-column layout is readable on TV; Status displays CONNECTED without clipping.
+- Enigma2 current-service fallback works: DVBAPI/client row displayed the watched service as DOMA HD while OSCam supplied no channel label.
+- Live ECM/idle/status continued updating and CAM rows remained correctly separated.
+- 13.31-w12 is the approved receiver-tested checkpoint for this monitor presentation batch.
