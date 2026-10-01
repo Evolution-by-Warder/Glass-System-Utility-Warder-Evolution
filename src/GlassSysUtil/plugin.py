@@ -412,6 +412,7 @@ def automatic_installation_information():
     roots = ("/etc/enigma2", "/usr/script", "/media/hdd", "/media/usb")
     rows = [_("Automatic installation"), ""]
     total = 0
+    types = {".ipk": 0, ".deb": 0, ".sh": 0, "archive": 0}
     for path in roots:
         if not os.path.exists(path):
             rows.append("%s: %s" % (path, _("not detected")))
@@ -422,6 +423,11 @@ def automatic_installation_information():
             total += len(candidates)
             rows.append("%s: %d %s" % (path, len(candidates), _("local install candidates")))
             for name in candidates[:6]:
+                low = name.lower()
+                if low.endswith(".ipk"): types[".ipk"] += 1
+                elif low.endswith(".deb"): types[".deb"] += 1
+                elif low.endswith(".sh"): types[".sh"] += 1
+                else: types["archive"] += 1
                 candidate = os.path.join(path, name)
                 try:
                     rows.append("  %s  (%s)" % (name, _human_bytes(os.path.getsize(candidate))))
@@ -432,6 +438,7 @@ def automatic_installation_information():
         except Exception:
             rows.append("%s: %s" % (path, _("detected")))
     rows += ["", _("Total local candidates: %d") % total,
+             _("IPK: %d | DEB: %d | scripts: %d | archives: %d") % (types[".ipk"], types[".deb"], types[".sh"], types["archive"]),
              _("Legacy remote installers are not executed."),
              _("Local install actions remain gated until receiver validation.")]
     return "\n".join(rows)
@@ -495,31 +502,44 @@ def conditional_legacy_cam_information():
 
 
 def cron_manager_information():
-    """Read-only cron capability and bounded job inventory for the original Crond manager."""
+    """Read-only cron capability and bounded schedule preview for the original manager."""
     rows = []
     cron_proc = bool(_find_processes("crond") or _find_processes("cron"))
     rows.append(_("Crond process: %s") % (_("RUNNING") if cron_proc else _("not detected")))
     locations = ("/etc/cron.d", "/etc/crontabs", "/var/spool/cron", "/var/spool/cron/crontabs")
-    found, samples = [], []
+    found, samples, previews = [], [], []
     jobs = 0
     for path in locations:
+        targets = []
         if os.path.isdir(path):
             found.append(path)
             try:
-                names = sorted(name for name in os.listdir(path) if not name.startswith("."))
-                jobs += len(names)
-                samples.extend("%s/%s" % (path, name) for name in names[:5])
+                targets = [os.path.join(path, name) for name in sorted(os.listdir(path)) if not name.startswith(".")]
             except Exception:
-                pass
+                targets = []
         elif os.path.isfile(path):
             found.append(path)
-            jobs += 1
-            samples.append(path)
+            targets = [path]
+        jobs += len(targets)
+        samples.extend(targets[:5])
+        for target in targets[:4]:
+            for line in _read_lines(target):
+                line = line.strip()
+                if line and not line.startswith("#"):
+                    fields = line.split()
+                    if len(fields) >= 6:
+                        previews.append("%s: %s %s %s %s %s  %s" % (
+                            os.path.basename(target), fields[0], fields[1], fields[2], fields[3], fields[4],
+                            " ".join(fields[5:])[:90]))
+                        break
+            if len(previews) >= 8:
+                break
     rows.append(_("Cron storage: %s") % (", ".join(found) if found else _("not detected")))
     rows.append(_("Cron entries/files: %d") % jobs)
     if samples:
-        rows += ["", _("Detected cron files")]
-        rows.extend(samples[:12])
+        rows += ["", _("Detected cron files")] + samples[:12]
+    if previews:
+        rows += ["", _("Schedule preview")] + previews[:8]
     rows += ["", _("Editing/enabling scheduled jobs remains disabled until receiver validation.")]
     return "\n".join(rows)
 
@@ -590,26 +610,26 @@ def channel_settings_information():
     lamedb = [name for name in names if name.startswith("lamedb")]
     satellites = [name for name in names if name in ("satellites.xml", "terrestrial.xml", "cables.xml")]
     rows += [_("Settings root: %s") % root, _("Bouquet files: %d") % len(bouquets),
-             _("Service database files: %d") % len(lamedb),
-             _("Tuning definition files: %d") % len(satellites)]
+             _("Service database files: %d") % len(lamedb), _("Tuning definition files: %d") % len(satellites)]
+    if satellites:
+        rows += ["", _("Tuning definitions")] + ["  " + name for name in satellites]
     if lamedb:
         rows += ["", _("Service databases")]
         for name in lamedb[:6]:
             path = os.path.join(root, name)
-            try:
-                rows.append("  %s  (%s)" % (name, _human_bytes(os.path.getsize(path))))
-            except Exception:
-                rows.append("  %s" % name)
+            try: rows.append("  %s  (%s)" % (name, _human_bytes(os.path.getsize(path))))
+            except Exception: rows.append("  %s" % name)
     if bouquets:
         rows += ["", _("Detected bouquets")]
         for name in bouquets[:12]:
             path = os.path.join(root, name)
             try:
-                rows.append("  %s  (%s)" % (name, _human_bytes(os.path.getsize(path))))
+                size = _human_bytes(os.path.getsize(path))
+                refs = sum(1 for line in _read_lines(path) if line.startswith("#SERVICE"))
+                rows.append("  %s  (%s, %d services)" % (name, size, refs))
             except Exception:
                 rows.append("  %s" % name)
-        if len(bouquets) > 12:
-            rows.append(_("... and %d more") % (len(bouquets) - 12))
+        if len(bouquets) > 12: rows.append(_("... and %d more") % (len(bouquets) - 12))
     rows += ["", _("Bouquet/channel modification remains disabled until receiver validation.")]
     return "\n".join(rows)
 
