@@ -265,6 +265,25 @@ class NetworkHealthTests(unittest.TestCase):
         self.assertEqual(source.count('"nethealth": (_("Network Health"), network_health_information)'), 1)
 
 
+class LegacyFunctionMigrationSafetyTests(unittest.TestCase):
+    def test_device_swap_and_package_areas_are_restored(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        for token in ("device_manager_information", "swap_manager_information",
+                      "package_tools_information", '_("Device Manager")',
+                      '_("Swap Manager")', '_("IPK/DEB and user scripts")'):
+            self.assertIn(token, source)
+
+    def test_migrated_legacy_functions_are_read_only(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        start = source.index("def device_manager_information")
+        end = source.index("def service_information", start)
+        body = source[start:end]
+        for forbidden in ("os.system(", "subprocess.", "mkfs", "fdisk", "parted",
+                          "swapon", "swapoff", "opkg install", "apt install",
+                          "urllib.", "urlopen", "wget", "curl"):
+            self.assertNotIn(forbidden, body)
+
+
 class OriginalSystemDashboardTests(unittest.TestCase):
     def test_resource_meters_and_protocol_indicators_exist(self):
         source = open(PLUGIN, encoding="utf-8").read()
