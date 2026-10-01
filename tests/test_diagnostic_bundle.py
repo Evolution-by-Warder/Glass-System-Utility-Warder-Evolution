@@ -348,8 +348,8 @@ class MainMenuFocusTests(unittest.TestCase):
         entries = re.findall(r'^\s*\(".*?",\s*".*?"\),\s*$', menu, re.M)
         self.assertLessEqual(len(entries), 20)
         for label in ("System Information", "Channel Information", "OSCam Information",
-                      "CAM/SRV Manager", "ECM Information", "Device Manager",
-                      "Warder Diagnostics & Tools", "Check for updates"):
+                      "CAM/SRV Manager", "ECM Information", "Device Manager", "Swap Manager",
+                      "IPK/DEB and user scripts", "Warder Diagnostics & Tools", "Check for updates"):
             self.assertIn(label, menu)
 
     def test_low_value_raw_duplicates_are_not_top_level(self):
@@ -377,8 +377,8 @@ class LocalizationContractTests(unittest.TestCase):
     def test_menu_labels_use_gettext(self):
         source = open(PLUGIN, encoding="utf-8").read()
         for label in ("System Information", "Channel Information", "OSCam Information",
-                      "CAM/SRV Manager", "ECM Information", "Device Manager",
-                      "Warder Diagnostics & Tools", "Health Check", "Network Health",
+                      "CAM/SRV Manager", "ECM Information", "Device Manager", "Swap Manager",
+                      "IPK/DEB and user scripts", "Warder Diagnostics & Tools", "Health Check", "Network Health",
                       "Storage Health", "Check for updates", "Restart Enigma2 GUI", "About this build"):
             self.assertIn('_("' + label + '")', source)
 
