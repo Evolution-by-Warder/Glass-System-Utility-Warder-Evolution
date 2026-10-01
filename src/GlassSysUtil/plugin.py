@@ -2873,6 +2873,11 @@ class GSUECMInformation(Screen):
             elif reason:
                 rows += ["", reason]
         self["ecm_context"].setText("\n".join(rows))
+        self["ecmlabels"].setText(_("Service\nProvider\nCAID\nCAM\nECM details"))
+        self["ecmValues"].setText("%s\n%s\n%s\n%s\n%s" % (
+            name, service.get("provider") or "N/A",
+            ", ".join("%04X" % value for value in caids) if caids else "N/A",
+            active.get("name") if active else "N/A", "\n".join(rows)))
 
 
 class GSUCamSrvManager(Screen):
