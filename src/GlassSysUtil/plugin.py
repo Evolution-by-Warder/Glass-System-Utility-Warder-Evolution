@@ -988,7 +988,7 @@ def health_check_information():
     if total:
         pct = available * 100.0 / total
         state = "PASS" if pct >= 15 else ("WARNING" if pct >= 7 else "WARNING")
-        rows.append("[%s] Memory: %.0f%% available" % (state, pct))
+        rows.append(_("[%s] Memory: %.0f%% available") % (state, pct))
     else:
         rows.append(_("[INFO] Memory: data not exposed"))
 
@@ -1025,36 +1025,36 @@ def health_check_information():
     resolvers = [line.split()[1] for line in _read_lines("/etc/resolv.conf")
                  if len(line.split()) >= 2 and line.split()[0] == "nameserver"]
     if up:
-        rows.append("[PASS] Network link: %s" % ", ".join(up))
+        rows.append(_("[PASS] Network link: %s") % ", ".join(up))
     elif interfaces:
         rows.append(_("[WARNING] Network link: no detected interface is up"))
     else:
         rows.append(_("[INFO] Network link: interfaces not exposed"))
-    rows.append("[%s] Default gateway: %s" % ("PASS" if gateway and gateway != "N/A" else "INFO", gateway or "N/A"))
-    rows.append("[%s] DNS configuration: %s" % (
+    rows.append(_("[%s] Default gateway: %s") % ("PASS" if gateway and gateway != "N/A" else "INFO", gateway or "N/A"))
+    rows.append(_("[%s] DNS configuration: %s") % (
         "PASS" if resolvers else "WARNING", ", ".join(resolvers) if resolvers else "no resolver configured"))
 
     # Enigma2 is expected while this screen is running; report rather than mutate anything.
     e2 = _find_processes("enigma2")
-    rows.append("[%s] Enigma2 process: %s" % ("PASS" if e2 else "WARNING", "running" if e2 else "not detected"))
+    rows.append(_("[%s] Enigma2 process: %s") % ("PASS" if e2 else "WARNING", _("running") if e2 else _("not detected")))
 
     temps = _temperature_values()
     if temps:
         hottest = max(value for label, value in temps)
         state = "PASS" if hottest < 80 else ("WARNING" if hottest < 95 else "WARNING")
-        rows.append("[%s] Temperature: hottest detected %.1f C" % (state, hottest))
+        rows.append(_("[%s] Temperature: hottest detected %.1f C") % (state, hottest))
     else:
         rows.append(_("[INFO] Temperature: measurement not exposed"))
 
     mounts = [line for line in _read_lines("/proc/mounts")
               if len(line.split()) >= 3 and line.split()[2].lower() in ("nfs", "nfs4", "cifs", "smbfs")]
-    rows.append("[INFO] Network mounts: %d active" % len(mounts))
+    rows.append(_("[INFO] Network mounts: %d active") % len(mounts))
 
     cams = []
     for name in ("oscam", "ncam", "cccam", "mgcamd"):
         if _find_processes(name):
             cams.append(name)
-    rows.append("[INFO] CAM: %s" % (", ".join(sorted(set(cams))) if cams else "no known CAM process detected"))
+    rows.append(_("[INFO] CAM: %s") % (", ".join(sorted(set(cams))) if cams else _("no known CAM process detected")))
 
     nim = _read_lines("/proc/bus/nim_sockets")
     try:
@@ -1419,7 +1419,7 @@ def network_mount_doctor_information():
             state = "PASS" if free_pct >= 5 else "WARNING"
             rows.append("[%s] %s -> %s [%s] %.1f%% free" % (state, source, target, fstype, free_pct))
         except Exception:
-            rows.append("[INFO] %s -> %s [%s] mounted; usage unavailable" % (source, target, fstype))
+            rows.append(_("[INFO] %s -> %s [%s] mounted; usage unavailable") % (source, target, fstype))
     if not active:
         rows.append(_("[INFO] No active NFS/CIFS mounts."))
 
@@ -1476,7 +1476,7 @@ def runtime_health_information():
         rows.append(_("[WARNING] Enigma2 process not detected."))
         return "\n".join(rows)
     pid = matches[0][0]
-    rows.append("[PASS] Enigma2 running  PID %s" % pid)
+    rows.append(_("[PASS] Enigma2 running  PID %s") % pid)
     status = {}
     for line in _read_lines("/proc/%s/status" % pid):
         if ":" in line:
