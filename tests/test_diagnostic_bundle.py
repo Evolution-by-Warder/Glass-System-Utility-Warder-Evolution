@@ -336,10 +336,28 @@ class ChannelTechnicalDataTests(unittest.TestCase):
             self.assertNotIn(forbidden, body)
 
 
+class WorkflowSeparationTests(unittest.TestCase):
+    def test_oscam_cam_manager_and_ecm_are_distinct_routes(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        self.assertIn('(_("OSCam Information"), "oscaminfo")', source)
+        self.assertIn('(_("CAM/SRV Manager"), "cammanager")', source)
+        self.assertIn('(_("ECM Information"), "ecminfo")', source)
+        self.assertNotIn('(_("CAM/SRV Manager"), "cammonitor")', source)
+        self.assertNotIn('(_("ECM Information"), "cammonitor")', source)
+
+    def test_cam_manager_does_not_add_unsafe_stop_or_kill(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        start = source.index("class GSUCamSrvManager")
+        end = source.index("class GSUActiveCAM", start)
+        body = source[start:end]
+        for forbidden in ("killall", "os.system(", "subprocess.", "stop_cam", "delete_cam"):
+            self.assertNotIn(forbidden, body)
+
+
 class OriginalGSURestorationTests(unittest.TestCase):
     def test_original_dashboards_and_cam_manager_exist(self):
         source = open(PLUGIN, encoding="utf-8").read()
-        for cls in ("GSUSystemDashboard", "GSUChannelDashboard", "GSUActiveCAM", "GSUWarderTools"):
+        for cls in ("GSUSystemDashboard", "GSUChannelDashboard", "GSUCamSrvManager", "GSUECMInformation", "GSUActiveCAM", "GSUWarderTools"):
             self.assertIn("class %s" % cls, source)
         self.assertIn('self.setTitle(_("CAM/SRV Manager"))', source)
         self.assertIn('"service_context"', source)
@@ -352,7 +370,7 @@ class OriginalGSURestorationTests(unittest.TestCase):
         source = open(PLUGIN, encoding="utf-8").read()
         self.assertIn('self.session.open(GSUSystemDashboard)', source)
         self.assertIn('self.session.open(GSUChannelDashboard)', source)
-        self.assertIn('self.session.open(GSUActiveCAM)', source)
+        self.assertIn('self.session.open(GSUActiveCAM)', source)\n        self.assertIn('self.session.open(GSUCamSrvManager)', source)\n        self.assertIn('self.session.open(GSUECMInformation)', source)
         self.assertIn('self.session.open(GSUWarderTools)', source)
 
 
