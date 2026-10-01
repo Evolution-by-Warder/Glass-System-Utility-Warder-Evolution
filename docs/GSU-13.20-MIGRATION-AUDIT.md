@@ -52,3 +52,16 @@ Health Check, Service Dashboard, Network Health, Network Mount Doctor, Storage H
 5. No credential display or secret collection in diagnostics.
 6. Missing capability disables/degrades a function; vendor-name branching is fallback only.
 7. A migrated function is not REAL PASS until exercised on the GigaBlue Quad 4K Pro / current OpenATV.
+
+
+## Authoritative package extraction — 2026-10-01
+
+The exact original `glasssysutil_13.20.ipk` was supplied and verified locally before this checkpoint.
+
+- SHA-256: `81aea6eb25b5ed519e904af87a3d7bece5d32ae6886a1690dac8ab47306fe3f7` (matches the immutable Trezor original).
+- The package contains the original SD/FHD/UHD skin modules and complete original image assets; these are now the visual authority and must not be redesigned.
+- The plugin payload contains compiled implementations for Python 2.6, 3.8, 3.9, 3.10, 3.11, 3.12 and 3.13. The Python 3.13 payload is a valid CPython 3.13 bytecode module whose embedded source metadata reports `plugin.py` size 455820 bytes.
+- The original postinst selects a version-specific bytecode file and has no Python 3.14 branch. This is the concrete compatibility blocker for current OpenATV/Python 3.14.
+- The original source `plugin.py` is not shipped in the IPK. Therefore the Python 3.14 port must be source-recovered/reconstructed from the authoritative 3.13 implementation while preserving original classes, functions, skins, assets and behavior. It must not be replaced by the post-w17 Warder dashboard design.
+
+Recovered top-level implementation inventory includes the original `SysUtilMngMain`, `GlassSysInfoBrowser`, `channelInfoCenter`, CCcam/OSCam/Mbox information screens, `univCamMng`, IPK/script/TAR centers, ECM/OSD ECM, swap/device/partition management, auto-install management, cron management, text editor and configuration/browser screens. This inventory supersedes screenshot-only inference.
