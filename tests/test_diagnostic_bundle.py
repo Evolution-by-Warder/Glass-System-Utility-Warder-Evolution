@@ -426,7 +426,9 @@ class OriginalGSURestorationTests(unittest.TestCase):
         source = open(PLUGIN, encoding="utf-8").read()
         self.assertIn('self.session.open(GSUSystemDashboard)', source)
         self.assertIn('self.session.open(GSUChannelDashboard)', source)
-        self.assertIn('self.session.open(GSUActiveCAM)', source)\n        self.assertIn('self.session.open(GSUCamSrvManager)', source)\n        self.assertIn('self.session.open(GSUECMInformation)', source)
+        self.assertIn('self.session.open(GSUActiveCAM)', source)
+        self.assertIn('self.session.open(GSUCamSrvManager)', source)
+        self.assertIn('self.session.open(GSUECMInformation)', source)
         self.assertIn('self.session.open(GSUWarderTools)', source)
 
 
