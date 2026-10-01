@@ -33,7 +33,7 @@ jobs:
           file --mime-type src/GlassSysUtil/SysMgt.png | grep -Fq 'image/png'
           grep -q 'def _temperature_candidates' src/GlassSysUtil/plugin.py
           grep -q 'def _temperature_values' src/GlassSysUtil/plugin.py
-          grep -q 'Check for updates' src/GlassSysUtil/plugin.py
+          grep -q 'GSUUpdater(self.session).check' src/GlassSysUtil/plugin.py
           ! grep -q 'WHERE_SESSIONSTART' src/GlassSysUtil/plugin.py
           ! grep -q 'def _auto_update_check' src/GlassSysUtil/plugin.py
           ! grep -q '_AUTO_UPDATE_STARTED' src/GlassSysUtil/plugin.py
