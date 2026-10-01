@@ -115,7 +115,7 @@ if __name__ == "__main__":
 
 class OSCamW11ReleaseContractTests(unittest.TestCase):
     def test_oscam_w11_fixed_table_contract(self):
-        source = PLUGIN.read_text(encoding="utf-8")
+        source = open(PLUGIN, encoding="utf-8").read()
         start = source.index("class GSUActiveCAM")
         end = source.index("class SysUtilMngMain", start)
         monitor = source[start:end]
@@ -137,10 +137,10 @@ class OSCamW11ReleaseContractTests(unittest.TestCase):
                                    "3C3C:0668@000000", "Example TV", "115 ms", "7s", "CONNECTED"))
 
     def test_w11_release_identity_is_consistent(self):
-        root = PLUGIN.parents[2]
-        version = (root / "src/GlassSysUtil/version").read_text(encoding="utf-8").strip()
-        control = (root / "packaging/CONTROL/control").read_text(encoding="utf-8")
-        postinst = (root / "packaging/CONTROL/postinst").read_text(encoding="utf-8")
+        root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        version = open(os.path.join(root, "src", "GlassSysUtil", "version"), encoding="utf-8").read().strip()
+        control = open(os.path.join(root, "packaging", "CONTROL", "control"), encoding="utf-8").read()
+        postinst = open(os.path.join(root, "packaging", "CONTROL", "postinst"), encoding="utf-8").read()
         self.assertEqual(version, "13.30-w11")
         self.assertIn("Version: " + version, control)
         self.assertIn(version, postinst)
