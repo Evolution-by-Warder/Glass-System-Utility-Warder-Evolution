@@ -138,7 +138,7 @@ class OSCamW11ReleaseContractTests(unittest.TestCase):
         version = open(os.path.join(root, "src", "GlassSysUtil", "version"), encoding="utf-8").read().strip()
         control = open(os.path.join(root, "packaging", "CONTROL", "control"), encoding="utf-8").read()
         postinst = open(os.path.join(root, "packaging", "CONTROL", "postinst"), encoding="utf-8").read()
-        self.assertEqual(version, "13.38-w19")
+        self.assertEqual(version, "13.39-w20")
         self.assertIn("Version: " + version, control)
         self.assertIn(version, postinst)
 
