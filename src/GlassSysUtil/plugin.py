@@ -2662,111 +2662,44 @@ class GSUInfo(Screen):
 
 
 class GSUSystemDashboard(Screen):
-    """GSU 13.20 GlassSysInfo geometry backed by modern read-only probes."""
+    """Dense original-style system dashboard; all probes remain read-only."""
     skin = """
     <screen name="GlassSysInfo" position="0,0" size="1920,1080" title="GlassSysInfo" backgroundColor="#31000000" flags="wfNoBorder">
-        <widget name="mem_labels" font="priveG;25" position="75,75" size="150,150" foregroundColor="#666666" transparent="1"/>
-        <widget name="ram" font="priveG;25" position="232,75" size="135,150" transparent="1"/>
-        <widget name="swap" font="priveG;25" position="382,75" size="135,150" transparent="1"/>
-        <widget name="mem_tot" font="priveG;25" position="532,75" size="135,150" transparent="1"/>
-        <widget name="root" font="priveG;25" position="682,75" size="135,150" transparent="1"/>
-        <ePixmap pixmap="/usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/fhd/devices/mem.png" position="244,255" size="60,120" alphatest="off"/>
-        <ePixmap pixmap="/usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/fhd/devices/swap.png" position="396,255" size="60,120" alphatest="off"/>
-        <ePixmap pixmap="/usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/fhd/devices/summ.png" position="538,255" size="60,120" alphatest="off"/>
-        <ePixmap pixmap="/usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/fhd/devices/root.png" position="690,255" size="60,120" alphatest="off"/>
-        <widget name="space_labels" font="priveG;25" position="75,375" size="150,150" foregroundColor="#666666" transparent="1"/>
-        <widget name="hdd" font="priveG;25" position="232,375" size="135,150" transparent="1"/>
-        <widget name="usb" font="priveG;25" position="382,375" size="135,150" transparent="1"/>
-        <widget name="cf" font="priveG;25" position="532,375" size="135,150" transparent="1"/>
-        <widget name="sd" font="priveG;25" position="682,375" size="135,150" transparent="1"/>
-        <ePixmap pixmap="/usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/fhd/devices/hdd.png" position="244,555" size="60,120" alphatest="off"/>
-        <ePixmap pixmap="/usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/fhd/devices/usb.png" position="396,555" size="60,120" alphatest="off"/>
-        <ePixmap pixmap="/usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/fhd/devices/cf.png" position="538,555" size="60,120" alphatest="off"/>
-        <ePixmap pixmap="/usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/fhd/devices/sd.png" position="681,555" size="60,120" alphatest="off"/>
-        <widget name="HDDCPULabels" position="75,675" size="150,150" font="priveG;25" foregroundColor="#666666"/>
-        <widget name="HDDTemperature" position="199,675" size="165,135" font="priveG;25" halign="center"/>
-        <widget name="hdddev" position="343,675" size="165,135" font="priveG;25" halign="center"/>
-        <widget name="cpu" position="490,675" size="165,135" font="priveG;25" halign="center" transparent="1"/>
-        <widget name="sensors" position="634,675" size="165,135" font="priveG;25" halign="center" transparent="1"/>
-        <eLabel text="Protocols:" font="priveG;25" position="75,870" size="150,150" foregroundColor="#666666" transparent="1"/>
-        <widget name="protocols" position="220,870" size="570,90" font="priveG;25" halign="center" transparent="1"/>
-        <widget name="ProccessInfo" position="906,195" size="939,330" font="priveG;25" transparent="1"/>
-        <widget name="DmesgInfo" position="906,675" size="939,295" font="priveG;25" transparent="1"/>
-        <eLabel text="Process Info" font="priveG;39" position="906,75" size="939,75" halign="center" shadowColor="#1A58A6" shadowOffset="-2,-1" transparent="1"/>
-        <eLabel text="Dmesg Info" font="priveG;39" position="906,555" size="939,75" halign="center" shadowColor="#1A58A6" shadowOffset="-2,-1" transparent="1"/>
-        <eLabel position="0,975" size="640,2" backgroundColor="red"/>
-        <eLabel position="640,975" size="640,2" backgroundColor="green"/>
-        <eLabel position="1280,975" size="640,2" backgroundColor="yellow"/>
-        <widget name="red" font="priveG;30" position="0,985" size="640,40" halign="center" foregroundColor="red" transparent="1"/>
-        <widget name="green" font="priveG;30" position="640,985" size="640,40" halign="center" foregroundColor="green" transparent="1"/>
-        <widget name="yellow" font="priveG;30" position="1280,985" size="640,40" halign="center" foregroundColor="yellow" transparent="1"/>
-        <!-- compatibility providers retained below for regression/API continuity -->
-        <widget name="system" position="0,0" size="1,1" font="Regular;1" transparent="1"/>
-        <widget name="resources" position="0,0" size="1,1" font="Regular;1" transparent="1"/>
-        <widget name="services" position="0,0" size="1,1" font="Regular;1" transparent="1"/>
-        <widget name="health" position="0,0" size="1,1" font="Regular;1" transparent="1"/>
+        <eLabel position="75,45" size="760,40" text="Memory / Storage / Temperature" font="Regular;28" foregroundColor="#666666" transparent="1"/>
+        <widget name="resources" position="75,100" size="760,430" font="Regular;25" transparent="1"/>
+        <eLabel position="75,555" size="760,40" text="System / Hardware" font="Regular;28" foregroundColor="#666666" transparent="1"/>
+        <widget name="system" position="75,610" size="760,315" font="Regular;23" transparent="1"/>
+        <eLabel position="925,45" size="900,40" text="Process Info" font="Regular;28" foregroundColor="#666666" transparent="1"/>
+        <widget name="services" position="925,100" size="900,350" font="Regular;23" transparent="1"/>
+        <eLabel position="925,475" size="900,40" text="Dmesg / Health Info" font="Regular;28" foregroundColor="#666666" transparent="1"/>
+        <widget name="health" position="925,530" size="900,395" font="Regular;22" transparent="1"/>
+        <eLabel position="75,945" size="150,35" text="Protocols:" font="Regular;25" foregroundColor="#666666" transparent="1"/>
+        <widget name="protocols" position="230,945" size="1150,40" font="Regular;24" foregroundColor="#33cc33" transparent="1"/>
+        <widget name="key_red" position="75,1010" size="300,45" font="Regular;27" foregroundColor="red" halign="center" transparent="1"/>
+        <widget name="key_yellow" position="810,1010" size="300,45" font="Regular;27" foregroundColor="yellow" halign="center" transparent="1"/>
+        <widget name="key_blue" position="1545,1010" size="300,45" font="Regular;27" foregroundColor="blue" halign="center" transparent="1"/>
     </screen>
     """
     def __init__(self, session):
         Screen.__init__(self, session)
-        for key in ("mem_labels", "ram", "swap", "mem_tot", "root", "space_labels", "hdd", "usb", "cf", "sd",
-                    "HDDCPULabels", "HDDTemperature", "hdddev", "cpu", "sensors", "protocols",
-                    "ProccessInfo", "DmesgInfo", "system", "resources", "services", "health"):
+        for key in ("system", "resources", "protocols", "services", "health"):
             self[key] = Label("")
-        self["red"] = Label(_("Exit"))
-        self["green"] = Label(_("Help"))
-        self["yellow"] = Label(_("Refresh"))
+        self["key_red"] = Label(_("Close"))
+        self["key_yellow"] = Label(_("Refresh"))
+        self["key_blue"] = Label(_("Tools"))
         self["actions"] = ActionMap(["OkCancelActions", "ColorActions"], {
-            "cancel": self.close, "red": self.close, "green": self.open_help, "yellow": self.refresh,
+            "cancel": self.close, "red": self.close, "yellow": self.refresh,
+            "blue": lambda: self.session.open(GSUWarderTools),
         }, -1)
         self.setTitle(_("System Information"))
         self.onShown.append(self.refresh)
 
-    def open_help(self):
-        self.session.open(GSUInfo, _("System Information"), system_information())
-
-    def open_tools(self):\n        """Modern diagnostics stay available without changing the original 13.20 key bar."""\n        self.session.open(GSUWarderTools)\n\n    def _space_text(self, path):
-        try:
-            stat = os.statvfs(path)
-            total = stat.f_blocks * stat.f_frsize
-            free = stat.f_bavail * stat.f_frsize
-            used = max(0, total - free)
-            return "%s\n%s\n%s" % (_human_bytes(total), _human_bytes(used), _human_bytes(free))
-        except Exception:
-            return "N/A"
-
     def refresh(self):
-        mem = {}
-        try:
-            for line in _read_lines("/proc/meminfo"):
-                if ":" in line:
-                    key, value = line.split(":", 1)
-                    mem[key] = int(value.strip().split()[0])
-        except Exception:
-            pass
-        mt = mem.get("MemTotal", 0); ma = mem.get("MemAvailable", mem.get("MemFree", 0))
-        st = mem.get("SwapTotal", 0); sf = mem.get("SwapFree", 0)
-        self["mem_labels"].setText(_("Total\nUsed\nFree"))
-        self["ram"].setText("%.0f MB\n%.0f MB\n%.0f MB" % (mt/1024.0, max(0, mt-ma)/1024.0, ma/1024.0) if mt else "N/A")
-        self["swap"].setText("%.0f MB\n%.0f MB\n%.0f MB" % (st/1024.0, max(0, st-sf)/1024.0, sf/1024.0) if st else "0 MB\n0 MB\n0 MB")
-        self["mem_tot"].setText("%.0f MB" % ((mt+st)/1024.0) if mt else "N/A")
-        self["root"].setText(self._space_text("/"))
-        self["space_labels"].setText(_("Total\nUsed\nFree"))
-        for key, mount in (("hdd", "/media/hdd"), ("usb", "/media/usb"), ("cf", "/media/cf"), ("sd", "/media/mmc")):
-            self[key].setText(self._space_text(mount) if os.path.exists(mount) else "N/A")
-        temps = _temperature_values()
-        self["HDDCPULabels"].setText(_("Temp.\nDevice\nCPU\nSensor"))
-        self["HDDTemperature"].setText("%.1f C" % max([v for n,v in temps], default=0.0) if temps else "N/A")
-        self["hdddev"].setText("/media/hdd" if os.path.exists("/media/hdd") else "N/A")
-        self["cpu"].setText(_read_text("/proc/stb/info/chipset", platform.machine()))
-        self["sensors"].setText("%d" % len(temps))
-        self["protocols"].setText(original_protocol_indicators())
-        self["ProccessInfo"].setText(service_dashboard_information())
-        self["DmesgInfo"].setText(storage_health_information() + "\n\n" + network_mount_doctor_information())
         self["system"].setText(system_information())
         self["resources"].setText(original_resource_dashboard_information())
+        self["protocols"].setText(original_protocol_indicators())
         self["services"].setText(service_dashboard_information())
-        self["health"].setText(storage_health_information())
+        self["health"].setText(storage_health_information() + "\n\n" + network_mount_doctor_information())
 
 
 class GSUChannelDashboard(Screen):
