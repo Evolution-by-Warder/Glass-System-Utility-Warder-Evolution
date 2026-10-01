@@ -1923,7 +1923,7 @@ class GSUUpdater(object):
 
     def _finish_check_error(self, detail):
         if not self.silent:
-            self.session.open(MessageBox, "Unable to check for updates.\n\n%s" % detail,
+            self.session.open(MessageBox, _("Unable to check for updates.\n\n%s") % detail,
                               MessageBox.TYPE_INFO, timeout=8)
 
     def _answer(self, answer):
@@ -1959,7 +1959,7 @@ class GSUUpdater(object):
         if progress is None:
             return
         if not success:
-            self._set_progress_text(progress, "Update installation failed.\n\n%s" % detail)
+            self._set_progress_text(progress, _("Update installation failed.\n\n%s") % detail)
             return
 
         self._set_progress_text(
@@ -2331,7 +2331,7 @@ class GSUActiveCAM(Screen):
                 self._refresh()
                 if rc != 0:
                     detail = output[-800:] if output else "restart command returned status %s" % rc
-                    self.session.open(MessageBox, "Active CAM restart failed.\n\n%s" % detail,
+                    self.session.open(MessageBox, _("Active CAM restart failed.\n\n%s") % detail,
                                       MessageBox.TYPE_ERROR, timeout=10)
                 elif verified:
                     changed = " (new PID %s)" % verified["pid"] if verified["pid"] != before_pid else ""
@@ -2455,10 +2455,10 @@ class SysUtilMngMain(Screen):
         elif action == "diagbundle":
             try:
                 path = create_diagnostic_bundle()
-                self.session.open(MessageBox, "Diagnostic bundle created:\n%s" % path,
+                self.session.open(MessageBox, _("Diagnostic bundle created:\n%s") % path,
                                   MessageBox.TYPE_INFO, timeout=10)
             except Exception as exc:
-                self.session.open(MessageBox, "Unable to create diagnostic bundle.\n\n%s" % exc,
+                self.session.open(MessageBox, _("Unable to create diagnostic bundle.\n\n%s") % exc,
                                   MessageBox.TYPE_ERROR, timeout=10)
         elif action == "update":
             GSUUpdater(self.session).check(silent=False)
