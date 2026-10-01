@@ -179,3 +179,18 @@ msgstr "Diagnostika siete"
 
 msgid "Diagnostic Summary"
 msgstr "Súhrn diagnostiky"
+
+msgid "GSU Health Check"
+msgstr "GSU Kontrola systému"
+
+msgid "Health Check is read-only. INFO means a capability is absent, optional, or not enough evidence exists to call it a fault."
+msgstr "Kontrola systému je iba na čítanie. INFO znamená, že schopnosť chýba, je voliteľná alebo nie je dostatok dôkazov na označenie stavu za chybu."
+
+msgid "Summary: %d interface(s) up, %d with IPv4."
+msgstr "Súhrn: %d rozhraní aktívnych, %d s IPv4."
+
+msgid "Doctor is read-only; credentials and mount configuration values are not displayed."
+msgstr "Diagnostika je iba na čítanie; prihlasovacie údaje ani hodnoty konfigurácie pripojení sa nezobrazujú."
+
+msgid "Summary: %d filesystem(s), %d warning(s)."
+msgstr "Súhrn: %d súborových systémov, %d upozornení."
