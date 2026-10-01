@@ -71,3 +71,27 @@ msgstr "Uruchom ponownie GUI Enigma2"
 msgid "About this build"
 msgstr "O tej wersji"
 
+msgid "Close"
+msgstr "Zamknij"
+
+msgid "Refresh"
+msgstr "Odśwież"
+
+msgid "Details"
+msgstr "Szczegóły"
+
+msgid "Restart CAM"
+msgstr "Uruchom ponownie CAM"
+
+msgid "Restart unavailable"
+msgstr "Restart niedostępny"
+
+msgid "Update check is unavailable on this Enigma2 image."
+msgstr "Sprawdzanie aktualizacji nie jest dostępne w tym obrazie Enigma2."
+
+msgid "Downloading, verifying and installing the update..."
+msgstr "Pobieranie, weryfikacja i instalowanie aktualizacji..."
+
+msgid "Update installed successfully.\\nEnigma2 GUI will restart in 3 seconds."
+msgstr "Aktualizacja została zainstalowana.\\nGUI Enigma2 uruchomi się ponownie za 3 sekundy."
+
