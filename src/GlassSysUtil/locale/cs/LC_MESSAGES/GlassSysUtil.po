@@ -1,0 +1,73 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Glass System Utility Warder Evolution\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: cs\n"
+
+msgid "Glass System Utility"
+msgstr "Glass System Utility"
+
+msgid "Glass System Utility Warder Evolution"
+msgstr "Glass System Utility Warder Evolution"
+
+msgid "Health Check"
+msgstr "Kontrola systému"
+
+msgid "Service Dashboard"
+msgstr "Přehled služeb"
+
+msgid "Active CAM / OSCam Monitor"
+msgstr "Aktivní CAM / OSCam Monitor"
+
+msgid "Network Health"
+msgstr "Stav sítě"
+
+msgid "Network Mount Doctor"
+msgstr "Diagnostika síťových připojení"
+
+msgid "Storage Health"
+msgstr "Stav úložišť"
+
+msgid "Enigma2 Runtime Health"
+msgstr "Stav Enigma2"
+
+msgid "Tuner information"
+msgstr "Informace o tunerech"
+
+msgid "Temperatures"
+msgstr "Teploty"
+
+msgid "System & Hardware"
+msgstr "Systém a hardware"
+
+msgid "Network & Interfaces"
+msgstr "Síť a rozhraní"
+
+msgid "Storage & Filesystems"
+msgstr "Úložiště a souborové systémy"
+
+msgid "Memory & Swap"
+msgstr "Paměť a swap"
+
+msgid "Services & Processes"
+msgstr "Služby a procesy"
+
+msgid "Network Mounts (NFS/CIFS)"
+msgstr "Síťová připojení (NFS/CIFS)"
+
+msgid "Logs & Diagnostics"
+msgstr "Logy a diagnostika"
+
+msgid "Create Diagnostic Bundle"
+msgstr "Vytvořit diagnostický balíček"
+
+msgid "Check for updates"
+msgstr "Zkontrolovat aktualizace"
+
+msgid "Restart Enigma2 GUI"
+msgstr "Restartovat Enigma2 GUI"
+
+msgid "About this build"
+msgstr "O této verzi"
+
