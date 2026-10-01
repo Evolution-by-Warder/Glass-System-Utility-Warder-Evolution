@@ -65,3 +65,10 @@ The exact original `glasssysutil_13.20.ipk` was supplied and verified locally be
 - The original source `plugin.py` is not shipped in the IPK. Therefore the Python 3.14 port must be source-recovered/reconstructed from the authoritative 3.13 implementation while preserving original classes, functions, skins, assets and behavior. It must not be replaced by the post-w17 Warder dashboard design.
 
 Recovered top-level implementation inventory includes the original `SysUtilMngMain`, `GlassSysInfoBrowser`, `channelInfoCenter`, CCcam/OSCam/Mbox information screens, `univCamMng`, IPK/script/TAR centers, ECM/OSD ECM, swap/device/partition management, auto-install management, cron management, text editor and configuration/browser screens. This inventory supersedes screenshot-only inference.
+
+
+## W18 continuation rule — original outward contract
+
+W18 remains the modern Python/runtime/backend base, but its custom dashboard presentation is not the target UI. From this checkpoint forward, the outward contract is the original GSU 13.20 hierarchy and visual language: original top-level function order, contextual help strip, four colored key areas, original System/Channel/CAM-SRV information grouping, and original screen purpose. Warder diagnostics remain an implementation/backend extension and are reached contextually rather than replacing the historical top-level GSU structure.
+
+The first restoration commit is `86ef6db1b7bbc1b965fbdd7167a8ad61ae4f2c82`: it restores the 13.20 top-level menu order and 930x790 original-style main-screen geometry while retaining the proven w18 Python 3.14 updater/runtime backends. Functions not yet safely ported remain visible in their historical location but gated rather than silently removed.
