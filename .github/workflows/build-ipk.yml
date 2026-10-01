@@ -35,6 +35,9 @@ jobs:
           grep -q 'def _temperature_candidates' src/GlassSysUtil/plugin.py
           grep -q 'def _temperature_values' src/GlassSysUtil/plugin.py
           grep -q 'Check for updates' src/GlassSysUtil/plugin.py
+          ! grep -q 'WHERE_SESSIONSTART' src/GlassSysUtil/plugin.py
+          ! grep -q 'def _auto_update_check' src/GlassSysUtil/plugin.py
+          ! grep -q '_AUTO_UPDATE_STARTED' src/GlassSysUtil/plugin.py
           grep -q 'ScrollLabel' src/GlassSysUtil/plugin.py
           python3 -m unittest discover -s tests -p 'test_*.py'
       - name: Build and validate deterministic IPK
