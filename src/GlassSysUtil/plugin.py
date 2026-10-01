@@ -2266,15 +2266,24 @@ def channel_technical_summary():
     if data["reference"]:
         rows.append(_("Service reference: %s") % data["reference"])
     fe = data["frontend"]
-    labels = (("tuner_type", _("System")), ("orbital_position", _("Orbital position")),
-              ("frequency", _("Frequency")), ("polarization_abbreviation", _("Polarization")),
-              ("symbol_rate", _("Symbol rate")), ("fec_inner", _("FEC")),
-              ("modulation", _("Modulation")), ("snr", _("SNR")),
-              ("agc", _("AGC")), ("ber", _("BER")))
+    labels = (("tuner_type", _("System")), ("tuner_number", _("Tuner")),
+              ("orbital_position", _("Orbital position")), ("frequency", _("Frequency")),
+              ("polarization_abbreviation", _("Polarization")), ("symbol_rate", _("Symbol rate")),
+              ("fec_inner", _("FEC")), ("modulation", _("Modulation")),
+              ("system", _("Delivery system")), ("inversion", _("Inversion")),
+              ("rolloff", _("Roll-off")), ("pilot", _("Pilot")),
+              ("snr", _("SNR")), ("snr_db", _("SNR dB")), ("agc", _("AGC")), ("ber", _("BER")))
     for key, label in labels:
         value = fe.get(key)
-        if value not in (None, ""):
-            rows.append("%s: %s" % (label, _format_orbital_position(value) if key == "orbital_position" else (_format_frontend_frequency(value) if key == "frequency" else (_format_symbol_rate(value) if key == "symbol_rate" else value))))
+        if value in (None, ""):
+            continue
+        if key == "orbital_position":
+            value = _format_orbital_position(value)
+        elif key == "frequency":
+            value = _format_frontend_frequency(value)
+        elif key == "symbol_rate":
+            value = _format_symbol_rate(value)
+        rows.append("%s: %s" % (label, value))
     if data["pids"]:
         rows += ["", _("Service IDs / PIDs")]
         for key in ("video", "audio", "pcr", "pmt", "txt", "tsid", "onid", "sid"):
@@ -2283,7 +2292,6 @@ def channel_technical_summary():
     if data["caids"]:
         rows += ["", _("CAIDs: %s") % ", ".join("%04X" % value for value in data["caids"])]
     return "\n".join(rows) if rows else _("Current service technical data not exposed.")
-
 
 def original_channel_overview_information():
     """GSU-style channel overview using only capabilities exposed by Enigma2/runtime."""
