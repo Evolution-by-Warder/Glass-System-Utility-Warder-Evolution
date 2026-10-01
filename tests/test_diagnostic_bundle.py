@@ -320,15 +320,18 @@ class LocalizationContractTests(unittest.TestCase):
 
     def test_menu_labels_use_gettext(self):
         source = open(PLUGIN, encoding="utf-8").read()
-        for label in ("Health Check", "Service Dashboard", "Active CAM / OSCam Monitor",
-                      "Network Health", "Storage Health", "Check for updates",
-                      "Restart Enigma2 GUI", "About this build"):
+        for label in ("System Information", "Channel Information", "OSCam Information",
+                      "CAM/SRV Manager", "ECM Information", "Device Manager",
+                      "Warder Diagnostics & Tools", "Health Check", "Network Health",
+                      "Storage Health", "Check for updates", "Restart Enigma2 GUI", "About this build"):
             self.assertIn('_("' + label + '")', source)
 
     def test_runtime_titles_and_dialogs_are_localizable(self):
         source = open(PLUGIN, encoding="utf-8").read()
         for text in ("Glass System Utility - Warder Evolution",
-                     "Active CAM / OSCam Monitor",
+                     "CAM/SRV Manager",
+                     "System Information",
+                     "Channel Information",
                      "Unable to check for updates.\\n\\n%s",
                      "Update installation failed.\\n\\n%s",
                      "Diagnostic bundle created:\\n%s",
