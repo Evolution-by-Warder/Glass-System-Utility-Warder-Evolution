@@ -1,6 +1,6 @@
 Package: enigma2-plugin-glasssysutil
-Version: 13.33-w14
+Version: 13.34-w15
 Architecture: all
 Maintainer: Warder Evolution
 Depends: enigma2
-Description: Glass System Utility Warder Evolution - modern Enigma2 system utility
+Description: Glass System Utility - Warder Evolution - modern Enigma2 system utility
