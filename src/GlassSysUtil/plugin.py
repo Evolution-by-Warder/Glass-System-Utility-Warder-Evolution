@@ -1903,6 +1903,7 @@ class GSUActiveCAM(Screen):
         self._live_rows = []
         self._refresh_in_progress = False
         self._live_fetch_running = False
+        self._restart_in_progress = False
         self._closing_live_monitor = False
         self._refresh()
         self._start_auto_refresh()
@@ -1925,7 +1926,7 @@ class GSUActiveCAM(Screen):
             self["live_status"].setText("Live OSCam: %d active client/reader row%s  |  OK = row details" %
                                         (len(rows), "" if len(rows) == 1 else "s"))
         else:
-            self["live_status"].setText("Live OSCam: %s" % reason)
+            self["live_status"].setText("Live OSCam: %s" % (reason or "No active client/reader rows."))
 
     def _refresh(self):
         if getattr(self, "_closing_live_monitor", False):
@@ -1980,6 +1981,7 @@ class GSUActiveCAM(Screen):
                 rows, reason = oscam_live_rows()
 
             def finish():
+                self._restart_in_progress = False
                 if getattr(self, "_closing_live_monitor", False):
                     self._live_fetch_running = False
                     return
@@ -2072,6 +2074,8 @@ class GSUActiveCAM(Screen):
         self.session.open(GSUInfo, "CAM / OSCam Details", "\n".join(parts))
 
     def restart_cam(self):
+        if getattr(self, "_restart_in_progress", False):
+            return
         if not self.restart_command:
             self.session.open(MessageBox, self.restart_detail, MessageBox.TYPE_INFO, timeout=8)
             return
@@ -2084,6 +2088,9 @@ class GSUActiveCAM(Screen):
     def _restart_confirmed(self, answer):
         if not answer:
             return
+        if getattr(self, "_restart_in_progress", False):
+            return
+        self._restart_in_progress = True
         command = list(self.restart_command)
         before = _active_cam()
         before_pid = before["pid"] if before else ""
@@ -2132,7 +2139,11 @@ class GSUActiveCAM(Screen):
                     timer.timeout.connect(finish)
                 timer.start(1, True)
 
-        threading.Thread(target=worker, name="GSU-CAM-Restart", daemon=True).start()
+        try:
+            threading.Thread(target=worker, name="GSU-CAM-Restart", daemon=True).start()
+        except Exception:
+            self._restart_in_progress = False
+            self.session.open(MessageBox, "Unable to start CAM restart worker.", MessageBox.TYPE_ERROR, timeout=8)
 
 class SysUtilMngMain(Screen):
     skin = """
