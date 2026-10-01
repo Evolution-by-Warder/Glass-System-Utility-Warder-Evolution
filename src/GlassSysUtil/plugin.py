@@ -1354,6 +1354,39 @@ def network_diagnostics():
 
 
 
+def network_mount_doctor_information():
+    """Read-only NFS/CIFS doctor for active mounts and common client capabilities."""
+    rows = ["GSU Network Mount Doctor", ""]
+    active = []
+    for line in _read_lines("/proc/mounts"):
+        fields = line.split()
+        if len(fields) < 4 or fields[2].lower() not in ("nfs", "nfs4", "cifs", "smbfs"):
+            continue
+        source, target, fstype, options = fields[:4]
+        active.append((source, target, fstype, options))
+        try:
+            usage = shutil.disk_usage(target)
+            free_pct = usage.free * 100.0 / usage.total if usage.total else 0
+            state = "PASS" if free_pct >= 5 else "WARNING"
+            rows.append("[%s] %s -> %s [%s] %.1f%% free" % (state, source, target, fstype, free_pct))
+        except Exception:
+            rows.append("[INFO] %s -> %s [%s] mounted; usage unavailable" % (source, target, fstype))
+    if not active:
+        rows.append("[INFO] No active NFS/CIFS mounts.")
+
+    rows += ["", "Client capabilities:"]
+    nfs = bool(shutil.which("mount.nfs") or shutil.which("mount.nfs4") or os.path.exists("/sbin/mount.nfs"))
+    cifs = bool(shutil.which("mount.cifs") or os.path.exists("/sbin/mount.cifs"))
+    rows.append("  NFS client: %s" % ("available" if nfs else "not detected"))
+    rows.append("  CIFS client: %s" % ("available" if cifs else "not detected"))
+
+    files = [path for path in ("/etc/fstab", "/etc/enigma2/automounts.xml", "/etc/auto.network")
+             if os.path.isfile(path)]
+    rows.append("  Persistent mount configuration: %s" % (", ".join(files) if files else "not detected"))
+    rows += ["", "Doctor is read-only; credentials and mount configuration values are not displayed."]
+    return "\n".join(rows)
+
+
 def time_health_information():
     """Report clock and detected time-sync facilities without assuming an image."""
     rows = ["Local time: %s" % time.strftime("%Y-%m-%d %H:%M:%S %Z")]
@@ -2262,6 +2295,7 @@ class SysUtilMngMain(Screen):
         ("Services & Processes", "services"),
         ("Listening Ports", "ports"),
         ("Network Mounts (NFS/CIFS)", "mounts"),
+        ("Network Mount Doctor", "mountdoctor"),
         ("CAM Inventory", "caminventory"),
         ("Active CAM / OSCam Monitor", "cammonitor"),
 
@@ -2305,6 +2339,7 @@ class SysUtilMngMain(Screen):
             "services": ("Services & Processes", service_information),
             "ports": ("Listening Ports", listening_ports_information),
             "mounts": ("Network Mounts", mount_information),
+            "mountdoctor": ("Network Mount Doctor", network_mount_doctor_information),
             "caminventory": ("CAM Inventory", cam_inventory_information),
 
             "tuners": ("Tuner information", tuner_information),
