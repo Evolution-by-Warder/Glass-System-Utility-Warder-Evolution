@@ -310,3 +310,22 @@ class UpdateDiscoveryUXTests(unittest.TestCase):
         body = source[start:end]
         self.assertIn("_version_key(release[\"version\"]) <= _version_key(VERSION)", body)
         self.assertIn("Install the update now?", body)
+
+
+class LocalizationContractTests(unittest.TestCase):
+    def test_menu_labels_use_gettext(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        for label in ("Health Check", "Service Dashboard", "Active CAM / OSCam Monitor",
+                      "Network Health", "Storage Health", "Check for updates",
+                      "Restart Enigma2 GUI", "About this build"):
+            self.assertIn('_("' + label + '")', source)
+
+    def test_core_languages_are_present(self):
+        root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        for lang in ("sk", "cs", "de", "pl", "it", "es", "fr"):
+            path = os.path.join(root, "src", "GlassSysUtil", "locale", lang,
+                                "LC_MESSAGES", "GlassSysUtil.po")
+            self.assertTrue(os.path.isfile(path), path)
+            data = open(path, encoding="utf-8").read()
+            self.assertIn('msgid "Health Check"', data)
+            self.assertIn('msgid "Check for updates"', data)
