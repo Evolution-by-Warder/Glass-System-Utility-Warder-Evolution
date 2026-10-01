@@ -616,6 +616,20 @@ def _oscam_service_display(row):
     return "%s:%s@%s" % (srvid or "----", caid or "----", provid or "------")
 
 
+def _oscam_live_quality(rows):
+    """Summarize whether the API mapping is useful without exposing row values."""
+    if not rows:
+        return "no rows"
+    fields = ("name", "address", "port", "protocol", "srvid", "caid",
+              "provid", "channel", "ecm", "idle", "status")
+    useful = 0
+    total = len(rows) * len(fields)
+    for row in rows:
+        useful += sum(1 for field in fields if _oscam_display(row.get(field)))
+    percent = int(round((100.0 * useful) / total)) if total else 0
+    return "%d/%d fields (%d%%)" % (useful, total, percent)
+
+
 def _oscam_table_cell(value, width):
     value = str(value or "").replace("\n", " ").replace("\r", " ")
     if len(value) > width:
@@ -1779,8 +1793,9 @@ class GSUActiveCAM(Screen):
                         self["table"].moveToIndex(min(selected, len(table_rows) - 1))
                     except Exception:
                         pass
-                    self["live_status"].setText("Live OSCam: %d client/reader row%s" %
-                                                (len(table_rows), "" if len(table_rows) == 1 else "s"))
+                    self["live_status"].setText("Live OSCam: %d row%s | mapped %s" %
+                                                (len(table_rows), "" if len(table_rows) == 1 else "s",
+                                                 _oscam_live_quality(table_rows)))
                 else:
                     self["live_status"].setText("Live OSCam: %s" % reason)
             except Exception:
@@ -1834,8 +1849,9 @@ class GSUActiveCAM(Screen):
                             self["table"].moveToIndex(min(selected, len(rows) - 1))
                         except Exception:
                             pass
-                        self["live_status"].setText("Live OSCam: %d client/reader row%s" %
-                                                    (len(rows), "" if len(rows) == 1 else "s"))
+                        self["live_status"].setText("Live OSCam: %d row%s | mapped %s" %
+                                                    (len(rows), "" if len(rows) == 1 else "s",
+                                                     _oscam_live_quality(rows)))
                     else:
                         self["live_status"].setText("Live OSCam: %s" % reason)
                     try:
