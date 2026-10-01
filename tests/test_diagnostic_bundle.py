@@ -279,7 +279,9 @@ class RemainingLegacyAreasTests(unittest.TestCase):
         start = source.index("def conditional_legacy_cam_information")
         end = source.index("def service_information", start)
         body = source[start:end]
-        for forbidden in ("subprocess.", "os.system(", "write(", "open(",\n                          "chpasswd", "crontab ", "rm ", "unlink(", "rename(", "killall"):\n            # Do not reject the harmless /etc/passwd read used to detect the root account.
+        # /etc/passwd is read-only here; reject mutation primitives, not that database path.
+        for forbidden in ("subprocess.", "os.system(", "write(",
+                          "chpasswd", "crontab ", "rm ", "unlink(", "rename(", "killall"):
             self.assertNotIn(forbidden, body)
 
 
