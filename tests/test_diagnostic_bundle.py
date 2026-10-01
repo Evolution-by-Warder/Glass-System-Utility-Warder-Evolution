@@ -111,3 +111,36 @@ class DiagnosticRedactionTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class OSCamW11ReleaseContractTests(unittest.TestCase):
+    def test_oscam_w11_fixed_table_contract(self):
+        source = PLUGIN.read_text(encoding="utf-8")
+        start = source.index("class GSUActiveCAM")
+        end = source.index("class SysUtilMngMain", start)
+        monitor = source[start:end]
+        self.assertNotIn('<widget name="h_', monitor)
+        self.assertNotIn('<widget name="sep', monitor)
+        self.assertGreaterEqual(monitor.count("<eLabel"), 17)
+        self.assertIn('source="table" render="Listbox"', monitor)
+        self.assertIn("TemplatedMultiContent", monitor)
+
+    def test_oscam_tuple_keeps_row_and_nine_columns(self):
+        row = {"name": "reader1", "address": "192.168.10.6", "port": "3333",
+               "protocol": "cs378x", "srvid": "3C3C", "caid": "0668",
+               "provid": "000000", "channel": "Example TV", "ecm": "115 ms",
+               "idle": "7s", "status": "CONNECTED"}
+        item = gsu._oscam_list_tuple(row)
+        self.assertEqual(len(item), 10)
+        self.assertIs(item[0], row)
+        self.assertEqual(item[1:], ("reader1", "192.168.10.6", "3333", "cs378x",
+                                   "3C3C:0668@000000", "Example TV", "115 ms", "7s", "CONNECTED"))
+
+    def test_w11_release_identity_is_consistent(self):
+        root = PLUGIN.parents[2]
+        version = (root / "src/GlassSysUtil/version").read_text(encoding="utf-8").strip()
+        control = (root / "packaging/CONTROL/control").read_text(encoding="utf-8")
+        postinst = (root / "packaging/CONTROL/postinst").read_text(encoding="utf-8")
+        self.assertEqual(version, "13.30-w11")
+        self.assertIn("Version: " + version, control)
+        self.assertIn(version, postinst)
