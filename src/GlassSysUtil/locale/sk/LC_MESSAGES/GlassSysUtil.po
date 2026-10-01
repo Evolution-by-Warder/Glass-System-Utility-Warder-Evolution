@@ -473,3 +473,36 @@ msgstr "IPK/DEB a používateľské skripty"
 
 msgid "Legacy & Maintenance"
 msgstr "Staršie funkcie a údržba"
+
+msgid "CCcam Information"
+msgstr "CCcam informácie"
+
+msgid "Mbox Information"
+msgstr "Mbox informácie"
+
+msgid "OSD ECM Information"
+msgstr "OSD ECM informácie"
+
+msgid "Channel settings"
+msgstr "Nastavenia kanálov"
+
+msgid "Automatic installations"
+msgstr "Automatické inštalácie"
+
+msgid "Crond Manager"
+msgstr "Spravovanie Crond-u"
+
+msgid "Text editor"
+msgstr "Textový editor"
+
+msgid "Reset root user password"
+msgstr "Reset hesla užívateľa root"
+
+msgid "Warder tools"
+msgstr "Warder nástroje"
+
+msgid "Exit"
+msgstr "Ukončiť"
+
+msgid "OK"
+msgstr "OK"
