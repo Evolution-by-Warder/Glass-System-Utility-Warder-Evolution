@@ -337,6 +337,29 @@ class ChannelTechnicalDataTests(unittest.TestCase):
             self.assertNotIn(forbidden, body)
 
 
+class ReceiverCandidateContractTests(unittest.TestCase):
+    def test_cam_manager_composes_proven_backends(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        start = source.index("class GSUCamSrvManager")
+        end = source.index("class GSUActiveCAM", start)
+        body = source[start:end]
+        for token in ("cam_srv_context_information()", "current_service_technical_information()",
+                      "_active_cam_restart_command()", "oscam_live_rows()", "_oscam_table_values("):
+            self.assertIn(token, body)
+
+    def test_original_primary_screens_are_distinct(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        for title in ("System Information", "Channel Information", "OSCam Information",
+                      "CAM/SRV Manager", "ECM Information"):
+            self.assertIn('title="' + title + '"', source)
+
+    def test_no_session_start_updater_registration_returned(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        self.assertNotIn("WHERE_SESSIONSTART", source)
+        self.assertNotIn("_AUTO_UPDATE_STARTED", source)
+        self.assertIn("check(silent=True)", source)
+
+
 class CombinedSystemAuditTests(unittest.TestCase):
     def test_system_dashboard_uses_restored_gsu_resource_widgets(self):
         source = open(PLUGIN, encoding="utf-8").read()
