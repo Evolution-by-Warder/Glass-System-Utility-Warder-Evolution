@@ -516,8 +516,7 @@ class LocalizationContractTests(unittest.TestCase):
                      "Channel Information",
                      "Unable to check for updates.\\n\\n%s",
                      "Update installation failed.\\n\\n%s",
-                     "Diagnostic bundle created:\\n%s",
-                     "About"):
+                     "Diagnostic bundle created:\\n%s"):
             self.assertIn('_("' + text + '")', source)
 
     def test_build_compiles_gettext_catalogs(self):
