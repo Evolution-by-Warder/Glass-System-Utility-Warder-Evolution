@@ -475,3 +475,16 @@ Known non-blocking follow-up: localization is not yet complete inside every diag
 - CI now validates the deferred plugin-open updater contract structurally with Python AST rather than brittle source-text matching.
 - GitHub Actions build run 36855162998: PASS at commit de17393b3d0eeea51b28b99c2f2fcf783d2f1d31.
 - REAL RECEIVER: REVIEW REQUIRED. Do not mark w17 REAL PASS until installed and exercised on the GigaBlue Quad 4K Pro.
+
+
+## 13.36-w17 published hotfix — 2026-10-01
+
+- Release workflow 36855291315: PASS.
+- Immutable release tag: `v13.36-w17`.
+- Release target: `370fed5640609169907652276b232349caada525`.
+- Asset: `enigma2-plugin-glasssysutil_13.36-w17_all.ipk`, 41,558 bytes.
+- SHA-256: `b00ab2370c880923221c852748ee07b70ab4e97e6796344540a58a21f748fc1b`.
+- SHA-256 sidecar published and release assets verified through GitHub API.
+- REAL RECEIVER: REVIEW REQUIRED. Published does not imply receiver PASS.
+
+Next development line starts from the immutable original GSU 13.20 as architectural/visual authority: audit and repair original functions first, then integrate the Warder Evolution backends into that repaired structure and validate the combined system.
