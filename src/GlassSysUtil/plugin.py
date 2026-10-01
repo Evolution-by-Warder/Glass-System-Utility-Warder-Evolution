@@ -2011,10 +2011,6 @@ def main(session, **kwargs):
     session.open(SysUtilMngMain)
 
 
-def sessionAutostart(reason, **kwargs):
-    # Network check only after Enigma2 session exists; failures stay silent.
-
-
 def startViaMenu(menuid, **kwargs):
     if menuid == "setup":
         return [(_("Glass System Utility"), main, "glass_sys_utils", None)]
