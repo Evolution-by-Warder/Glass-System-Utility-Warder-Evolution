@@ -522,6 +522,24 @@ class OriginalVisualContractTests(unittest.TestCase):
         self.assertIn("self.session.open(GSUPackageCenter)", source)
 
 
+class OriginalMaintenanceWorkflowTests(unittest.TestCase):
+    def test_maintenance_entries_open_real_screens_not_flat_info_dialogs(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        for cls in ("GSUSwapManager", "GSUDeviceManager", "GSUCrondManager",
+                    "GSUTextEditorCenter", "GSUChannelSettingsCenter", "GSURootPasswordCenter"):
+            self.assertIn("class " + cls, source)
+            self.assertIn("self.session.open(" + cls + ")", source)
+        self.assertIn('name="GlassStatusCenter"', source)
+
+    def test_maintenance_centers_keep_mutations_gated(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        start = source.index("class GSUOriginalStatusCenter")
+        end = source.index("class GSUPackageCenter", start)
+        body = source[start:end]
+        for forbidden in ("os.system(", "subprocess.", "write(", "unlink(", "killall", "mkfs", "swapon", "swapoff"):
+            self.assertNotIn(forbidden, body)
+
+
 class LocalizationContractTests(unittest.TestCase):
     def test_localization_follows_enigma2_language(self):
         root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
