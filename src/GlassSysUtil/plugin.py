@@ -2928,66 +2928,73 @@ class GSUActiveCAM(Screen):
             self.session.open(MessageBox, _("Unable to start CAM restart worker."), MessageBox.TYPE_ERROR, timeout=8)
 
 class SysUtilMngMain(Screen):
-    """Original GSU hierarchy with Warder backends folded into a compact tools group."""
+    """GSU 13.20 top-level presentation backed by the modern Warder runtime."""
     skin = """
-    <screen name="SysUtilMngMain" position="center,center" size="1180,720" title="Glass System Utility - Warder Evolution">
-        <eLabel position="25,18" size="1130,48" text="Glass System Utility - Warder Evolution" font="Regular;30" foregroundColor="#e6d500" />
-        <widget name="menu" position="35,82" size="760,520" font="Regular;27" itemHeight="42" />
-        <eLabel position="820,82" size="320,38" text="Warder Evolution" font="Regular;24" foregroundColor="#3399ff" />
-        <widget name="context" position="820,132" size="320,300" font="Regular;21" />
-        <widget name="availability" position="820,455" size="320,90" font="Regular;20" />
-        <widget name="key_red" position="35,648" size="250,45" font="Regular;24" foregroundColor="#ff3333" />
-        <widget name="key_green" position="330,648" size="250,45" font="Regular;24" foregroundColor="#33cc33" />
-        <widget name="key_yellow" position="625,648" size="250,45" font="Regular;24" foregroundColor="#e6d500" />
-        <widget name="key_blue" position="920,648" size="220,45" font="Regular;24" foregroundColor="#3399ff" />
+    <screen name="GlassSysUtil" position="center,center" size="930,790" title="Glass System Utility" backgroundColor="#31000000">
+        <widget name="menu" position="30,0" size="870,600" font="Regular;25" itemHeight="38" scrollbarMode="showOnDemand" backgroundColor="#31000000" />
+        <eLabel position="0,607" size="930,2" backgroundColor="#888888" zPosition="5" transparent="0" />
+        <widget name="context" position="30,610" size="870,120" font="Regular;23" zPosition="4" valign="center" halign="center" foregroundColor="#888888" transparent="1" />
+        <eLabel position="0,733" size="232,2" backgroundColor="red" zPosition="5" transparent="0" />
+        <eLabel position="232,733" size="233,2" backgroundColor="green" zPosition="5" transparent="0" />
+        <eLabel position="465,733" size="232,2" backgroundColor="yellow" zPosition="5" transparent="0" />
+        <eLabel position="697,733" size="233,2" backgroundColor="blue" zPosition="5" transparent="0" />
+        <widget name="key_red" position="0,743" size="232,37" font="Regular;27" valign="center" halign="center" foregroundColor="red" transparent="1"/>
+        <widget name="key_green" position="232,743" size="233,37" font="Regular;27" valign="center" halign="center" foregroundColor="green" transparent="1"/>
+        <widget name="key_yellow" position="465,743" size="232,37" font="Regular;27" valign="center" halign="center" foregroundColor="yellow" transparent="1"/>
+        <widget name="key_blue" position="697,743" size="233,37" font="Regular;27" valign="center" halign="center" foregroundColor="blue" transparent="1"/>
     </screen>
     """
     MENU = [
         (_("System Information"), "originalsystem"),
         (_("Channel Information"), "originalchannel"),
+        (_("CCcam Information"), "cccaminfo"),
         (_("OSCam Information"), "oscaminfo"),
-        (_("CAM/SRV Manager"), "cammanager"),
-        (_("ECM Information"), "ecminfo"),
-        (_("Device Manager"), "devicemanager"),
-        (_("Swap Manager"), "swapmanager"),
+        (_("Mbox Information"), "mboxinfo"),
         (_("IPK/DEB and user scripts"), "packagetools"),
-        (_("Legacy & Maintenance"), "legacymaintenance"),
-        (_("Warder Diagnostics & Tools"), "tools"),
-        (_("Check for updates"), "update"),
-        (_("Restart Enigma2 GUI"), "restart"),
-        (_("About this build"), "about"),
+        (_("ECM Information"), "ecminfo"),
+        (_("CAM/SRV Manager"), "cammanager"),
+        (_("OSD ECM Information"), "osdecm"),
+        (_("Swap Manager"), "swapmanager"),
+        (_("Channel settings"), "channelsettings"),
+        (_("Device Manager"), "devicemanager"),
+        (_("Automatic installations"), "autoinstall"),
+        (_("Crond Manager"), "crond"),
+        (_("Text editor"), "texteditor"),
+        (_("Reset root user password"), "rootpassword"),
     ]
     HELP = {
-        "originalsystem": _("System, memory, swap, storage, temperature, process and service overview."),
-        "originalchannel": _("Current service, tuner/frontend and CAM/ECM information in one dashboard."),
-        "oscaminfo": _("Detailed live OSCam client/reader monitor and runtime information."),
-        "cammanager": _("Detected CAM/SRV state, current service context and safe CAM actions."),
-        "ecminfo": _("Focused current-service ECM, CAID and decoding status."),
-        "devicemanager": _("Detected devices and filesystems. Destructive legacy actions remain disabled."),
-        "swapmanager": _("Current swap state. Creation and enable/disable actions remain safety-gated."),
-        "packagetools": _("Local package/script capabilities. Obsolete remote installers are not restored."),
-        "legacymaintenance": _("Conditional legacy CAM, channel, cron, editor and root-account migration status."),
-        "tools": _("Modern Warder health checks, network, mounts, runtime diagnostics, logs and support bundle."),
-        "update": _("Check the immutable Warder Evolution release channel for an update."),
-        "restart": _("Restart only the Enigma2 graphical interface after confirmation."),
-        "about": _("Build and migration status for Glass System Utility - Warder Evolution."),
+        "originalsystem": _("Displays system, memory, storage, temperature, process and service information."),
+        "originalchannel": _("Displays current channel, ECM, bitrate, signal and transponder information."),
+        "cccaminfo": _("CCcam information is available only when a compatible CCcam runtime is detected."),
+        "oscaminfo": _("Displays OSCam runtime, clients/readers and decoding information."),
+        "mboxinfo": _("Mbox information is available only when a compatible Mbox runtime is detected."),
+        "packagetools": _("User scripts and local IPK/DEB/TAR package tools."),
+        "ecminfo": _("Displays current ECM and conditional-access information."),
+        "cammanager": _("Manage and inspect the active CAM/SRV using image-supported mechanisms."),
+        "osdecm": _("OSD ECM information compatibility area."),
+        "swapmanager": _("Displays and manages swap using capability-gated operations."),
+        "channelsettings": _("Channel settings compatibility area."),
+        "devicemanager": _("Detected devices, filesystems and storage information."),
+        "autoinstall": _("Automatic installation compatibility area."),
+        "crond": _("Crond management compatibility area."),
+        "texteditor": _("Text editor compatibility area."),
+        "rootpassword": _("Root password maintenance compatibility area."),
     }
 
     def __init__(self, session):
         Screen.__init__(self, session)
         self["menu"] = MenuList([item[0] for item in self.MENU])
         self["context"] = Label("")
-        self["availability"] = Label("")
-        self["key_red"] = Label(_("Close"))
-        self["key_green"] = Label(_("Open"))
+        self["key_red"] = Label(_("Exit"))
+        self["key_green"] = Label(_("OK"))
         self["key_yellow"] = Label(_("Refresh"))
-        self["key_blue"] = Label(_("Tools"))
+        self["key_blue"] = Label(_("Warder tools"))
         self["actions"] = ActionMap(["OkCancelActions", "ColorActions", "DirectionActions"], {
             "ok": self.ok, "cancel": self.close, "red": self.close, "green": self.ok,
             "yellow": self._refresh_context, "blue": self.open_tools,
             "up": self._up, "down": self._down,
         }, -1)
-        self.setTitle(_("Glass System Utility - Warder Evolution"))
+        self.setTitle("GSU ver. %s" % VERSION)
         self.onShown.append(self._check_update_on_open)
         self.onShown.append(self._refresh_context)
 
@@ -2998,11 +3005,7 @@ class SysUtilMngMain(Screen):
             return ""
 
     def _refresh_context(self):
-        action = self._selected_action()
-        self["context"].setText(self.HELP.get(action, ""))
-        active = _active_cam()
-        cam = active_cam_summary() if active else _("CAM: not detected")
-        self["availability"].setText(_("Availability") + "\n" + cam)
+        self["context"].setText(self.HELP.get(self._selected_action(), ""))
 
     def _up(self):
         self["menu"].up()
@@ -3030,15 +3033,7 @@ class SysUtilMngMain(Screen):
 
     def ok(self):
         action = self._selected_action()
-        actions = {
-            "devicemanager": (_("Device Manager"), device_manager_information),
-            "swapmanager": (_("Swap Manager"), swap_manager_information),
-            "packagetools": (_("IPK/DEB and user scripts"), package_tools_information),
-        }
-        if action in actions:
-            title, fnc = actions[action]
-            self._info(title, fnc())
-        elif action == "originalsystem":
+        if action == "originalsystem":
             self.session.open(GSUSystemDashboard)
         elif action == "originalchannel":
             self.session.open(GSUChannelDashboard)
@@ -3048,24 +3043,26 @@ class SysUtilMngMain(Screen):
             self.session.open(GSUCamSrvManager)
         elif action == "ecminfo":
             self.session.open(GSUECMInformation)
-        elif action == "legacymaintenance":
-            self._info(_("Legacy & Maintenance"), "\\n\\n".join((conditional_legacy_cam_information(), channel_settings_information(), cron_manager_information(), text_editor_information(), root_password_information())))
-        elif action == "tools":
-            self.open_tools()
-        elif action == "update":
-            GSUUpdater(self.session).check(silent=False)
-        elif action == "restart":
-            try:
-                from Screens.Standby import TryQuitMainloop
-                self.session.open(TryQuitMainloop, 3)
-            except Exception as exc:
-                self.session.open(MessageBox, str(exc), MessageBox.TYPE_ERROR)
-        elif action == "about":
-            self._info(_("About"), (
-                "Glass System Utility - Warder Evolution %s\n\n"
-                "GSU 13.20 content/visual structure is the migration baseline.\n"
-                "Legacy state-changing functions are restored only after modern safety review."
-            ) % VERSION)
+        elif action == "devicemanager":
+            self._info(_("Device Manager"), device_manager_information())
+        elif action == "swapmanager":
+            self._info(_("Swap Manager"), swap_manager_information())
+        elif action == "packagetools":
+            self._info(_("IPK/DEB and user scripts"), package_tools_information())
+        elif action in ("cccaminfo", "mboxinfo"):
+            self._info(self.MENU[self["menu"].getSelectedIndex()][0], conditional_legacy_cam_information())
+        elif action == "channelsettings":
+            self._info(_("Channel settings"), channel_settings_information())
+        elif action == "crond":
+            self._info(_("Crond Manager"), cron_manager_information())
+        elif action == "texteditor":
+            self._info(_("Text editor"), text_editor_information())
+        elif action == "rootpassword":
+            self._info(_("Reset root user password"), root_password_information())
+        elif action in ("osdecm", "autoinstall"):
+            self._info(self.MENU[self["menu"].getSelectedIndex()][0],
+                       _("This original GSU function is retained in the migration map and remains gated until its Python 3.14 implementation is receiver-validated."))
+
 
 
 class GSUWarderTools(Screen):
