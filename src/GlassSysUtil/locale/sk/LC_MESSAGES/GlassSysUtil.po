@@ -341,3 +341,63 @@ msgstr "sledovanie chrony:"
 
 msgid "NTP peers:"
 msgstr "NTP servery:"
+
+msgid "Hardware serial interface: %s"
+msgstr "Hardvérové sériové rozhranie: %s"
+
+msgid "available (hidden)"
+msgstr "dostupné (skryté)"
+
+msgid "not exposed"
+msgstr "nedostupné"
+
+msgid "CPU frequency: %.0f-%.0f MHz"
+msgstr "Frekvencia CPU: %.0f-%.0f MHz"
+
+msgid "Process IDs: %s"
+msgstr "ID procesov: %s"
+
+msgid "PID file: %s"
+msgstr "PID súbor: %s"
+
+msgid "Config dir: %s"
+msgstr "Adresár konfigurácie: %s"
+
+msgid "DVB device adapters: %s"
+msgstr "DVB adaptéry zariadení: %s"
+
+msgid "Process runtime: %dd %02d:%02d:%02d"
+msgstr "Doba behu procesu: %dd %02d:%02d:%02d"
+
+msgid "Runtime version file: %s"
+msgstr "Súbor runtime verzie: %s"
+
+msgid "Readers configured: %d"
+msgstr "Nakonfigurované readery: %d"
+
+msgid "Accounts configured: %d"
+msgstr "Nakonfigurované účty: %d"
+
+msgid "Version: %s"
+msgstr "Verzia: %s"
+
+msgid "Status: %s"
+msgstr "Stav: %s"
+
+msgid "Time sync: %s"
+msgstr "Synchronizácia času: %s"
+
+msgid "no known time-sync facility detected"
+msgstr "nebola zistená známa služba synchronizácie času"
+
+msgid "[INFO] Open file descriptors: %d"
+msgstr "[INFO] Otvorené deskriptory súborov: %d"
+
+msgid "[%s] Known crash logs: %d"
+msgstr "[%s] Známe crash logy: %d"
+
+msgid "[INFO   ] Net mounts %d active"
+msgstr "[INFO   ] Sieťové pripojenia: %d aktívnych"
+
+msgid "[INFO   ] Listeners  %d detected"
+msgstr "[INFO   ] Listenery: zistených %d"
