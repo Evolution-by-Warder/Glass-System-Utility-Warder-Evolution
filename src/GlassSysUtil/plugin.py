@@ -2876,21 +2876,36 @@ class GSUCamSrvManager(Screen):
     """Original CAM/SRV landing screen wrapping the proven OSCam monitor backend."""
     skin = """
     <screen name="Glass Cams Manager" position="center,center" size="1530,895" title="UCM" backgroundColor="#31000000">
-        <eLabel position="30,20" size="700,40" text="CAM-y / SRV-e" font="Regular;28" foregroundColor="#666666" transparent="1"/>
-        <widget name="cam" position="30,75" size="700,300" font="Regular;24" transparent="1"/>
-        <eLabel position="800,20" size="700,40" text="Aktívny CAM / Aktívny SRV" font="Regular;28" foregroundColor="#666666" transparent="1"/>
-        <widget name="service" position="800,75" size="700,300" font="Regular;24" transparent="1"/>
-        <eLabel position="30,405" size="1470,2" backgroundColor="#888888"/>
-        <eLabel position="30,430" size="1470,40" text="ECM / CAID / Process status" font="Regular;27" foregroundColor="#666666" transparent="1"/>
-        <widget name="status" position="30,485" size="1470,275" font="Regular;23" transparent="1"/>
-        <eLabel position="0,790" size="382,2" backgroundColor="red"/>
-        <eLabel position="382,790" size="383,2" backgroundColor="green"/>
-        <eLabel position="765,790" size="382,2" backgroundColor="yellow"/>
-        <eLabel position="1147,790" size="383,2" backgroundColor="blue"/>
-        <widget name="key_red" position="0,810" size="382,45" font="Regular;27" foregroundColor="red" halign="center" transparent="1"/>
-        <widget name="key_green" position="382,810" size="383,45" font="Regular;27" foregroundColor="green" halign="center" transparent="1"/>
-        <widget name="key_yellow" position="765,810" size="382,45" font="Regular;27" foregroundColor="yellow" halign="center" transparent="1"/>
-        <widget name="key_blue" position="1147,810" size="383,45" font="Regular;27" foregroundColor="blue" halign="center" transparent="1"/>
+        <widget name="config" font="priveG;30" position="60,7" size="1410,82" backgroundColor="#353e575e" transparent="1"/>
+        <eLabel position="25,96" size="1480,2" backgroundColor="#bbbbbb"/>
+        <widget name="statCamSrvcmd" position="60,105" size="746,35" font="priveG;30" transparent="1"/>
+        <widget name="statCamSrvbin" position="60,150" size="746,35" font="priveG;30" transparent="1"/>
+        <eLabel position="25,193" size="777,2" backgroundColor="#bbbbbb"/>
+        <widget name="activCam" position="60,212" size="746,35" font="priveG;30" transparent="1"/>
+        <widget name="activSrv" position="60,254" size="746,35" font="priveG;30" transparent="1"/>
+        <eLabel position="25,296" size="777,2" backgroundColor="#bbbbbb"/>
+        <widget name="fullEcmLine" position="21,455" size="785,140" font="priveG;30" valign="center" halign="center" transparent="1"/>
+        <widget name="CAID_info" position="21,605" size="785,230" font="priveG;30" valign="center" halign="center" transparent="1"/>
+        <widget name="txt0" position="891,105" size="624,35" font="priveG;30" transparent="1"/>
+        <widget name="txt1" position="891,143" size="624,35" font="priveG;30" transparent="1"/>
+        <widget name="txt2" position="891,182" size="624,35" font="priveG;30" transparent="1"/>
+        <widget name="txt3" position="891,220" size="624,35" font="priveG;30" transparent="1"/>
+        <widget name="txt4" position="891,259" size="624,35" font="priveG;30" transparent="1"/>
+        <widget name="txt5" position="891,297" size="624,35" font="priveG;30" transparent="1"/>
+        <widget name="txt6" position="891,336" size="624,35" font="priveG;30" transparent="1"/>
+        <widget name="txt7" position="891,374" size="624,35" font="priveG;30" transparent="1"/>
+        <widget name="txt8" position="891,413" size="624,35" font="priveG;30" transparent="1"/>
+        <widget name="txt9" position="891,451" size="624,35" font="priveG;30" transparent="1"/>
+        <eLabel position="891,510" size="624,2" backgroundColor="#bbbbbb"/>
+        <widget name="helpTXT" position="891,520" size="624,315" font="priveG;30" halign="center" valign="center" transparent="1"/>
+        <widget name="cam" position="0,0" size="1,1" font="priveG;1" transparent="1"/>
+        <widget name="service" position="0,0" size="1,1" font="priveG;1" transparent="1"/>
+        <widget name="status" position="0,0" size="1,1" font="priveG;1" transparent="1"/>
+        <eLabel position="0,840" size="382,2" backgroundColor="red"/><eLabel position="382,840" size="383,2" backgroundColor="green"/><eLabel position="765,840" size="382,2" backgroundColor="yellow"/><eLabel position="1147,840" size="382,2" backgroundColor="blue"/>
+        <widget name="key_red" position="0,850" size="382,35" font="priveG;30" foregroundColor="red" halign="center" transparent="1"/>
+        <widget name="key_green" position="382,850" size="383,35" font="priveG;30" foregroundColor="green" halign="center" transparent="1"/>
+        <widget name="key_yellow" position="765,850" size="382,35" font="priveG;30" foregroundColor="yellow" halign="center" transparent="1"/>
+        <widget name="key_blue" position="1147,850" size="383,35" font="priveG;30" foregroundColor="blue" halign="center" transparent="1"/>
     </screen>
     """
     def __init__(self, session):
@@ -2951,6 +2966,18 @@ class GSUCamSrvManager(Screen):
             _("Stop / activate / download / delete actions remain disabled until receiver validation."),
         ]
         self["status"].setText("\n".join(status_rows))
+        self["config"].setText(_("CAM/SRV Manager"))
+        self["statCamSrvcmd"].setText(_("CAM command: %s") % (detail or _("not exposed")))
+        self["statCamSrvbin"].setText(_("Runtime: %s") % (active_cam_summary() if active else _("not detected")))
+        self["activCam"].setText(_("Active CAM: %s") % (active.get("name") if active else _("none")))
+        self["activSrv"].setText(_("Active service: %s") % (technical.get("name") or _("not exposed")))
+        self["fullEcmLine"].setText("\n".join(status_rows[:8]))
+        self["CAID_info"].setText(_("Available CAIDs: %s") % (", ".join("%04X" % value for value in caids) if caids else _("not exposed")))
+        detail_rows=status_rows[8:18]
+        for idx in range(10):
+            self["txt%d" % idx].setText(detail_rows[idx] if idx < len(detail_rows) else "")
+        self["helpTXT"].setText(_("Green: OSCam monitor\nYellow: refresh\nBlue: ECM details"))
+
 
 
 class GSUActiveCAM(Screen):
