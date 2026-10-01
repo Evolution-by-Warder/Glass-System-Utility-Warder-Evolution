@@ -164,13 +164,13 @@ def hardware_identity_information():
             cpu = value.strip()
             if cpu:
                 break
-    rows.append("CPU: %s" % (cpu or "N/A"))
+    rows.append(_("CPU: %s") % (cpu or _("N/A")))
     # Serial is deliberately reported only as presence, not exposed in UI.
     serial_present = any(bool(_read_text(path, "")) for path in serial_paths)
     rows.append("Hardware serial interface: %s" % ("available (hidden)" if serial_present else "not exposed"))
 
     cpu_count = os.cpu_count()
-    rows.append("CPU cores: %s" % (cpu_count if cpu_count is not None else "N/A"))
+    rows.append(_("CPU cores: %s") % (cpu_count if cpu_count is not None else _("N/A")))
 
     freq_values = []
     cpu_root = "/sys/devices/system/cpu"
@@ -219,7 +219,7 @@ def network_information():
         fields = line.split()
         if len(fields) >= 2 and fields[0] == "nameserver":
             resolvers.append(fields[1])
-    rows.append("DNS: %s" % (", ".join(resolvers) if resolvers else "N/A"))
+    rows.append(_("DNS: %s") % (", ".join(resolvers) if resolvers else _("N/A")))
     rows.append("")
     try:
         names = sorted(os.listdir("/sys/class/net"))
@@ -292,7 +292,7 @@ def mount_information():
 def oscam_information():
     rows = []
     matches = _find_processes("oscam")
-    rows.append("Process: %s" % ("RUNNING" if matches else "not detected"))
+    rows.append(_("Process: %s") % (_("RUNNING") if matches else _("not detected")))
     if matches:
         rows.append("Process IDs: %s" % ", ".join(pid for pid, argv in matches[:8]))
     config_dir = _process_option(matches, "--config-dir")
@@ -316,7 +316,7 @@ def oscam_information():
     ])
     found = next((path for path in candidates if os.path.isfile(path)), "")
     rows.append("")
-    rows.append("Config: %s" % (found if found else "not found"))
+    rows.append(_("Config: %s") % (found if found else _("not found")))
     if config_dir:
         rows.append("Config dir: %s" % config_dir)
     return "\n".join(rows)
@@ -1242,7 +1242,7 @@ def _cam_process_metrics(pid):
     if status.get("VmRSS"):
         rows.append(_("Resident memory: %s") % status["VmRSS"])
     if status.get("VmSize"):
-        rows.append("Virtual memory: %s" % status["VmSize"])
+        rows.append(_("Virtual memory: %s") % status["VmSize"])
     seconds = _process_runtime_seconds(pid)
     if seconds is not None:
         days, seconds = divmod(seconds, 86400)
@@ -1383,7 +1383,7 @@ def network_health_information():
 def network_diagnostics():
     rows = []
     gateway = _default_gateway()
-    rows.append("Default gateway: %s" % gateway)
+    rows.append(_("Default gateway: %s") % gateway)
     if gateway != "N/A":
         rc, ping = _run_status(["ping", "-c", "1", "-W", "2", gateway], 4)
         rows.append("Gateway reachability: %s" % ("OK" if rc == 0 else "no reply"))
@@ -1393,7 +1393,7 @@ def network_diagnostics():
         fields = line.split()
         if len(fields) >= 2 and fields[0] == "nameserver":
             resolvers.append(fields[1])
-    rows.append("DNS servers: %s" % (", ".join(resolvers) if resolvers else "N/A"))
+    rows.append(_("DNS servers: %s") % (", ".join(resolvers) if resolvers else _("N/A")))
 
     route = _run(["ip", "route"], 4)
     if route:
@@ -1439,7 +1439,7 @@ def network_mount_doctor_information():
 def time_health_information():
     """Report clock and detected time-sync facilities without assuming an image."""
     rows = ["Local time: %s" % time.strftime("%Y-%m-%d %H:%M:%S %Z")]
-    rows.append("UTC time: %s" % time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()))
+    rows.append(_("UTC time: %s") % time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()))
 
     detected = []
     for name in ("chronyd", "ntpd", "ntpdate", "systemd-timesyncd"):
@@ -1539,8 +1539,8 @@ def image_information():
                 if text:
                     rows.append("  %s" % text)
             rows.append("")
-    rows.append("Enigma2 binary: %s" % (_run(["which", "enigma2"], 3) or "not found"))
-    rows.append("Python: %s" % platform.python_version())
+    rows.append(_("Enigma2 binary: %s") % (_run(["which", "enigma2"], 3) or _("not found")))
+    rows.append(_("Python: %s") % platform.python_version())
     return "\n".join(rows)
 
 
