@@ -266,6 +266,68 @@ def memory_information():
     return "\n".join("%s: %s" % (key, values.get(key, "N/A")) for key in wanted)
 
 
+
+def device_manager_information():
+    """Read-only first phase of the original GSU Device Manager."""
+    rows = [_("Detected mounted devices")]
+    found = False
+    for line in _read_lines("/proc/mounts"):
+        fields = line.split()
+        if len(fields) < 4:
+            continue
+        device, mountpoint, fstype, options = fields[:4]
+        if not device.startswith("/dev/"):
+            continue
+        found = True
+        mode = _("read-only") if "ro" in options.split(",") else _("read/write")
+        try:
+            usage = shutil.disk_usage(mountpoint)
+            rows.append("%s -> %s [%s, %s]" % (device, mountpoint, fstype, mode))
+            rows.append("  %.1f / %.1f GiB  (%s free)" % (
+                (usage.total - usage.free) / 1073741824.0,
+                usage.total / 1073741824.0,
+                _human_bytes(usage.free)))
+        except Exception:
+            rows.append("%s -> %s [%s, %s]" % (device, mountpoint, fstype, mode))
+    if not found:
+        rows.append(_("No physical storage mounts found."))
+    rows += ["", _("Safety: format, partition, mount and unmount actions are disabled until receiver validation.")]
+    return "\n".join(rows)
+
+
+def swap_manager_information():
+    """Read-only migration stage for the original GSU swap manager."""
+    rows = [_("Swap status")]
+    lines = _read_lines("/proc/swaps")
+    if len(lines) <= 1:
+        rows.append(_("No active swap devices/files."))
+    else:
+        for line in lines[1:]:
+            fields = line.split()
+            if len(fields) >= 5:
+                rows.append("%s  %s  %s KiB / %s KiB  priority %s" % (
+                    fields[0], fields[1], fields[3], fields[2], fields[4]))
+    rows += ["", memory_information(), "",
+             _("Safety: swap enable/disable/create actions remain gated until real-receiver validation.")]
+    return "\n".join(rows)
+
+
+def package_tools_information():
+    """Capability audit for the original IPK/DEB and user-script area."""
+    package_manager = "opkg" if shutil.which("opkg") else ("apt" if shutil.which("apt") else "")
+    shell = shutil.which("sh") or ""
+    rows = [
+        _("Package manager: %s") % (package_manager or _("not detected")),
+        _("Shell capability: %s") % (shell or _("not detected")),
+        _("IPK support: %s") % (_("available") if package_manager == "opkg" else _("not detected")),
+        _("DEB support: %s") % (_("available") if package_manager == "apt" else _("not detected")),
+        _("User scripts: explicit local execution only; legacy remote installers are not restored."),
+        "",
+        _("This migration stage is informational only. Package/script state changes remain gated."),
+    ]
+    return "\n".join(rows)
+
+
 def service_information():
     rows = []
     patterns = ("enigma2", "oscam", "cccam", "ncam", "mgcamd", "samba", "smbd",
@@ -2686,7 +2748,9 @@ class SysUtilMngMain(Screen):
         (_("OSCam Information"), "cammonitor"),
         (_("CAM/SRV Manager"), "cammonitor"),
         (_("ECM Information"), "cammonitor"),
-        (_("Device Manager"), "storage"),
+        (_("Device Manager"), "devicemanager"),
+        (_("Swap Manager"), "swapmanager"),
+        (_("IPK/DEB and user scripts"), "packagetools"),
         (_("Warder Diagnostics & Tools"), "tools"),
         (_("Check for updates"), "update"),
         (_("Restart Enigma2 GUI"), "restart"),
@@ -2696,7 +2760,9 @@ class SysUtilMngMain(Screen):
         "originalsystem": _("System, memory, swap, storage, temperature, process and service overview."),
         "originalchannel": _("Current service, tuner/frontend and CAM/ECM information in one dashboard."),
         "cammonitor": _("Detected CAM/SRV state, live ECM/OSCam information and safe receiver actions."),
-        "storage": _("Detected storage and filesystem information. Destructive legacy actions remain disabled."),
+        "devicemanager": _("Detected devices and filesystems. Destructive legacy actions remain disabled."),
+        "swapmanager": _("Current swap state. Creation and enable/disable actions remain safety-gated."),
+        "packagetools": _("Local package/script capabilities. Obsolete remote installers are not restored."),
         "tools": _("Modern Warder health checks, network, mounts, runtime diagnostics, logs and support bundle."),
         "update": _("Check the immutable Warder Evolution release channel for an update."),
         "restart": _("Restart only the Enigma2 graphical interface after confirmation."),
@@ -2761,7 +2827,9 @@ class SysUtilMngMain(Screen):
     def ok(self):
         action = self._selected_action()
         actions = {
-            "storage": (_("Device Manager"), storage_information),
+            "devicemanager": (_("Device Manager"), device_manager_information),
+            "swapmanager": (_("Swap Manager"), swap_manager_information),
+            "packagetools": (_("IPK/DEB and user scripts"), package_tools_information),
         }
         if action in actions:
             title, fnc = actions[action]
