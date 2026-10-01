@@ -698,6 +698,27 @@ def _oscam_row_role(row):
     return " "
 
 
+def _oscam_endpoint_display(row):
+    address = _oscam_display(row.get("address"))
+    port = _oscam_display(row.get("port"))
+    if address and port:
+        return "%s:%s" % (address, port)
+    return address or port
+
+
+def _oscam_name_display(row):
+    name = _oscam_display(row.get("name"))
+    if name:
+        return name
+    role = _oscam_row_role(row)
+    protocol = _oscam_display(row.get("protocol")).lower()
+    if protocol == "emu":
+        return "EMU"
+    if protocol == "dvbapi":
+        return "DVBAPI"
+    return {"R": "Reader", "C": "Client", "S": "Server", "L": "Local"}.get(role, "CAM")
+
+
 def _oscam_status_display(row):
     status = _oscam_display(row.get("status"))
     if status:
@@ -707,20 +728,7 @@ def _oscam_status_display(row):
 
 
 def _oscam_table_values(row):
-    name = _oscam_display(row.get("name"))
-    role = _oscam_row_role(row)
-    protocol = _oscam_display(row.get("protocol")).lower()
-    if not name:
-        if protocol == "emu":
-            name = "EMU"
-        elif protocol == "dvbapi":
-            name = "DVBAPI"
-        elif role == "R":
-            name = "Reader"
-        elif role == "C":
-            name = "Client"
-        elif role == "S":
-            name = "Server"
+    name = _oscam_name_display(row)
     return {
         "name": name,
         "address": _oscam_display(row.get("address")),
@@ -1906,6 +1914,8 @@ class GSUActiveCAM(Screen):
             self["live_status"].setText("Live OSCam: %s" % reason)
 
     def _refresh(self):
+        if getattr(self, "_closing_live_monitor", False):
+            return
         if getattr(self, "_refresh_in_progress", False):
             return
         self._refresh_in_progress = True
@@ -1987,12 +1997,13 @@ class GSUActiveCAM(Screen):
     def close(self, *args, **kwargs):
         self._closing_live_monitor = True
         self._live_fetch_running = True
-        timer = getattr(self, "_live_timer", None)
-        if timer is not None:
-            try:
-                timer.stop()
-            except Exception:
-                pass
+        for timer_name in ("_live_timer", "_live_finish_timer", "_restart_finish_timer"):
+            timer = getattr(self, timer_name, None)
+            if timer is not None:
+                try:
+                    timer.stop()
+                except Exception:
+                    pass
         return Screen.close(self, *args, **kwargs)
 
     def show_details(self):
