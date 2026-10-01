@@ -40,6 +40,16 @@ jobs:
           ! grep -q '_AUTO_UPDATE_STARTED' src/GlassSysUtil/plugin.py
           grep -q 'ScrollLabel' src/GlassSysUtil/plugin.py
           python3 -m unittest discover -s tests -p 'test_*.py'
+          python3 - <<'PY'
+          from pathlib import Path
+          msgid = 'msgid "Live OSCam: %d active client/reader rows  |  OK = row details"'
+          for lang in ("sk", "cs", "de", "pl", "it", "es", "fr"):
+              data = Path(f"src/GlassSysUtil/locale/{lang}/LC_MESSAGES/GlassSysUtil.po").read_text(encoding="utf-8")
+              assert msgid in data, lang
+              block = data[data.index(msgid):].split("\\n\\n", 1)[0]
+              msgstr = next(line for line in block.splitlines() if line.startswith("msgstr "))
+              assert msgstr.count("%d") == 1 and "%s" not in msgstr, (lang, block)
+          PY
       - name: Build and validate deterministic IPK
         run: |
           set -eu
