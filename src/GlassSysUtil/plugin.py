@@ -1689,6 +1689,51 @@ def capability_information():
     return "\n".join(rows)
 
 
+
+def original_system_overview_information():
+    """GSU-style consolidated system overview backed by modern read-only probes."""
+    sections = [
+        (_("System & Hardware"), system_information()),
+        (_("Memory & Swap"), memory_information()),
+        (_("Temperatures"), temperature_information()),
+        (_("Storage & Filesystems"), storage_health_information()),
+        (_("Services & Processes"), service_dashboard_information()),
+    ]
+    rows = [_("GSU System Information"), "=" * 54]
+    for title, body in sections:
+        rows += ["", "[ %s ]" % title, body]
+    return "\n".join(rows)
+
+
+def original_channel_overview_information():
+    """GSU-style channel overview using only capabilities exposed by Enigma2/runtime."""
+    rows = [_("GSU Channel Information"), "=" * 54, ""]
+    name = _current_service_name()
+    rows.append(_("Service: %s") % (name or _("not exposed")))
+    rows += ["", "[ %s ]" % _("Tuner / frontend"), tuner_information()]
+    active = _active_cam()
+    rows += ["", "[ %s ]" % _("ECM / CAM")]
+    if active:
+        rows.append(active_cam_summary())
+        if active.get("family") == "oscam":
+            live, reason = oscam_live_rows()
+            if live:
+                values = _oscam_table_values(live[0])
+                rows.extend([
+                    _("Reader / User: %s") % (values["name"] or "N/A"),
+                    _("Protocol: %s") % (values["protocol"] or "N/A"),
+                    _("Service: %s") % (values["service"] or "N/A"),
+                    _("Channel: %s") % (values["channel"] or name or "N/A"),
+                    _("ECM: %s") % (values["ecm"] or "N/A"),
+                    _("Status: %s") % (values["status"] or "N/A"),
+                ])
+            else:
+                rows.append(reason or _("No active client/reader rows."))
+    else:
+        rows.append(_("No supported active CAM detected."))
+    return "\n".join(rows)
+
+
 def diagnostic_summary():
     oscam = bool(_find_processes("oscam"))
     network_mounts = 0
