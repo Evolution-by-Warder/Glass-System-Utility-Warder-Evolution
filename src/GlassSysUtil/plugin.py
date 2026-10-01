@@ -1746,6 +1746,7 @@ class GSUActiveCAM(Screen):
                 "right": self["table"].pageDown,
             }, -1)
         self._refresh_in_progress = False
+        self._live_fetch_running = False
         self._refresh()
         self._start_auto_refresh()
 
@@ -1801,10 +1802,52 @@ class GSUActiveCAM(Screen):
         self._live_timer.start(5000, False)
 
     def _auto_refresh(self):
-        try:
-            self._refresh()
-        except Exception:
-            pass
+        if getattr(self, "_live_fetch_running", False):
+            return
+        self._live_fetch_running = True
+
+        def worker():
+            active = _active_cam()
+            rows, reason = ([], "No supported active OSCam detected.")
+            if active and active.get("family") == "oscam":
+                rows, reason = oscam_live_rows()
+
+            def finish():
+                try:
+                    selected = 0
+                    try:
+                        selected = self["table"].getSelectionIndex()
+                    except Exception:
+                        pass
+                    self["table"].setList([_oscam_table_line(row) for row in rows])
+                    if rows:
+                        try:
+                            self["table"].moveToIndex(min(selected, len(rows) - 1))
+                        except Exception:
+                            pass
+                        self["live_status"].setText("Live OSCam: %d client/reader row%s" %
+                                                    (len(rows), "" if len(rows) == 1 else "s"))
+                    else:
+                        self["live_status"].setText("Live OSCam: %s" % reason)
+                    try:
+                        self["summary"].setText(active_cam_summary())
+                    except Exception:
+                        pass
+                finally:
+                    self._live_fetch_running = False
+
+            if eTimer is None:
+                finish()
+            else:
+                timer = eTimer()
+                self._live_finish_timer = timer
+                try:
+                    timer.callback.append(finish)
+                except Exception:
+                    timer.timeout.connect(finish)
+                timer.start(1, True)
+
+        threading.Thread(target=worker, name="GSU-OSCam-Live", daemon=True).start()
 
     def close(self, *args, **kwargs):
         timer = getattr(self, "_live_timer", None)
