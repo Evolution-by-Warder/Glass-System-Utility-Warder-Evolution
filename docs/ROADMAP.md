@@ -401,3 +401,18 @@ The displayed product name is standardized as **Glass System Utility - Warder Ev
 Release packaging compiles PO catalogs to MO files and includes them in the deterministic IPK. Regression coverage protects localization hooks, language catalogs, compiled-catalog packaging, update-on-open behavior and the 13.33-w14 Service Dashboard CAM-record crash fix.
 
 No new destructive or state-changing administration is introduced by this release batch. Published v13.33-w14 remains immutable.
+
+
+## 13.34-w15 published checkpoint — 2026-10-01
+
+Published immutable-by-policy release **v13.34-w15** from production commit `b0c89c012dbf0a97c600c65682daab4734316898`.
+
+Release workflow `36834944320` passed identity validation, source tests, centralized deterministic IPK build, localized payload validation, publication and post-publication verification.
+
+Artifact: `enigma2-plugin-glasssysutil_13.34-w15_all.ipk`
+Size: 34,320 bytes
+SHA-256: `9ce67d7058608a98e3376d64954e07f7d491943f4a9d3af7f10acd625c9dec9b`
+
+The release includes compiled SK/CS/DE/PL/IT/ES/FR gettext catalogs, English fallback, Enigma2-language-driven catalog selection, canonical product display name, and asynchronous update discovery on GSU open.
+
+Status: **PUBLISHED / CI PASS / awaiting REAL RECEIVER validation**. Do not mark REAL RECEIVER PASS until installation/update and runtime behavior are verified on the GigaBlue Quad 4K Pro.
