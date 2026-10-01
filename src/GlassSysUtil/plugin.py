@@ -338,7 +338,7 @@ def swap_manager_information():
             except Exception:
                 candidates.append(path)
     rows += ["", _("Detected swap files: %s") % (", ".join(candidates) if candidates else _("none")),
-             _("Swap tools: swapon=%s | swapoff=%s | mkswap=%s") % (
+             _("Swap command capabilities: enable=%s | disable=%s | create=%s") % (
                  _("yes") if shutil.which("swapon") else _("no"),
                  _("yes") if shutil.which("swapoff") else _("no"),
                  _("yes") if shutil.which("mkswap") else _("no"))]
