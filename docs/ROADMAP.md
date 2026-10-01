@@ -388,3 +388,16 @@ Real receiver: GigaBlue Quad 4K Pro / OpenATV 8.x.
 13.33-w14 is the current REAL RECEIVER PASS recovery/reference checkpoint. Published release v13.33-w14 remains immutable.
 
 Post-checkpoint development: automatic update discovery on GSU open is implemented asynchronously on warder-master-production and covered by regression tests; it is not part of immutable v13.33-w14.
+
+
+## 13.34-w15 localization and update-discovery candidate — 2026-10-01
+
+Built from the immutable 13.33-w14 REAL RECEIVER PASS checkpoint.
+
+This coherent release batch adds automatic asynchronous update discovery whenever the GSU main screen is opened, while retaining the existing manual updater and session-start check. It also introduces Enigma2/gettext localization infrastructure with English fallback and initial Slovak, Czech, German, Polish, Italian, Spanish and French catalogs. Main menu labels, plugin identity, runtime screen titles, CAM monitor controls and core updater/CAM/diagnostic user dialogs are localization-aware.
+
+The displayed product name is standardized as **Glass System Utility - Warder Evolution**.
+
+Release packaging compiles PO catalogs to MO files and includes them in the deterministic IPK. Regression coverage protects localization hooks, language catalogs, compiled-catalog packaging, update-on-open behavior and the 13.33-w14 Service Dashboard CAM-record crash fix.
+
+No new destructive or state-changing administration is introduced by this release batch. Published v13.33-w14 remains immutable.
