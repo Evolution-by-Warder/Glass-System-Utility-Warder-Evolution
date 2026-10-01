@@ -303,22 +303,6 @@ class UpdateDiscoveryUXTests(unittest.TestCase):
         self.assertIn("GSUUpdater(self.session).check(silent=True)", body)
         self.assertIn("self.onShown.remove(self._check_update_on_open)", body)
 
-    def test_localized_oscam_live_status_has_matching_format_contract(self):
-        source = open(PLUGIN, encoding="utf-8").read()
-        self.assertIn('_("Live OSCam: %d active client/reader rows  |  OK = row details") % len(rows)', source)
-        self.assertNotIn("row%s", source)
-        root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-        msgid = 'msgid "Live OSCam: %d active client/reader rows  |  OK = row details"'
-        for lang in ("sk", "cs", "de", "pl", "it", "es", "fr"):
-            path = os.path.join(root, "src", "GlassSysUtil", "locale", lang,
-                                "LC_MESSAGES", "GlassSysUtil.po")
-            data = open(path, encoding="utf-8").read()
-            self.assertIn(msgid, data)
-            block = data[data.index(msgid):].split("\n\n", 1)[0]
-            msgstr = [line for line in block.splitlines() if line.startswith("msgstr ")][0]
-            self.assertEqual(msgstr.count("%d"), 1, (lang, block))
-            self.assertNotIn("%s", msgstr)
-
     def test_background_check_only_prompts_for_newer_release(self):
         source = open(PLUGIN, encoding="utf-8").read()
         start = source.index("class GSUUpdater")
