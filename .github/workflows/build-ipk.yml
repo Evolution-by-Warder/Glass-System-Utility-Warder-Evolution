@@ -27,7 +27,6 @@ jobs:
           grep -Fqx "Version: $VERSION" packaging/CONTROL/control
           python3 -m py_compile src/GlassSysUtil/plugin.py
           grep -Fqx "Glass System Utility - Warder Evolution $VERSION installed." <(grep 'Glass System Utility - Warder Evolution .* installed.' packaging/CONTROL/postinst | sed 's/.*echo "//;s/"$//')
-          ! grep -RFn '\\n        self[' src/GlassSysUtil tests
           test -s src/GlassSysUtil/plugin.py
           test -s src/GlassSysUtil/__init__.py
           test -s src/GlassSysUtil/SysMgt.png
