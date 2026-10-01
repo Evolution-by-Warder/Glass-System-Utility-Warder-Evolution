@@ -2073,6 +2073,94 @@ class GSUInfo(Screen):
 
 
 
+class GSUSystemDashboard(Screen):
+    """Dense original-style system dashboard; all probes remain read-only."""
+    skin = """
+    <screen name="GSUSystemDashboard" position="center,center" size="1450,780" title="System Information">
+        <eLabel position="25,18" size="680,38" text="System / Hardware" font="Regular;25" foregroundColor="#e6d500" />
+        <eLabel position="745,18" size="680,38" text="Memory / Storage / Temperature" font="Regular;25" foregroundColor="#e6d500" />
+        <widget name="system" position="25,65" size="680,265" font="Regular;21" />
+        <widget name="resources" position="745,65" size="680,265" font="Regular;21" />
+        <eLabel position="25,350" size="680,38" text="Services / Processes" font="Regular;25" foregroundColor="#3399ff" />
+        <eLabel position="745,350" size="680,38" text="Health / Mounts" font="Regular;25" foregroundColor="#3399ff" />
+        <widget name="services" position="25,397" size="680,280" font="Regular;20" />
+        <widget name="health" position="745,397" size="680,280" font="Regular;20" />
+        <widget name="key_red" position="35,710" size="250,45" font="Regular;24" foregroundColor="#ff3333" />
+        <widget name="key_yellow" position="600,710" size="250,45" font="Regular;24" foregroundColor="#e6d500" />
+        <widget name="key_blue" position="1160,710" size="250,45" font="Regular;24" foregroundColor="#3399ff" />
+    </screen>
+    """
+    def __init__(self, session):
+        Screen.__init__(self, session)
+        for key in ("system", "resources", "services", "health"):
+            self[key] = Label("")
+        self["key_red"] = Label(_("Close"))
+        self["key_yellow"] = Label(_("Refresh"))
+        self["key_blue"] = Label(_("Tools"))
+        self["actions"] = ActionMap(["OkCancelActions", "ColorActions"], {
+            "cancel": self.close, "red": self.close, "yellow": self.refresh,
+            "blue": lambda: self.session.open(GSUWarderTools),
+        }, -1)
+        self.setTitle(_("System Information"))
+        self.onShown.append(self.refresh)
+
+    def refresh(self):
+        self["system"].setText(system_information())
+        self["resources"].setText(memory_information() + "\n\n" + temperature_information())
+        self["services"].setText(service_dashboard_information())
+        self["health"].setText(storage_health_information() + "\n\n" + network_mount_doctor_information())
+
+
+class GSUChannelDashboard(Screen):
+    """Original-style current-channel dashboard using live Enigma2 and CAM data."""
+    skin = """
+    <screen name="GSUChannelDashboard" position="center,center" size="1450,780" title="Channel Information">
+        <widget name="channel" position="25,20" size="1400,52" font="Regular;30" foregroundColor="#e6d500" />
+        <eLabel position="25,90" size="680,38" text="ECM / CAM" font="Regular;25" foregroundColor="#3399ff" />
+        <eLabel position="745,90" size="680,38" text="Tuner / Frontend" font="Regular;25" foregroundColor="#3399ff" />
+        <widget name="ecm" position="25,138" size="680,510" font="Regular;21" />
+        <widget name="tuner" position="745,138" size="680,510" font="Regular;20" />
+        <widget name="key_red" position="35,710" size="250,45" font="Regular;24" foregroundColor="#ff3333" />
+        <widget name="key_green" position="590,710" size="280,45" font="Regular;24" foregroundColor="#33cc33" />
+        <widget name="key_yellow" position="1160,710" size="250,45" font="Regular;24" foregroundColor="#e6d500" />
+    </screen>
+    """
+    def __init__(self, session):
+        Screen.__init__(self, session)
+        self["channel"] = Label("")
+        self["ecm"] = Label("")
+        self["tuner"] = Label("")
+        self["key_red"] = Label(_("Close"))
+        self["key_green"] = Label(_("CAM/SRV Manager"))
+        self["key_yellow"] = Label(_("Refresh"))
+        self["actions"] = ActionMap(["OkCancelActions", "ColorActions"], {
+            "cancel": self.close, "red": self.close,
+            "green": lambda: self.session.open(GSUActiveCAM),
+            "yellow": self.refresh,
+        }, -1)
+        self.setTitle(_("Channel Information"))
+        self.onShown.append(self.refresh)
+
+    def refresh(self):
+        name = _current_service_name() or _("Current service not exposed")
+        self["channel"].setText(name)
+        active = _active_cam()
+        rows = [active_cam_summary() if active else _("No supported active CAM detected.")]
+        if active and active.get("family") == "oscam":
+            live, reason = oscam_live_rows()
+            if live:
+                values = _oscam_table_values(live[0])
+                rows += ["", _("Reader / User: %s") % (values["name"] or "N/A"),
+                         _("Protocol: %s") % (values["protocol"] or "N/A"),
+                         _("Service: %s") % (values["service"] or "N/A"),
+                         _("ECM: %s") % (values["ecm"] or "N/A"),
+                         _("Status: %s") % (values["status"] or "N/A")]
+            elif reason:
+                rows += ["", reason]
+        self["ecm"].setText("\n".join(rows))
+        self["tuner"].setText(tuner_information())
+
+
 class GSUActiveCAM(Screen):
     """Visual OSCam/CAM monitor with a compact live table and safe actions."""
     skin = """
@@ -2511,13 +2599,15 @@ class SysUtilMngMain(Screen):
     def ok(self):
         action = self._selected_action()
         actions = {
-            "originalsystem": (_("System Information"), original_system_overview_information),
-            "originalchannel": (_("Channel Information"), original_channel_overview_information),
             "storage": (_("Device Manager"), storage_information),
         }
         if action in actions:
             title, fnc = actions[action]
             self._info(title, fnc())
+        elif action == "originalsystem":
+            self.session.open(GSUSystemDashboard)
+        elif action == "originalchannel":
+            self.session.open(GSUChannelDashboard)
         elif action == "cammonitor":
             self.session.open(GSUActiveCAM)
         elif action == "tools":
