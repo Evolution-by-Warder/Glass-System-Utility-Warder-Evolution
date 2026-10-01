@@ -1490,6 +1490,48 @@ def original_resource_dashboard_information():
     return "\n".join(rows)
 
 
+def original_memory_storage_information():
+    """Original GSU resource facts: RAM, swap, total and root usage."""
+    mem = {}
+    for line in _read_lines("/proc/meminfo"):
+        if ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        fields = value.strip().split()
+        try:
+            mem[key] = int(fields[0]) * 1024
+        except Exception:
+            pass
+
+    def human(value):
+        try:
+            value = float(value)
+            for unit in ("B", "KB", "MB", "GB", "TB"):
+                if value < 1024.0 or unit == "TB":
+                    return "%.1f %s" % (value, unit)
+                value /= 1024.0
+        except Exception:
+            pass
+        return "N/A"
+
+    total = mem.get("MemTotal", 0)
+    available = mem.get("MemAvailable", mem.get("MemFree", 0))
+    swap_total = mem.get("SwapTotal", 0)
+    swap_free = mem.get("SwapFree", 0)
+    rows = [
+        _("RAM: %s used / %s total") % (human(max(0, total - available)), human(total)),
+        _("Swap: %s used / %s total") % (human(max(0, swap_total - swap_free)), human(swap_total)),
+    ]
+    try:
+        stat = os.statvfs("/")
+        root_total = stat.f_blocks * stat.f_frsize
+        root_free = stat.f_bavail * stat.f_frsize
+        rows.append(_("Root: %s used / %s total") % (human(max(0, root_total - root_free)), human(root_total)))
+    except Exception:
+        rows.append(_("Root: not exposed"))
+    return "\n".join(rows)
+
+
 def original_protocol_indicators():
     """Original-style service indicators backed by process/listener discovery."""
     names = []
@@ -2439,7 +2481,7 @@ class GSUSystemDashboard(Screen):
     skin = """
     <screen name="GlassSysInfo" position="0,0" size="1920,1080" title="GlassSysInfo" backgroundColor="#31000000" flags="wfNoBorder">
         <eLabel position="75,45" size="760,40" text="Memory / Storage / Temperature" font="Regular;28" foregroundColor="#666666" transparent="1"/>
-        <widget name="resources" position="75,100" size="760,430" font="Regular;25" transparent="1"/>
+        <widget name="resources" position="75,100" size="760,260" font="Regular;25" transparent="1"/>\n        <widget name="resource_facts" position="75,375" size="760,155" font="Regular;22" foregroundColor="#aaaaaa" transparent="1"/>
         <eLabel position="75,555" size="760,40" text="System / Hardware" font="Regular;28" foregroundColor="#666666" transparent="1"/>
         <widget name="system" position="75,610" size="760,315" font="Regular;23" transparent="1"/>
         <eLabel position="925,45" size="900,40" text="Process Info" font="Regular;28" foregroundColor="#666666" transparent="1"/>
@@ -2455,7 +2497,7 @@ class GSUSystemDashboard(Screen):
     """
     def __init__(self, session):
         Screen.__init__(self, session)
-        for key in ("system", "resources", "protocols", "services", "health"):
+        for key in ("system", "resources", "resource_facts", "protocols", "services", "health"):
             self[key] = Label("")
         self["key_red"] = Label(_("Close"))
         self["key_yellow"] = Label(_("Refresh"))
@@ -2469,7 +2511,7 @@ class GSUSystemDashboard(Screen):
 
     def refresh(self):
         self["system"].setText(system_information())
-        self["resources"].setText(original_resource_dashboard_information())
+        self["resources"].setText(original_resource_dashboard_information())\n        self["resource_facts"].setText(original_memory_storage_information())
         self["protocols"].setText(original_protocol_indicators())
         self["services"].setText(service_dashboard_information())
         self["health"].setText(storage_health_information() + "\n\n" + network_mount_doctor_information())
