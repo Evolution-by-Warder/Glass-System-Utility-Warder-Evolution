@@ -648,5 +648,16 @@ class LocalizationContractTests(unittest.TestCase):
             self.assertIn('msgid "Check for updates"', data)
 
 
+    def test_system_information_restores_1320_widget_contract(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        body = source[source.index("class GSUSystemDashboard"):source.index("class GSUChannelDashboard")]
+        for widget in ("mem_labels","ram","swap","mem_tot","root","membar","swapbar","rootbar","space_labels","hdd","usb","cf","sd","HDDCPULabels","HDDTemperature","cpu","sensors","ftp_on","telnet_on","vpn_on","smb_on","nfs_on","ProccessInfo","DmesgInfo"):
+            self.assertIn('name="%s"' % widget, body)
+        self.assertIn('position="906,195" size="939,330"', body)
+        self.assertIn('position="906,675" size="939,295"', body)
+        self.assertIn('fhd/devices/mem.png', body)
+        self.assertIn('fhd/bar.png', body)
+
+
 if __name__ == "__main__":
     unittest.main()
