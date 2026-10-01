@@ -1240,7 +1240,7 @@ def _cam_process_metrics(pid):
             key, value = line.split(":", 1)
             status[key.strip()] = value.strip()
     if status.get("VmRSS"):
-        rows.append("Resident memory: %s" % status["VmRSS"])
+        rows.append(_("Resident memory: %s") % status["VmRSS"])
     if status.get("VmSize"):
         rows.append("Virtual memory: %s" % status["VmSize"])
     seconds = _process_runtime_seconds(pid)
@@ -1256,8 +1256,8 @@ def active_cam_summary():
     if not cam:
         return "No known active CAM process detected."
     rows = [
-        "Active CAM: %s" % cam["name"],
-        "Family: %s" % cam["family"],
+        _("Active CAM: %s") % cam["name"],
+        _("Family: %s") % cam["family"],
         "PID: %s" % cam["pid"],
     ]
     rows.extend(_cam_process_metrics(cam["pid"]))
@@ -1339,7 +1339,7 @@ def package_information():
 
 def network_health_information():
     """Fast read-only network health focused on link, addressing, gateway and DNS."""
-    rows = ["GSU Network Health", ""]
+    rows = [_("GSU Network Health"), ""]
     try:
         names = sorted(name for name in os.listdir("/sys/class/net") if name != "lo")
     except Exception:
@@ -1376,7 +1376,7 @@ def network_health_information():
         "PASS" if resolvers else "WARNING",
         ", ".join(resolvers) if resolvers else "none detected"))
     rows += ["", "Summary: %d interface(s) up, %d with IPv4." % (len(up), len(addressed)),
-             "Network Health is read-only; ping failure alone is reported as a warning, not proof of link failure."]
+             _("Network Health is read-only; ping failure alone is reported as a warning, not proof of link failure.")]
     return "\n".join(rows)
 
 
@@ -1405,7 +1405,7 @@ def network_diagnostics():
 
 def network_mount_doctor_information():
     """Read-only NFS/CIFS doctor for active mounts and common client capabilities."""
-    rows = ["GSU Network Mount Doctor", ""]
+    rows = [_("GSU Network Mount Doctor"), ""]
     active = []
     for line in _read_lines("/proc/mounts"):
         fields = line.split()
@@ -1470,7 +1470,7 @@ def time_health_information():
 
 def runtime_health_information():
     """Compact Enigma2 runtime health without duplicating process/log screens."""
-    rows = ["GSU Enigma2 Runtime Health", ""]
+    rows = [_("GSU Enigma2 Runtime Health"), ""]
     matches = _find_processes("enigma2")
     if not matches:
         rows.append("[WARNING] Enigma2 process not detected.")
@@ -1499,7 +1499,7 @@ def runtime_health_information():
                 crash_logs.append(path)
     rows.append("[%s] Known crash logs: %d" % ("INFO" if crash_logs else "PASS", len(crash_logs)))
     rows.extend("       %s" % item for item in crash_logs[:3])
-    rows += ["", "Runtime Health is read-only; it does not restart Enigma2 or delete logs."]
+    rows += ["", _("Runtime Health is read-only; it does not restart Enigma2 or delete logs.")]
     return "\n".join(rows)
 
 
@@ -1576,7 +1576,7 @@ def cam_inventory_information():
 
 def service_dashboard_information():
     """Compact operational dashboard for services users actually troubleshoot."""
-    rows = ["GSU Service Dashboard", ""]
+    rows = [_("GSU Service Dashboard"), ""]
     e2 = _find_processes("enigma2")
     rows.append("[%-7s] Enigma2  %s" % ("RUNNING" if e2 else "DOWN",
                 ("PID " + ", ".join(str(pid) for pid, cmd in e2[:3])) if e2 else "not detected"))
@@ -1605,7 +1605,7 @@ def service_dashboard_information():
     listeners = _run(["ss", "-lntup"], 4) or _run(["netstat", "-lntup"], 4)
     count = max(0, len(listeners.splitlines()) - 1) if listeners else 0
     rows.append("[INFO   ] Listeners  %d detected" % count)
-    rows += ["", "Dashboard is read-only. Use dedicated screens for full diagnostics."]
+    rows += ["", _("Dashboard is read-only. Use dedicated screens for full diagnostics.")]
     return "\n".join(rows)
 
 
@@ -1616,7 +1616,7 @@ def listening_ports_information():
 
 def storage_health_information():
     """Concise storage health view focused on actionable receiver conditions."""
-    rows = ["GSU Storage Health", ""]
+    rows = [_("GSU Storage Health"), ""]
     seen = 0
     warnings = 0
     for line in _read_lines("/proc/mounts"):
@@ -1646,7 +1646,7 @@ def storage_health_information():
     if not seen:
         rows.append("[INFO] No physical mounted filesystems detected.")
     rows += ["", "Summary: %d filesystem(s), %d warning(s)." % (seen, warnings),
-             "Storage Health is read-only and does not run destructive filesystem tests."]
+             _("Storage Health is read-only and does not run destructive filesystem tests.")]
     return "\n".join(rows)
 
 
@@ -2144,10 +2144,10 @@ class GSUActiveCAM(Screen):
                 self["table"].moveToIndex(min(selected, len(rows) - 1))
             except Exception:
                 pass
-            self["live_status"].setText("Live OSCam: %d active client/reader row%s  |  OK = row details" %
+            self["live_status"].setText(_("Live OSCam: %d active client/reader row%s  |  OK = row details") %
                                         (len(rows), "" if len(rows) == 1 else "s"))
         else:
-            self["live_status"].setText("Live OSCam: %s" % (reason or "No active client/reader rows."))
+            self["live_status"].setText(_("Live OSCam: %s") % (reason or _("No active client/reader rows.")))
 
     def _refresh(self):
         if getattr(self, "_closing_live_monitor", False):
@@ -2425,27 +2425,27 @@ class SysUtilMngMain(Screen):
             "hardwareid": ("Hardware Identity", hardware_identity_information),
             "temps": ("Temperatures", temperature_information),
             "network": ("Network & Interfaces", network_information),
-            "netdiag": ("Network Diagnostics", network_diagnostics),
-            "nethealth": ("Network Health", network_health_information),
+            "netdiag": (_("Network Diagnostics"), network_diagnostics),
+            "nethealth": (_("Network Health"), network_health_information),
             "timehealth": ("Time & Synchronization", time_health_information),
             "storage": ("Storage & Filesystems", storage_information),
-            "storagehealth": ("Storage Health", storage_health_information),
+            "storagehealth": (_("Storage Health"), storage_health_information),
             "fshealth": ("Filesystem Health", filesystem_health_information),
             "devices": ("Block Devices", device_information),
             "memory": ("Memory & Swap", memory_information),
-            "servicedashboard": ("Service Dashboard", service_dashboard_information),
+            "servicedashboard": (_("Service Dashboard"), service_dashboard_information),
             "services": ("Services & Processes", service_information),
-            "runtimehealth": ("Enigma2 Runtime Health", runtime_health_information),
+            "runtimehealth": (_("Enigma2 Runtime Health"), runtime_health_information),
             "ports": ("Listening Ports", listening_ports_information),
             "mounts": ("Network Mounts", mount_information),
-            "mountdoctor": ("Network Mount Doctor", network_mount_doctor_information),
+            "mountdoctor": (_("Network Mount Doctor"), network_mount_doctor_information),
             "caminventory": ("CAM Inventory", cam_inventory_information),
 
             "tuners": ("Tuner information", tuner_information),
-            "logs": ("Logs & Diagnostics", log_information),
+            "logs": (_("Logs & Diagnostics"), log_information),
             "packages": ("Package information", package_information),
             "imageinfo": ("Image & Runtime", image_information),
-            "summary": ("Diagnostic Summary", diagnostic_summary),
+            "summary": (_("Diagnostic Summary"), diagnostic_summary),
             "healthcheck": ("Health Check", health_check_information),
             "capabilities": ("Detected Capabilities", capability_information),
         }
