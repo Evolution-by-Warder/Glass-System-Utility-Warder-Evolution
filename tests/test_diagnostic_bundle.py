@@ -198,3 +198,31 @@ class StorageHealthTests(unittest.TestCase):
         source = open(PLUGIN, encoding="utf-8").read()
         self.assertEqual(source.count('("Storage Health", "storagehealth")'), 1)
         self.assertEqual(source.count('"storagehealth": ("Storage Health", storage_health_information)'), 1)
+
+
+class OperationalDoctorsTests(unittest.TestCase):
+    def test_mount_doctor_never_reads_mount_configuration_contents(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        start = source.index("def network_mount_doctor_information")
+        end = source.index("def time_health_information", start)
+        body = source[start:end]
+        self.assertIn("/proc/mounts", body)
+        self.assertIn("mount.cifs", body)
+        self.assertIn("/etc/fstab", body)
+        self.assertNotIn('_read_lines("/etc/fstab")', body)
+        self.assertNotIn("password", body.lower())
+
+    def test_runtime_health_is_procfs_read_only(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        start = source.index("def runtime_health_information")
+        end = source.index("def device_information", start)
+        body = source[start:end]
+        self.assertIn('/proc/%s/status', body)
+        self.assertIn('/proc/%s/fd', body)
+        self.assertNotIn("kill", body.lower())
+        self.assertNotIn("remove(", body)
+
+    def test_operational_doctors_are_wired_once(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        self.assertEqual(source.count('("Network Mount Doctor", "mountdoctor")'), 1)
+        self.assertEqual(source.count('("Enigma2 Runtime Health", "runtimehealth")'), 1)
