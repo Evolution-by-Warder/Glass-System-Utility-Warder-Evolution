@@ -2796,21 +2796,21 @@ class GSUChannelDashboard(Screen):
 class GSUECMInformation(Screen):
     """Original-character ECM center composed from live Enigma2/CAM data only."""
     skin = """
-    <screen name="GSUECMInformation" position="center,center" size="930,790" title="ECM Information" backgroundColor="#31000000">
-        <widget name="service" position="30,20" size="870,45" font="Regular;29" foregroundColor="#e6d500" halign="center" transparent="1"/>
+    <screen name="ECMInfo" position="center,center" size="525,573" title="ECM Informations" backgroundColor="#31000000">
+        <widget name="service" position="30,20" size="870,45" font="priveG;24" foregroundColor="#e6d500" halign="center" transparent="1"/>
         <eLabel position="0,80" size="930,2" backgroundColor="#888888"/>
-        <widget name="service_context" position="35,100" size="410,210" font="Regular;22" transparent="1"/>
-        <widget name="ecm_context" position="485,100" size="410,430" font="Regular;22" transparent="1"/>
+        <widget name="service_context" position="35,100" size="410,210" font="priveG;24" transparent="1"/>
+        <widget name="ecm_context" position="485,100" size="410,430" font="priveG;24" transparent="1"/>
         <eLabel position="465,100" size="2,430" backgroundColor="#888888"/>
-        <widget name="ca_context" position="35,330" size="410,200" font="Regular;22" transparent="1"/>
+        <widget name="ca_context" position="35,330" size="410,200" font="priveG;24" transparent="1"/>
         <eLabel position="0,550" size="930,2" backgroundColor="#888888"/>
-        <widget name="info" position="35,570" size="860,105" font="Regular;20" foregroundColor="#888888" halign="center" valign="center" transparent="1"/>
+        <widget name="info" position="35,570" size="860,105" font="priveG;24" foregroundColor="#888888" halign="center" valign="center" transparent="1"/>
         <eLabel position="0,705" size="310,2" backgroundColor="red"/>
         <eLabel position="310,705" size="310,2" backgroundColor="yellow"/>
         <eLabel position="620,705" size="310,2" backgroundColor="blue"/>
-        <widget name="key_red" position="0,725" size="310,40" font="Regular;25" foregroundColor="red" halign="center" transparent="1"/>
-        <widget name="key_yellow" position="310,725" size="310,40" font="Regular;25" foregroundColor="yellow" halign="center" transparent="1"/>
-        <widget name="key_blue" position="620,725" size="310,40" font="Regular;25" foregroundColor="blue" halign="center" transparent="1"/>
+        <widget name="key_red" position="0,725" size="310,40" font="priveG;24" foregroundColor="red" halign="center" transparent="1"/>
+        <widget name="key_yellow" position="310,725" size="310,40" font="priveG;24" foregroundColor="yellow" halign="center" transparent="1"/>
+        <widget name="key_blue" position="620,725" size="310,40" font="priveG;24" foregroundColor="blue" halign="center" transparent="1"/>
     </screen>
     """
 
