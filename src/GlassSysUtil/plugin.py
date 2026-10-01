@@ -656,37 +656,48 @@ def mount_information():
 
 
 def oscam_information():
+    """Credential-safe runtime/config overview for the original OSCam information workflow."""
     rows = []
     matches = _find_processes("oscam")
     rows.append(_("Process: %s") % (_("RUNNING") if matches else _("not detected")))
     if matches:
         rows.append(_("Process IDs: %s") % ", ".join(pid for pid, argv in matches[:8]))
+        executable = next((os.path.basename(argv[0]) for pid, argv in matches if argv), "")
+        if executable:
+            rows.append(_("Executable: %s") % executable)
     config_dir = _process_option(matches, "--config-dir")
-
     if not config_dir:
-        pidfiles = ("/var/tmp/oscam-uni.pid", "/var/volatile/tmp/oscam-uni.pid")
-        for pidfile in pidfiles:
+        for pidfile in ("/var/tmp/oscam-uni.pid", "/var/volatile/tmp/oscam-uni.pid"):
             if os.path.isfile(pidfile):
                 rows.append(_("PID file: %s") % pidfile)
                 break
-
     candidates = []
     if config_dir:
         candidates.append(os.path.join(config_dir, "oscam.conf"))
-    candidates.extend([
-        "/etc/tuxbox/config/oscam-uni/oscam.conf",
-        "/etc/tuxbox/config/oscam.conf",
-        "/etc/tuxbox/config/oscam/oscam.conf",
-        "/usr/keys/oscam.conf",
-        "/var/keys/oscam.conf",
-    ])
+    candidates.extend(("/etc/tuxbox/config/oscam-uni/oscam.conf", "/etc/tuxbox/config/oscam.conf",
+                       "/etc/tuxbox/config/oscam/oscam.conf", "/usr/keys/oscam.conf", "/var/keys/oscam.conf"))
     found = next((path for path in candidates if os.path.isfile(path)), "")
-    rows.append("")
-    rows.append(_("Config: %s") % (found if found else _("not found")))
+    rows += ["", _("Config: %s") % (found if found else _("not found"))]
     if config_dir:
         rows.append(_("Config dir: %s") % config_dir)
+    if found:
+        try:
+            rows.append(_("Config size: %s") % _human_bytes(os.path.getsize(found)))
+        except Exception:
+            pass
+    live, reason = oscam_live_rows() if matches else ([], "")
+    rows += ["", _("Live client/reader rows: %d") % len(live)]
+    if live:
+        values = _oscam_table_values(live[0])
+        rows += [_("Reader / User: %s") % (values["name"] or "N/A"),
+                 _("Protocol: %s") % (values["protocol"] or "N/A"),
+                 _("Channel: %s") % (values["channel"] or "N/A"),
+                 _("ECM: %s") % (values["ecm"] or "N/A"),
+                 _("Status: %s") % (values["status"] or "N/A")]
+    elif reason:
+        rows.append(reason)
+    rows += ["", _("Credentials and raw configuration contents are never displayed.")]
     return "\n".join(rows)
-
 
 def _proc_cmdline(pid):
     raw = _read_text("/proc/%s/cmdline" % pid, "")
