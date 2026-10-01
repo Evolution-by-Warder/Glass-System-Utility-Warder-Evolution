@@ -1320,8 +1320,11 @@ def original_resource_dashboard_information():
 
 def original_protocol_indicators():
     """Original-style service indicators backed by process/listener discovery."""
-    processes = _process_snapshot()
-    names = " ".join(item.get("name", "").lower() for item in processes)
+    names = []
+    for needle in ("vsftpd", "proftpd", "pure-ftpd", "telnetd", "openvpn", "wireguard", "wg-quick", "smbd", "nmbd", "nfsd", "rpc.mountd"):
+        if _find_processes(needle):
+            names.append(needle)
+    names = " ".join(names)
     mapping = (("FTP", ("vsftpd", "proftpd", "pure-ftpd")),
                ("Telnet", ("telnetd",)),
                ("VPN", ("openvpn", "wireguard", "wg-quick")),
