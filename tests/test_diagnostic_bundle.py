@@ -320,6 +320,16 @@ class LocalizationContractTests(unittest.TestCase):
                       "Restart Enigma2 GUI", "About this build"):
             self.assertIn('_("' + label + '")', source)
 
+    def test_runtime_titles_and_dialogs_are_localizable(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        for text in ("Glass System Utility - Warder Evolution",
+                     "Active CAM / OSCam Monitor",
+                     "Unable to check for updates.\\n\\n%s",
+                     "Update installation failed.\\n\\n%s",
+                     "Diagnostic bundle created:\\n%s",
+                     "About"):
+            self.assertIn('_("' + text + '")', source)
+
     def test_build_compiles_gettext_catalogs(self):
         root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
         build = open(os.path.join(root, "tools", "build-ipk.sh"), encoding="utf-8").read()
