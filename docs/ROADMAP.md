@@ -269,3 +269,27 @@ Relevant implementation commits:
 - `97553505f69554dcf22ebc483d84c0be75c267db` exception-safe refresh lifecycle.
 
 All source-triggered GitHub Actions runs for this batch are PASS. The release gate remains unchanged: one coherent receiver candidate must validate actual visual/live field mapping before v13.29-w10 publication.
+
+
+### 2026-10-01 coherent w10 receiver candidate
+
+The OSCam live monitor is ready for the next single receiver validation batch.
+
+Additional hardening:
+- periodic five-second OSCam WebIF fetch no longer performs network I/O on the Enigma2 GUI thread;
+- only one live fetch worker may run at a time;
+- worker completion updates the table on the Enigma2 timer path;
+- closing the monitor stops periodic refresh and prevents an outstanding worker from updating a closed screen;
+- manual refresh, Details and safe CAM restart behavior remain available.
+
+Validated source commit: `4f36bfdb9ff598751fce55e2db24381a4590886b`.
+GitHub Actions run: `36822113432` — PASS.
+CI artifact IPK: `enigma2-plugin-glasssysutil_13.29-w10_all.ipk`, 23,616 bytes,
+SHA-256 `400be4cb1ab7376becb6efa1b97ac3936bbbbd1d3116f6d5a04b0c924e74c500`.
+
+Receiver gate:
+- confirm monitor opens without GUI stall;
+- confirm table is visually useful and stable across automatic refresh;
+- inspect which real fields populate;
+- if important fields remain empty, use Details -> OSCam API schema (field names only) to guide mapping without exposing credentials or raw API values;
+- do not publish v13.29-w10 until this gate passes.
