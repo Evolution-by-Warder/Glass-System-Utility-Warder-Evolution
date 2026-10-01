@@ -22,6 +22,7 @@ import urllib.error
 from urllib.parse import urlsplit
 
 from Plugins.Plugin import PluginDescriptor
+from . import _
 from Screens.MessageBox import MessageBox
 from Screens.Screen import Screen
 from Components.ActionMap import ActionMap
@@ -2366,26 +2367,26 @@ class SysUtilMngMain(Screen):
     </screen>
     """
     MENU = [
-        ("Health Check", "healthcheck"),
-        ("Service Dashboard", "servicedashboard"),
-        ("Active CAM / OSCam Monitor", "cammonitor"),
-        ("Network Health", "nethealth"),
-        ("Network Mount Doctor", "mountdoctor"),
-        ("Storage Health", "storagehealth"),
-        ("Enigma2 Runtime Health", "runtimehealth"),
-        ("Tuner information", "tuners"),
-        ("Temperatures", "temps"),
-        ("System & Hardware", "system"),
-        ("Network & Interfaces", "network"),
-        ("Storage & Filesystems", "storage"),
-        ("Memory & Swap", "memory"),
-        ("Services & Processes", "services"),
-        ("Network Mounts (NFS/CIFS)", "mounts"),
-        ("Logs & Diagnostics", "logs"),
-        ("Create Diagnostic Bundle", "diagbundle"),
-        ("Check for updates", "update"),
-        ("Restart Enigma2 GUI", "restart"),
-        ("About this build", "about"),
+        (_("Health Check"), "healthcheck"),
+        (_("Service Dashboard"), "servicedashboard"),
+        (_("Active CAM / OSCam Monitor"), "cammonitor"),
+        (_("Network Health"), "nethealth"),
+        (_("Network Mount Doctor"), "mountdoctor"),
+        (_("Storage Health"), "storagehealth"),
+        (_("Enigma2 Runtime Health"), "runtimehealth"),
+        (_("Tuner information"), "tuners"),
+        (_("Temperatures"), "temps"),
+        (_("System & Hardware"), "system"),
+        (_("Network & Interfaces"), "network"),
+        (_("Storage & Filesystems"), "storage"),
+        (_("Memory & Swap"), "memory"),
+        (_("Services & Processes"), "services"),
+        (_("Network Mounts (NFS/CIFS)"), "mounts"),
+        (_("Logs & Diagnostics"), "logs"),
+        (_("Create Diagnostic Bundle"), "diagbundle"),
+        (_("Check for updates"), "update"),
+        (_("Restart Enigma2 GUI"), "restart"),
+        (_("About this build"), "about"),
     ]
 
     def __init__(self, session):
@@ -2485,14 +2486,14 @@ def sessionAutostart(reason, **kwargs):
 
 def startViaMenu(menuid, **kwargs):
     if menuid == "setup":
-        return [("Glass System Utility", main, "glass_sys_utils", None)]
+        return [(_("Glass System Utility"), main, "glass_sys_utils", None)]
     return []
 
 
 def Plugins(path=None, **kwargs):
     return [
-        PluginDescriptor(name="Glass System Utility",
-                         description="Glass System Utility Warder Evolution",
+        PluginDescriptor(name=_("Glass System Utility"),
+                         description=_("Glass System Utility Warder Evolution"),
                          where=PluginDescriptor.WHERE_PLUGINMENU, icon="SysMgt.png", fnc=main),
         PluginDescriptor(name="Glass System Utility",
                          description="Glass System Utility Warder Evolution",
