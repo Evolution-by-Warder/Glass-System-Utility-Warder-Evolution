@@ -2725,7 +2725,7 @@ class GSUSystemDashboard(Screen):
     def open_help(self):
         self.session.open(GSUInfo, _("System Information"), system_information())
 
-    def _space_text(self, path):
+    def open_tools(self):\n        """Modern diagnostics stay available without changing the original 13.20 key bar."""\n        self.session.open(GSUWarderTools)\n\n    def _space_text(self, path):
         try:
             stat = os.statvfs(path)
             total = stat.f_blocks * stat.f_frsize
