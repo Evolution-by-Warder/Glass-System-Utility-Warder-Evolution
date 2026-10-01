@@ -3183,11 +3183,10 @@ class GSUActiveCAM(Screen):
         if not active:
             self.session.open(MessageBox, _("No supported active CAM detected."), MessageBox.TYPE_INFO, timeout=6)
             return
-        parts = [active_cam_information()]
+        parts = [oscam_information() if active.get("family") == "oscam" else active_cam_information()]
         if active.get("family") == "oscam":
-            parts.extend(["", oscam_live_information(), "", oscam_runtime_information(), "",
-                          oscam_webif_information(), "", oscam_api_schema_information()])
-        self.session.open(GSUInfo, "CAM / OSCam Details", "\n".join(parts))
+            parts.extend(["", oscam_runtime_information(), "", oscam_webif_information()])
+        self.session.open(GSUInfo, _("OSCam Information"), "\n".join(parts))
 
     def restart_cam(self):
         if getattr(self, "_restart_in_progress", False):
