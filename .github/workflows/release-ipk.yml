@@ -36,7 +36,7 @@ jobs:
           VERSION="$(tr -d '\r\n' < src/GlassSysUtil/version)"
           EXPECTED="${{ inputs.expected_version || '' }}"
           if [ -z "$EXPECTED" ] && [ -f .release-request ]; then
-            EXPECTED="$(tr -d '\r\n' < .release-request)"
+            EXPECTED="$(head -n 1 .release-request | tr -d '\r\n')"
           fi
           test -n "$VERSION"
           test "$VERSION" = "$EXPECTED"
