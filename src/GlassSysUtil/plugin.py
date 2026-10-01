@@ -990,7 +990,7 @@ def health_check_information():
         state = "PASS" if pct >= 15 else ("WARNING" if pct >= 7 else "WARNING")
         rows.append("[%s] Memory: %.0f%% available" % (state, pct))
     else:
-        rows.append("[INFO] Memory: data not exposed")
+        rows.append(_("[INFO] Memory: data not exposed"))
 
     # Filesystems: warn only about mounted physical filesystems that are genuinely tight.
     storage_seen = False
@@ -1012,7 +1012,7 @@ def health_check_information():
             "WARNING" if storage_warning else "PASS",
             "one or more filesystems below 5% free" if storage_warning else "mounted filesystems have usable free space"))
     else:
-        rows.append("[INFO] Storage: no physical filesystem mounts detected")
+        rows.append(_("[INFO] Storage: no physical filesystem mounts detected"))
 
     # Network capability/state. Loopback is deliberately ignored.
     interfaces = []
@@ -1027,9 +1027,9 @@ def health_check_information():
     if up:
         rows.append("[PASS] Network link: %s" % ", ".join(up))
     elif interfaces:
-        rows.append("[WARNING] Network link: no detected interface is up")
+        rows.append(_("[WARNING] Network link: no detected interface is up"))
     else:
-        rows.append("[INFO] Network link: interfaces not exposed")
+        rows.append(_("[INFO] Network link: interfaces not exposed"))
     rows.append("[%s] Default gateway: %s" % ("PASS" if gateway and gateway != "N/A" else "INFO", gateway or "N/A"))
     rows.append("[%s] DNS configuration: %s" % (
         "PASS" if resolvers else "WARNING", ", ".join(resolvers) if resolvers else "no resolver configured"))
@@ -1044,7 +1044,7 @@ def health_check_information():
         state = "PASS" if hottest < 80 else ("WARNING" if hottest < 95 else "WARNING")
         rows.append("[%s] Temperature: hottest detected %.1f C" % (state, hottest))
     else:
-        rows.append("[INFO] Temperature: measurement not exposed")
+        rows.append(_("[INFO] Temperature: measurement not exposed"))
 
     mounts = [line for line in _read_lines("/proc/mounts")
               if len(line.split()) >= 3 and line.split()[2].lower() in ("nfs", "nfs4", "cifs", "smbfs")]
@@ -1062,9 +1062,9 @@ def health_check_information():
     except Exception:
         dvb = []
     if nim or dvb:
-        rows.append("[PASS] Tuner interfaces: detected")
+        rows.append(_("[PASS] Tuner interfaces: detected"))
     else:
-        rows.append("[INFO] Tuner interfaces: not exposed through detected system interfaces")
+        rows.append(_("[INFO] Tuner interfaces: not exposed through detected system interfaces"))
 
     rows += ["", _("Health Check is read-only. INFO means a capability is absent, optional, or not enough evidence exists to call it a fault.")]
     return "\n".join(rows)
@@ -1306,7 +1306,7 @@ def oscam_runtime_information():
             if text and not any(secret in text.lower() for secret in ("password", "passwd", "pwd=")):
                 rows.append(text)
     else:
-        rows.append("OSCam runtime version file: not found")
+        rows.append(_("OSCam runtime version file: not found"))
 
     matches = _find_processes("oscam")
     config_dir = _process_option(matches, "--config-dir")
@@ -1333,7 +1333,7 @@ def package_information():
         rows.append("%s" % package)
         rows.append("  Version: %s" % (version or "N/A"))
         rows.append("  Status: %s" % (status or "N/A"))
-    rows += ["", "Available upgrades: not checked here (repository queries may block this screen)."]
+    rows += ["", _("Available upgrades: not checked here (repository queries may block this screen).")]
     return "\n".join(rows)
 
 
@@ -1457,14 +1457,14 @@ def time_health_information():
     if chronyc:
         tracking = _run(["chronyc", "tracking"], 4)
         if tracking:
-            rows += ["", "chrony tracking:"]
+            rows += ["", _("chrony tracking:")]
             rows.extend(tracking.splitlines()[:16])
     else:
         ntpq = _run(["which", "ntpq"], 2)
         if ntpq:
             peers = _run(["ntpq", "-pn"], 4)
             if peers:
-                rows += ["", "NTP peers:"]
+                rows += ["", _("NTP peers:")]
                 rows.extend(peers.splitlines()[:16])
     return "\n".join(rows)
 
