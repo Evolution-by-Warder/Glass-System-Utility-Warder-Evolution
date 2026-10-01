@@ -2392,6 +2392,19 @@ class SysUtilMngMain(Screen):
         Screen.__init__(self, session)
         self["menu"] = MenuList([item[0] for item in self.MENU])
         self["actions"] = ActionMap(["OkCancelActions"], {"ok": self.ok, "cancel": self.close}, -1)
+        # Check again whenever the user actually opens GSU.  The updater is
+        # asynchronous, so opening the plugin never waits on GitHub/network I/O.
+        self.onShown.append(self._check_update_on_open)
+
+    def _check_update_on_open(self):
+        try:
+            self.onShown.remove(self._check_update_on_open)
+        except Exception:
+            pass
+        try:
+            GSUUpdater(self.session).check(silent=True)
+        except Exception:
+            pass
 
     def _info(self, title, text):
         self.session.open(GSUInfo, title, text)
