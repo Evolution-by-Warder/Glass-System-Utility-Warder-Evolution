@@ -3065,6 +3065,56 @@ class SysUtilMngMain(Screen):
 
 
 
+class GSUPackageCenter(Screen):
+    """Original GSU IPK/DEB/user-script center; mutation stays capability-gated."""
+    skin = """
+    <screen name="GlassIpkScriptCenter" position="center,center" size="750,530" title="Ipk and Script Manager" backgroundColor="#31000000">
+        <widget name="list" position="30,20" size="690,340" font="Regular;27" itemHeight="45" scrollbarMode="showOnDemand" backgroundColor="#31000000" />
+        <eLabel position="0,375" size="750,2" backgroundColor="#888888" />
+        <widget name="info" position="30,385" size="690,85" font="Regular;21" valign="center" halign="center" foregroundColor="#888888" transparent="1" />
+        <widget name="red" position="0,485" size="250,35" font="Regular;25" halign="center" foregroundColor="red" transparent="1" />
+        <widget name="green" position="250,485" size="250,35" font="Regular;25" halign="center" foregroundColor="green" transparent="1" />
+        <widget name="yellow" position="500,485" size="250,35" font="Regular;25" halign="center" foregroundColor="yellow" transparent="1" />
+    </screen>
+    """
+    MENU = [
+        (_("User scripts"), _("Browse and run user scripts only after the execution path is receiver-validated.")),
+        (_("Install IPK"), _("Local IPK installation is retained but remains gated until receiver validation.")),
+        (_("Uninstall IPK"), _("Installed-package removal is retained but remains gated until receiver validation.")),
+        (_("Install TAR"), _("Local TAR installation is retained but remains gated until receiver validation.")),
+        (_("Install/Uninstall DEB"), _("DEB handling is enabled only on images exposing a compatible package manager.")),
+    ]
+
+    def __init__(self, session):
+        Screen.__init__(self, session)
+        self["list"] = MenuList([x[0] for x in self.MENU])
+        self["info"] = Label("")
+        self["red"] = Label(_("Exit"))
+        self["green"] = Label(_("OK"))
+        self["yellow"] = Label(_("Refresh"))
+        self["actions"] = ActionMap(["OkCancelActions", "ColorActions", "DirectionActions"], {
+            "cancel": self.close, "red": self.close, "ok": self.open_selected,
+            "green": self.open_selected, "yellow": self.refresh,
+            "up": self.up, "down": self.down,
+        }, -1)
+        self.setTitle(_("IPK/DEB and user scripts"))
+        self.onShown.append(self.refresh)
+
+    def refresh(self):
+        try:
+            idx = self["list"].getSelectedIndex()
+            self["info"].setText(self.MENU[idx][1])
+        except Exception:
+            self["info"].setText("")
+    def up(self):
+        self["list"].up(); self.refresh()
+    def down(self):
+        self["list"].down(); self.refresh()
+    def open_selected(self):
+        self.session.open(GSUInfo, self.MENU[self["list"].getSelectedIndex()][0],
+                          package_tools_information())
+
+
 class GSUWarderTools(Screen):
     """Modern diagnostics grouped behind the original GSU-style top level."""
     skin = """
