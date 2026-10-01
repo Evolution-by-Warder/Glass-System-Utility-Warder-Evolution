@@ -194,3 +194,51 @@ msgstr "Diagnostika je iba na čítanie; prihlasovacie údaje ani hodnoty konfig
 
 msgid "Summary: %d filesystem(s), %d warning(s)."
 msgstr "Súhrn: %d súborových systémov, %d upozornení."
+
+msgid "CPU: %s"
+msgstr "CPU: %s"
+
+msgid "CPU cores: %s"
+msgstr "Jadrá CPU: %s"
+
+msgid "N/A"
+msgstr "N/A"
+
+msgid "Default gateway: %s"
+msgstr "Predvolená brána: %s"
+
+msgid "DNS: %s"
+msgstr "DNS: %s"
+
+msgid "Process: %s"
+msgstr "Proces: %s"
+
+msgid "RUNNING"
+msgstr "BEŽÍ"
+
+msgid "not detected"
+msgstr "nezistené"
+
+msgid "Config: %s"
+msgstr "Konfigurácia: %s"
+
+msgid "not found"
+msgstr "nenájdené"
+
+msgid "Virtual memory: %s"
+msgstr "Virtuálna pamäť: %s"
+
+msgid "DNS servers: %s"
+msgstr "DNS servery: %s"
+
+msgid "Local time: %s"
+msgstr "Miestny čas: %s"
+
+msgid "UTC time: %s"
+msgstr "Čas UTC: %s"
+
+msgid "Python: %s"
+msgstr "Python: %s"
+
+msgid "Enigma2 binary: %s"
+msgstr "Binárny súbor Enigma2: %s"
