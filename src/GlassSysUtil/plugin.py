@@ -32,6 +32,17 @@ except ImportError:
     ScrollLabel = None
 from Components.MenuList import MenuList
 try:
+    from Components.Sources.List import List
+    from Components.MultiContent import MultiContentEntryText
+    from enigma import eListboxPythonMultiContent, gFont, RT_HALIGN_LEFT, RT_VALIGN_CENTER
+except ImportError:
+    List = None
+    MultiContentEntryText = None
+    eListboxPythonMultiContent = None
+    gFont = None
+    RT_HALIGN_LEFT = 0
+    RT_VALIGN_CENTER = 0
+try:
     from enigma import eTimer
 except ImportError:
     eTimer = None
@@ -639,6 +650,19 @@ def _oscam_table_cell(value, width):
     return value.ljust(width)
 
 
+_OSCAM_COLUMNS = (
+    ("name", 20, 210),
+    ("address", 245, 190),
+    ("port", 450, 75),
+    ("protocol", 540, 120),
+    ("service", 675, 230),
+    ("channel", 920, 230),
+    ("ecm", 1165, 95),
+    ("idle", 1275, 80),
+    ("status", 1370, 130),
+)
+
+
 def _oscam_row_role(row):
     typ = (row.get("type") or "").lower()
     name = (row.get("name") or "").lower()
@@ -665,38 +689,49 @@ def _oscam_status_display(row):
     return "IDLE" if idle else ""
 
 
-def _oscam_row_is_noise(row):
-    """Hide OSCam infrastructure rows that add no useful service/client information."""
-    typ = (row.get("type") or "").lower()
-    protocol = (row.get("protocol") or "").lower()
-    name = _oscam_display(row.get("name")).lower()
-    address = _oscam_display(row.get("address"))
-    has_service = bool(_oscam_service_display(row) or _oscam_display(row.get("channel")))
-    if typ == "http" or protocol == "http":
-        return True
-    if typ == "server" and address in ("127.0.0.1", "::1") and not has_service:
-        return True
-    if name in ("", "-") and not has_service and not _oscam_display(row.get("status")):
-        return True
-    return False
+def _oscam_table_values(row):
+    name = _oscam_display(row.get("name"))
+    role = _oscam_row_role(row)
+    if role.strip():
+        name = "%s  %s" % (role, name)
+    return {
+        "name": name,
+        "address": _oscam_display(row.get("address")),
+        "port": _oscam_display(row.get("port")),
+        "protocol": _oscam_display(row.get("protocol")),
+        "service": _oscam_service_display(row),
+        "channel": _oscam_display(row.get("channel")),
+        "ecm": _oscam_display(row.get("ecm")),
+        "idle": _oscam_display(row.get("idle")),
+        "status": _oscam_status_display(row),
+    }
+
+
+def _oscam_multicontent_row(row):
+    values = _oscam_table_values(row)
+    if MultiContentEntryText is None:
+        return _oscam_table_line(row)
+    result = [row]
+    for key, x, width in _OSCAM_COLUMNS:
+        result.append(MultiContentEntryText(
+            pos=(x, 0), size=(width, 34), font=0,
+            flags=RT_HALIGN_LEFT | RT_VALIGN_CENTER,
+            text=values[key]))
+    return result
 
 
 def _oscam_table_line(row):
-    service = _oscam_service_display(row)
-    name = _oscam_display(row["name"])
-    role = _oscam_row_role(row)
-    if role.strip():
-        name = "%s %s" % (role, name)
+    values = _oscam_table_values(row)
     return " ".join((
-        _oscam_table_cell(name, 16),
-        _oscam_table_cell(_oscam_display(row["address"]), 16),
-        _oscam_table_cell(_oscam_display(row["port"]), 6),
-        _oscam_table_cell(_oscam_display(row["protocol"]), 10),
-        _oscam_table_cell(service, 20),
-        _oscam_table_cell(_oscam_display(row["channel"]), 24),
-        _oscam_table_cell(_oscam_display(row["ecm"]), 9),
-        _oscam_table_cell(_oscam_display(row["idle"]), 9),
-        _oscam_table_cell(_oscam_status_display(row), 13),
+        _oscam_table_cell(values["name"], 16),
+        _oscam_table_cell(values["address"], 16),
+        _oscam_table_cell(values["port"], 6),
+        _oscam_table_cell(values["protocol"], 10),
+        _oscam_table_cell(values["service"], 20),
+        _oscam_table_cell(values["channel"], 24),
+        _oscam_table_cell(values["ecm"], 9),
+        _oscam_table_cell(values["idle"], 9),
+        _oscam_table_cell(values["status"], 13),
     ))
 
 
@@ -1745,8 +1780,29 @@ class GSUActiveCAM(Screen):
     <screen name="GSUActiveCAM" position="center,center" size="1500,760" title="Active CAM / OSCam Monitor">
         <widget name="summary" position="25,20" size="1450,105" font="Regular;22" />
         <widget name="live_status" position="25,128" size="1450,32" font="Regular;20" foregroundColor="#33cc33" />
-        <widget name="table_header" position="25,170" size="1450,34" font="Console;17" foregroundColor="#e6d500" />
-        <widget name="table" position="25,207" size="1450,445" font="Console;17" itemHeight="34" scrollbarMode="showOnDemand" />
+        <widget name="h_name" position="45,170" size="210,34" font="Regular;18" foregroundColor="#e6d500" text="Reader / User" />
+        <widget name="h_address" position="270,170" size="190,34" font="Regular;18" foregroundColor="#e6d500" text="Address" />
+        <widget name="h_port" position="475,170" size="75,34" font="Regular;18" foregroundColor="#e6d500" text="Port" />
+        <widget name="h_protocol" position="565,170" size="120,34" font="Regular;18" foregroundColor="#e6d500" text="Protocol" />
+        <widget name="h_service" position="700,170" size="230,34" font="Regular;18" foregroundColor="#e6d500" text="srvid:caid@provid" />
+        <widget name="h_channel" position="945,170" size="230,34" font="Regular;18" foregroundColor="#e6d500" text="Channel" />
+        <widget name="h_ecm" position="1190,170" size="95,34" font="Regular;18" foregroundColor="#e6d500" text="ECM" />
+        <widget name="h_idle" position="1300,170" size="80,34" font="Regular;18" foregroundColor="#e6d500" text="Idle" />
+        <widget name="h_status" position="1395,170" size="105,34" font="Regular;18" foregroundColor="#e6d500" text="Status" />
+        <widget source="table" render="Listbox" position="25,207" size="1450,445" scrollbarMode="showOnDemand">
+            <convert type="TemplatedMultiContent">
+                {"template": [MultiContentEntryText(pos=(20,0),size=(210,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=1),
+                              MultiContentEntryText(pos=(245,0),size=(190,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=2),
+                              MultiContentEntryText(pos=(450,0),size=(75,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=3),
+                              MultiContentEntryText(pos=(540,0),size=(120,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=4),
+                              MultiContentEntryText(pos=(675,0),size=(230,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=5),
+                              MultiContentEntryText(pos=(920,0),size=(230,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=6),
+                              MultiContentEntryText(pos=(1165,0),size=(95,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=7),
+                              MultiContentEntryText(pos=(1275,0),size=(80,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=8),
+                              MultiContentEntryText(pos=(1370,0),size=(130,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=9)],
+                 "fonts":[gFont("Regular",18)],"itemHeight":34}
+            </convert>
+        </widget>
         <widget name="key_red" position="35,680" size="230,45" font="Regular;24" foregroundColor="#ff3333" />
         <widget name="key_green" position="380,680" size="250,45" font="Regular;24" foregroundColor="#33cc33" />
         <widget name="key_yellow" position="760,680" size="220,45" font="Regular;24" foregroundColor="#e6d500" />
@@ -1759,8 +1815,10 @@ class GSUActiveCAM(Screen):
         Screen.__init__(self, session)
         self["summary"] = Label(active_cam_summary())
         self["live_status"] = Label("")
-        self["table_header"] = Label(self.TABLE_HEADER)
-        self["table"] = MenuList([])
+        if List is not None:
+            self["table"] = List([])
+        else:
+            self["table"] = MenuList([])
         self["key_red"] = Label("Close")
         command, detail = _active_cam_restart_command()
         self.restart_command = command
@@ -1805,7 +1863,7 @@ class GSUActiveCAM(Screen):
                     selected = self["table"].getSelectionIndex()
                 except Exception:
                     pass
-                self["table"].setList([_oscam_table_line(row) for row in table_rows])
+                self["table"].setList([tuple([row] + list(_oscam_table_values(row).values())) for row in table_rows] if List is not None else [_oscam_table_line(row) for row in table_rows])
                 if table_rows:
                     try:
                         self["table"].moveToIndex(min(selected, len(table_rows) - 1))
@@ -1861,7 +1919,7 @@ class GSUActiveCAM(Screen):
                         selected = self["table"].getSelectionIndex()
                     except Exception:
                         pass
-                    self["table"].setList([_oscam_table_line(row) for row in rows])
+                    self["table"].setList([tuple([row] + list(_oscam_table_values(row).values())) for row in rows] if List is not None else [_oscam_table_line(row) for row in rows])
                     if rows:
                         try:
                             self["table"].moveToIndex(min(selected, len(rows) - 1))
