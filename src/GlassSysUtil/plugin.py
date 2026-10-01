@@ -2665,19 +2665,19 @@ class GSUSystemDashboard(Screen):
     """Dense original-style system dashboard; all probes remain read-only."""
     skin = """
     <screen name="GlassSysInfo" position="0,0" size="1920,1080" title="GlassSysInfo" backgroundColor="#31000000" flags="wfNoBorder">
-        <eLabel position="75,45" size="760,40" text="Memory / Storage / Temperature" font="Regular;28" foregroundColor="#666666" transparent="1"/>
-        <widget name="resources" position="75,100" size="760,430" font="Regular;25" transparent="1"/>
-        <eLabel position="75,555" size="760,40" text="System / Hardware" font="Regular;28" foregroundColor="#666666" transparent="1"/>
-        <widget name="system" position="75,610" size="760,315" font="Regular;23" transparent="1"/>
-        <eLabel position="925,45" size="900,40" text="Process Info" font="Regular;28" foregroundColor="#666666" transparent="1"/>
-        <widget name="services" position="925,100" size="900,350" font="Regular;23" transparent="1"/>
-        <eLabel position="925,475" size="900,40" text="Dmesg / Health Info" font="Regular;28" foregroundColor="#666666" transparent="1"/>
-        <widget name="health" position="925,530" size="900,395" font="Regular;22" transparent="1"/>
-        <eLabel position="75,945" size="150,35" text="Protocols:" font="Regular;25" foregroundColor="#666666" transparent="1"/>
-        <widget name="protocols" position="230,945" size="1150,40" font="Regular;24" foregroundColor="#33cc33" transparent="1"/>
-        <widget name="key_red" position="75,1010" size="300,45" font="Regular;27" foregroundColor="red" halign="center" transparent="1"/>
-        <widget name="key_yellow" position="810,1010" size="300,45" font="Regular;27" foregroundColor="yellow" halign="center" transparent="1"/>
-        <widget name="key_blue" position="1545,1010" size="300,45" font="Regular;27" foregroundColor="blue" halign="center" transparent="1"/>
+        <eLabel position="75,45" size="760,40" text="Memory / Storage / Temperature" font="priveG;28" foregroundColor="#666666" transparent="1"/>
+        <widget name="resources" position="75,100" size="760,430" font="priveG;25" transparent="1"/>
+        <eLabel position="75,555" size="760,40" text="System / Hardware" font="priveG;28" foregroundColor="#666666" transparent="1"/>
+        <widget name="system" position="75,610" size="760,315" font="priveG;23" transparent="1"/>
+        <eLabel position="925,45" size="900,40" text="Process Info" font="priveG;28" foregroundColor="#666666" transparent="1"/>
+        <widget name="services" position="925,100" size="900,350" font="priveG;23" transparent="1"/>
+        <eLabel position="925,475" size="900,40" text="Dmesg / Health Info" font="priveG;28" foregroundColor="#666666" transparent="1"/>
+        <widget name="health" position="925,530" size="900,395" font="priveG;22" transparent="1"/>
+        <eLabel position="75,945" size="150,35" text="Protocols:" font="priveG;25" foregroundColor="#666666" transparent="1"/>
+        <widget name="protocols" position="230,945" size="1150,40" font="priveG;24" foregroundColor="#33cc33" transparent="1"/>
+        <widget name="key_red" position="75,1010" size="300,45" font="priveG;30" foregroundColor="red" halign="center" transparent="1"/>
+        <widget name="key_yellow" position="810,1010" size="300,45" font="priveG;30" foregroundColor="yellow" halign="center" transparent="1"/>
+        <widget name="key_blue" position="1545,1010" size="300,45" font="priveG;30" foregroundColor="blue" halign="center" transparent="1"/>
     </screen>
     """
     def __init__(self, session):
