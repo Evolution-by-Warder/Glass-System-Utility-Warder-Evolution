@@ -245,3 +245,27 @@ class NetworkHealthTests(unittest.TestCase):
         source = open(PLUGIN, encoding="utf-8").read()
         self.assertEqual(source.count('("Network Health", "nethealth")'), 1)
         self.assertEqual(source.count('"nethealth": ("Network Health", network_health_information)'), 1)
+
+
+class MainMenuFocusTests(unittest.TestCase):
+    def test_main_menu_stays_bounded_and_operational(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        start = source.index("class SysUtilMngMain")
+        end = source.index("    def __init__", start)
+        menu = source[start:end]
+        entries = re.findall(r'^\s*\(".*?",\s*".*?"\),\s*$', menu, re.M)
+        self.assertLessEqual(len(entries), 20)
+        for label in ("Health Check", "Service Dashboard", "Active CAM / OSCam Monitor",
+                      "Network Health", "Network Mount Doctor", "Storage Health",
+                      "Enigma2 Runtime Health", "Create Diagnostic Bundle", "Check for updates"):
+            self.assertIn(label, menu)
+
+    def test_low_value_raw_duplicates_are_not_top_level(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        start = source.index("class SysUtilMngMain")
+        end = source.index("    def __init__", start)
+        menu = source[start:end]
+        for label in ("Hardware Identity", "Filesystem Health", "Block Devices",
+                      "Listening Ports", "CAM Inventory", "Package information",
+                      "Image & Runtime", "Diagnostic Summary", "Detected Capabilities"):
+            self.assertNotIn('("' + label + '",', menu)
