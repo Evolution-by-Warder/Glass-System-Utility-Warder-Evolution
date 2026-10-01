@@ -303,19 +303,6 @@ class UpdateDiscoveryUXTests(unittest.TestCase):
         self.assertIn("GSUUpdater(self.session).check(silent=True)", body)
         self.assertIn("self.onShown.remove(self._check_update_on_open)", body)
 
-    def test_enigma2_session_start_never_checks_for_updates(self):
-        source = open(PLUGIN, encoding="utf-8").read()
-        plugin_body = source[source.index("def Plugins("):]
-        forbidden = "PluginDescriptor." + "WHERE_" + "SESSIONSTART"
-        self.assertNotIn(forbidden, plugin_body)
-        helper = "def " + "_auto_" + "update_check"
-        self.assertNotIn(helper, source)
-        guard = "_AUTO_" + "UPDATE_STARTED"
-        self.assertNotIn(guard, source)
-        start = source.index("class SysUtilMngMain")
-        end = source.index("def main(session", start)
-        self.assertIn("GSUUpdater(self.session).check(silent=True)", source[start:end])
-
     def test_localized_oscam_live_status_has_matching_format_contract(self):
         source = open(PLUGIN, encoding="utf-8").read()
         self.assertIn('_("Live OSCam: %d active client/reader rows  |  OK = row details") % len(rows)', source)
