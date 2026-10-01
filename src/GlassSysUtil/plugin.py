@@ -1832,23 +1832,23 @@ class GSUActiveCAM(Screen):
     <screen name="GSUActiveCAM" position="center,center" size="1500,760" title="Active CAM / OSCam Monitor">
         <widget name="summary" position="25,20" size="1450,105" font="Regular;22" />
         <widget name="live_status" position="25,128" size="1450,32" font="Regular;20" foregroundColor="#33cc33" />
-        <widget name="h_name" position="45,170" size="210,34" font="Regular;18" foregroundColor="#e6d500" text="Reader / User" />
-        <widget name="h_address" position="270,170" size="190,34" font="Regular;18" foregroundColor="#e6d500" text="Address" />
-        <widget name="h_port" position="475,170" size="75,34" font="Regular;18" foregroundColor="#e6d500" text="Port" />
-        <widget name="h_protocol" position="565,170" size="120,34" font="Regular;18" foregroundColor="#e6d500" text="Protocol" />
-        <widget name="h_service" position="700,170" size="230,34" font="Regular;18" foregroundColor="#e6d500" text="srvid:caid@provid" />
-        <widget name="h_channel" position="945,170" size="230,34" font="Regular;18" foregroundColor="#e6d500" text="Channel" />
-        <widget name="h_ecm" position="1190,170" size="95,34" font="Regular;18" foregroundColor="#e6d500" text="ECM" />
-        <widget name="h_idle" position="1300,170" size="80,34" font="Regular;18" foregroundColor="#e6d500" text="Idle" />
-        <widget name="h_status" position="1395,170" size="105,34" font="Regular;18" foregroundColor="#e6d500" text="Status" />
-        <widget name="sep1" position="260,168" size="1,485" backgroundColor="#555555" />
-        <widget name="sep2" position="465,168" size="1,485" backgroundColor="#555555" />
-        <widget name="sep3" position="555,168" size="1,485" backgroundColor="#555555" />
-        <widget name="sep4" position="690,168" size="1,485" backgroundColor="#555555" />
-        <widget name="sep5" position="935,168" size="1,485" backgroundColor="#555555" />
-        <widget name="sep6" position="1180,168" size="1,485" backgroundColor="#555555" />
-        <widget name="sep7" position="1290,168" size="1,485" backgroundColor="#555555" />
-        <widget name="sep8" position="1385,168" size="1,485" backgroundColor="#555555" />
+        <eLabel position="45,170" size="210,34" font="Regular;18" foregroundColor="#e6d500" text="Reader / User" />
+        <eLabel position="270,170" size="190,34" font="Regular;18" foregroundColor="#e6d500" text="Address" />
+        <eLabel position="475,170" size="75,34" font="Regular;18" foregroundColor="#e6d500" text="Port" />
+        <eLabel position="565,170" size="120,34" font="Regular;18" foregroundColor="#e6d500" text="Protocol" />
+        <eLabel position="700,170" size="230,34" font="Regular;18" foregroundColor="#e6d500" text="srvid:caid@provid" />
+        <eLabel position="945,170" size="230,34" font="Regular;18" foregroundColor="#e6d500" text="Channel" />
+        <eLabel position="1190,170" size="95,34" font="Regular;18" foregroundColor="#e6d500" text="ECM" />
+        <eLabel position="1300,170" size="80,34" font="Regular;18" foregroundColor="#e6d500" text="Idle" />
+        <eLabel position="1395,170" size="105,34" font="Regular;18" foregroundColor="#e6d500" text="Status" />
+        <eLabel position="260,168" size="1,485" backgroundColor="#555555" />
+        <eLabel position="465,168" size="1,485" backgroundColor="#555555" />
+        <eLabel position="555,168" size="1,485" backgroundColor="#555555" />
+        <eLabel position="690,168" size="1,485" backgroundColor="#555555" />
+        <eLabel position="935,168" size="1,485" backgroundColor="#555555" />
+        <eLabel position="1180,168" size="1,485" backgroundColor="#555555" />
+        <eLabel position="1290,168" size="1,485" backgroundColor="#555555" />
+        <eLabel position="1385,168" size="1,485" backgroundColor="#555555" />
         <widget source="table" render="Listbox" position="25,207" size="1450,445" scrollbarMode="showOnDemand">
             <convert type="TemplatedMultiContent">
                 {"template": [MultiContentEntryText(pos=(20,0),size=(210,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=1),
@@ -1900,6 +1900,7 @@ class GSUActiveCAM(Screen):
                 "left": self["table"].pageUp,
                 "right": self["table"].pageDown,
             }, -1)
+        self._live_rows = []
         self._refresh_in_progress = False
         self._live_fetch_running = False
         self._closing_live_monitor = False
@@ -1907,6 +1908,7 @@ class GSUActiveCAM(Screen):
         self._start_auto_refresh()
 
     def _set_live_rows(self, rows, reason=""):
+        self._live_rows = list(rows or [])
         selected = 0
         try:
             selected = self["table"].getSelectionIndex()
@@ -2033,11 +2035,15 @@ class GSUActiveCAM(Screen):
         if self._table_uses_list_source and current:
             if isinstance(current, dict):
                 row = current
-            elif isinstance(current, (tuple, list)) and current:
+            elif isinstance(current, (tuple, list)) and current and isinstance(current[0], dict):
                 row = current[0]
-        elif current:
-            # Text fallback cannot safely reconstruct the original row.
-            row = None
+        if row is None:
+            try:
+                index = self["table"].getSelectionIndex()
+                if 0 <= index < len(self._live_rows):
+                    row = self._live_rows[index]
+            except Exception:
+                row = None
         if not isinstance(row, dict):
             return
         values = _oscam_table_values(row)
@@ -2093,6 +2099,8 @@ class GSUActiveCAM(Screen):
                         break
 
             def finish():
+                if getattr(self, "_closing_live_monitor", False):
+                    return
                 self._refresh()
                 if rc != 0:
                     detail = output[-800:] if output else "restart command returned status %s" % rc
@@ -2106,6 +2114,12 @@ class GSUActiveCAM(Screen):
                     self.session.open(MessageBox,
                                       "Restart command completed, but no active CAM was detected afterwards.",
                                       MessageBox.TYPE_ERROR, timeout=10)
+                timer = getattr(self, "_restart_finish_timer", None)
+                if timer is not None:
+                    try:
+                        timer.stop()
+                    except Exception:
+                        pass
 
             if eTimer is None:
                 finish()
