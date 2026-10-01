@@ -2774,7 +2774,13 @@ class GSUChannelDashboard(Screen):
         keys=(("tuner_type",_("System")),("frequency",_("Frequency")),("polarization_abbreviation",_("Polarization")),("symbol_rate",_("Symbol rate")),("fec_inner",_("FEC")),("modulation",_("Modulation")))
         self["tp_lab"].setText("\n".join(label for key,label in keys)); self["tp_values"].setText("\n".join(str(fe.get(key) if fe.get(key) not in (None,"") else "N/A") for key,label in keys))
         self["signal"].setText("SNR: %s    AGC: %s    BER: %s" % (fe.get("snr","N/A"),fe.get("agc","N/A"),fe.get("ber","N/A")))
-        self["ids"].setText(channel_technical_summary())
+        id_rows=[]
+        for key in ("video", "audio", "pcr", "pmt", "txt", "tsid", "onid", "sid"):
+            if key in data.get("pids", {}):
+                value=data["pids"][key]; id_rows.append("%s: %s (0x%X)" % (key.upper(), value, value))
+        if data.get("caids"):
+            id_rows.append(_("CAIDs: %s") % ", ".join("%04X" % value for value in data["caids"]))
+        self["ids"].setText("\n".join(id_rows) if id_rows else _("Service IDs / PIDs not exposed."))
         self["ecm"].setText(ecm_information()); self["technical"].setText(channel_technical_summary())
 
 
