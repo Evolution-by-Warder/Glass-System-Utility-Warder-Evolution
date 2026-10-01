@@ -571,11 +571,13 @@ class RestoredInformationCenterContractTests(unittest.TestCase):
         start = source.index("class GSUECMInformation")
         end = source.index("class GSUCamSrvManager", start)
         body = source[start:end]
-        self.assertIn('size="930,790"', body)
-        for widget in ('name="service_context"', 'name="ca_context"', 'name="ecm_context"'):
+        self.assertIn('name="ECMInfo"', body)
+        self.assertIn('size="525,573"', body)
+        for widget in ('name="ecmlabels"', 'name="ecmValues"', 'name="piccode"'):
             self.assertIn(widget, body)
         for token in ("Reader / User", "Protocol", "Channel", "ECM", "Idle", "Status"):
             self.assertIn(token, body)
+
 
     def test_channel_center_has_dedicated_service_id_ca_block(self):
         source = open(PLUGIN, encoding="utf-8").read()
