@@ -2246,29 +2246,29 @@ class GSUChannelDashboard(Screen):
 class GSUActiveCAM(Screen):
     """Visual OSCam/CAM monitor with a compact live table and safe actions."""
     skin = """
-    <screen name="GSUActiveCAM" position="center,center" size="1500,760" title="Active CAM / OSCam Monitor">
-        <widget name="summary" position="25,20" size="710,105" font="Regular;22" />
+    <screen name="GSUActiveCAM" position="center,center" size="1500,820" title="CAM/SRV Manager">
+        <eLabel position="25,12" size="710,32" text="CAM / SRV status" font="Regular;21" foregroundColor="#3399ff" />\n        <widget name="summary" position="25,48" size="710,95" font="Regular;21" />
         <widget name="service_context" position="760,20" size="715,52" font="Regular;21" foregroundColor="#e6d500" />
         <widget name="ecm_context" position="760,73" size="715,52" font="Regular;20" foregroundColor="#33cc33" />
-        <widget name="live_status" position="25,128" size="1450,32" font="Regular;20" foregroundColor="#33cc33" />
-        <eLabel position="45,170" size="165,34" font="Regular;18" foregroundColor="#e6d500" text="Reader / User" />
-        <eLabel position="225,170" size="190,34" font="Regular;18" foregroundColor="#e6d500" text="Address" />
-        <eLabel position="430,170" size="75,34" font="Regular;18" foregroundColor="#e6d500" text="Port" />
-        <eLabel position="520,170" size="130,34" font="Regular;18" foregroundColor="#e6d500" text="Protocol" />
-        <eLabel position="665,170" size="225,34" font="Regular;18" foregroundColor="#e6d500" text="srvid:caid@provid" />
-        <eLabel position="905,170" size="225,34" font="Regular;18" foregroundColor="#e6d500" text="Channel" />
-        <eLabel position="1145,170" size="95,34" font="Regular;18" foregroundColor="#e6d500" text="ECM" />
-        <eLabel position="1255,170" size="80,34" font="Regular;18" foregroundColor="#e6d500" text="Idle" />
-        <eLabel position="1350,170" size="150,34" font="Regular;18" foregroundColor="#e6d500" text="Status" />
-        <eLabel position="215,168" size="1,485" backgroundColor="#555555" />
-        <eLabel position="420,168" size="1,485" backgroundColor="#555555" />
-        <eLabel position="510,168" size="1,485" backgroundColor="#555555" />
-        <eLabel position="655,168" size="1,485" backgroundColor="#555555" />
-        <eLabel position="895,168" size="1,485" backgroundColor="#555555" />
-        <eLabel position="1135,168" size="1,485" backgroundColor="#555555" />
-        <eLabel position="1245,168" size="1,485" backgroundColor="#555555" />
-        <eLabel position="1340,168" size="1,485" backgroundColor="#555555" />
-        <widget source="table" render="Listbox" position="25,207" size="1450,445" scrollbarMode="showOnDemand">
+        <widget name="live_status" position="25,148" size="1450,32" font="Regular;20" foregroundColor="#33cc33" />
+        <eLabel position="45,190" size="165,34" font="Regular;18" foregroundColor="#e6d500" text="Reader / User" />
+        <eLabel position="225,190" size="190,34" font="Regular;18" foregroundColor="#e6d500" text="Address" />
+        <eLabel position="430,190" size="75,34" font="Regular;18" foregroundColor="#e6d500" text="Port" />
+        <eLabel position="520,190" size="130,34" font="Regular;18" foregroundColor="#e6d500" text="Protocol" />
+        <eLabel position="665,190" size="225,34" font="Regular;18" foregroundColor="#e6d500" text="srvid:caid@provid" />
+        <eLabel position="905,190" size="225,34" font="Regular;18" foregroundColor="#e6d500" text="Channel" />
+        <eLabel position="1145,190" size="95,34" font="Regular;18" foregroundColor="#e6d500" text="ECM" />
+        <eLabel position="1255,190" size="80,34" font="Regular;18" foregroundColor="#e6d500" text="Idle" />
+        <eLabel position="1350,190" size="150,34" font="Regular;18" foregroundColor="#e6d500" text="Status" />
+        <eLabel position="215,188" size="1,505" backgroundColor="#555555" />
+        <eLabel position="420,188" size="1,505" backgroundColor="#555555" />
+        <eLabel position="510,188" size="1,505" backgroundColor="#555555" />
+        <eLabel position="655,188" size="1,505" backgroundColor="#555555" />
+        <eLabel position="895,188" size="1,505" backgroundColor="#555555" />
+        <eLabel position="1135,188" size="1,505" backgroundColor="#555555" />
+        <eLabel position="1245,188" size="1,505" backgroundColor="#555555" />
+        <eLabel position="1340,188" size="1,505" backgroundColor="#555555" />
+        <widget source="table" render="Listbox" position="25,227" size="1450,465" scrollbarMode="showOnDemand">
             <convert type="TemplatedMultiContent">
                 {"template": [MultiContentEntryText(pos=(20,0),size=(165,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=1),
                               MultiContentEntryText(pos=(200,0),size=(190,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=2),
@@ -2282,10 +2282,10 @@ class GSUActiveCAM(Screen):
                  "fonts":[gFont("Regular",18)],"itemHeight":34}
             </convert>
         </widget>
-        <widget name="key_red" position="35,680" size="230,45" font="Regular;24" foregroundColor="#ff3333" />
-        <widget name="key_green" position="380,680" size="250,45" font="Regular;24" foregroundColor="#33cc33" />
-        <widget name="key_yellow" position="760,680" size="220,45" font="Regular;24" foregroundColor="#e6d500" />
-        <widget name="key_blue" position="1180,680" size="220,45" font="Regular;24" foregroundColor="#3399ff" />
+        <widget name="key_red" position="35,750" size="230,45" font="Regular;24" foregroundColor="#ff3333" />
+        <widget name="key_green" position="380,750" size="250,45" font="Regular;24" foregroundColor="#33cc33" />
+        <widget name="key_yellow" position="760,750" size="220,45" font="Regular;24" foregroundColor="#e6d500" />
+        <widget name="key_blue" position="1180,750" size="220,45" font="Regular;24" foregroundColor="#3399ff" />
     </screen>
     """
     TABLE_HEADER = "  Reader/User     Address          Port   Protocol   srvid:caid@provid     Channel                  ECM       Idle      Status"
