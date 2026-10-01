@@ -313,6 +313,14 @@ class UpdateDiscoveryUXTests(unittest.TestCase):
 
 
 class LocalizationContractTests(unittest.TestCase):
+    def test_localization_follows_enigma2_language(self):
+        root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        init_py = open(os.path.join(root, "src", "GlassSysUtil", "__init__.py"), encoding="utf-8").read()
+        self.assertIn("language.getLanguage()", init_py)
+        self.assertIn("gettext.translation", init_py)
+        self.assertIn("language.addCallback(localeInit)", init_py)
+        self.assertIn("_translation.gettext(text)", init_py)
+
     def test_menu_labels_use_gettext(self):
         source = open(PLUGIN, encoding="utf-8").read()
         for label in ("Health Check", "Service Dashboard", "Active CAM / OSCam Monitor",
