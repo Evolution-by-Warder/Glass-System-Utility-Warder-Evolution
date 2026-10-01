@@ -499,7 +499,7 @@ class OriginalVisualContractTests(unittest.TestCase):
         start = source.index("class SysUtilMngMain")
         end = source.index("class GSUPackageCenter", start)
         body = source[start:end]
-        self.assertIn('size="525,573"', body)
+        self.assertIn('size="930,790"', body)
         for widget in ('name="list"', 'name="info"', 'name="red"', 'name="green"',
                        'name="yellow"', 'name="blue"'):
             self.assertIn(widget, body)
