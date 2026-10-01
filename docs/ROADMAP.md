@@ -340,3 +340,13 @@ This supersedes the previous receiver candidate source while keeping version `13
 - Enigma2 current-service fallback works: DVBAPI/client row displayed the watched service as DOMA HD while OSCam supplied no channel label.
 - Live ECM/idle/status continued updating and CAM rows remained correctly separated.
 - 13.31-w12 is the approved receiver-tested checkpoint for this monitor presentation batch.
+
+
+### Post-w12 operational diagnostics batch
+Development continues from the receiver-approved 13.31-w12 checkpoint without changing that published release.
+
+Added two focused, read-only tools chosen for practical support value:
+- **Service Dashboard**: compact operational view of Enigma2, active CAM, time-sync daemon, active NFS/CIFS mounts and listening-service count. It consolidates common first checks without duplicating a service manager or adding unsafe lifecycle controls.
+- **Storage Health**: concise PASS/WARNING view for mounted physical filesystems, highlighting read-only mounts and genuinely low free space (<5%). It performs no fsck/mkfs or destructive probing.
+
+Both follow capability-first detection and keep detailed legacy/raw diagnostics in their existing screens. They are development work for the next coherent release batch, not a reason for an immediate receiver update.
