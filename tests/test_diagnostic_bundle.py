@@ -350,7 +350,7 @@ class ReceiverCandidateContractTests(unittest.TestCase):
 
     def test_original_primary_screens_are_distinct(self):
         source = open(PLUGIN, encoding="utf-8").read()
-        for title in ("OSCam Information", "ECM Information"):
+        for title in ("OSCam Information", "ECM Informations"):
             self.assertIn('title="' + title + '"', source)
         self.assertIn('name="GlassSysInfo"', source)
         self.assertIn('name="Channel Info Center"', source)
@@ -499,7 +499,7 @@ class OriginalVisualContractTests(unittest.TestCase):
         start = source.index("class SysUtilMngMain")
         end = source.index("class GSUPackageCenter", start)
         body = source[start:end]
-        self.assertIn('size="930,790"', body)
+        self.assertIn('size="525,573"', body)
         for widget in ('name="list"', 'name="info"', 'name="red"', 'name="green"',
                        'name="yellow"', 'name="blue"'):
             self.assertIn(widget, body)
