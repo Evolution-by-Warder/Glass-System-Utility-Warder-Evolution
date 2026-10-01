@@ -455,4 +455,16 @@ msgstr "Diagnostický balík bol vytvorený:\n%s"
 
 msgid "Unable to create diagnostic bundle.\n\n%s"
 msgstr "Diagnostický balík sa nepodarilo vytvoriť.\n\n%s"
-\nmsgid "OSCam Information"\nmsgstr "Informácie OSCam"\n\nmsgid "CAM/SRV Manager"\nmsgstr "Správca CAM/SRV"\n\nmsgid "ECM Information"\nmsgstr "ECM informácie"\n\nmsgid "Swap Manager"\nmsgstr "Spravovanie swap-u"\n\nmsgid "IPK/DEB and user scripts"\nmsgstr "IPK/DEB a používateľské skripty"\n\nmsgid "Legacy & Maintenance"\nmsgstr "Staršie funkcie a údržba"\n
+
+msgid "OSCam Information"
+msgstr "Informácie OSCam"\n
+msgid "CAM/SRV Manager"
+msgstr "Správca CAM/SRV"\n
+msgid "ECM Information"
+msgstr "ECM informácie"\n
+msgid "Swap Manager"
+msgstr "Spravovanie swap-u"\n
+msgid "IPK/DEB and user scripts"
+msgstr "IPK/DEB a používateľské skripty"\n
+msgid "Legacy & Maintenance"
+msgstr "Staršie funkcie a údržba"\n
