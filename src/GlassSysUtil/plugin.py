@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Glass System Utility Warder Evolution
+Glass System Utility - Warder Evolution
 Modern source core. Original Glass System Utility authorship is respected.
 """
 
@@ -200,7 +200,7 @@ def system_information():
             if cpu:
                 break
     return "\n".join((
-        "Glass System Utility Warder Evolution %s" % VERSION, "",
+        "Glass System Utility - Warder Evolution %s" % VERSION, "",
         "Receiver: %s %s" % (brand, model),
         "Hostname: %s" % socket.gethostname(),
         "CPU: %s" % cpu,
@@ -1113,7 +1113,7 @@ def create_diagnostic_bundle():
                     handle.write("Source: %s\n\n%s" % (path, data))
 
         manifest = (
-            "Glass System Utility Warder Evolution diagnostic bundle\n"
+            "Glass System Utility - Warder Evolution diagnostic bundle\n"
             "GSU version: %s\n"
             "Generated: %s\n"
             "Privacy: credentials and stable identifiers are redacted; diagnostic LAN/MAC data is preserved; "
@@ -2367,7 +2367,7 @@ class GSUActiveCAM(Screen):
 
 class SysUtilMngMain(Screen):
     skin = """
-    <screen name="SysUtilMngMain" position="center,center" size="980,690" title="Glass System Utility Warder Evolution">
+    <screen name="SysUtilMngMain" position="center,center" size="980,690" title="Glass System Utility - Warder Evolution">
         <widget name="menu" position="35,35" size="910,610" font="Regular;28" itemHeight="46" />
     </screen>
     """
@@ -2470,7 +2470,7 @@ class SysUtilMngMain(Screen):
                 self.session.open(MessageBox, str(exc), MessageBox.TYPE_ERROR)
         elif action == "about":
             self._info("About", (
-                "Glass System Utility Warder Evolution %s\n\n"
+                "Glass System Utility - Warder Evolution %s\n\n"
                 "Modern Python 3 source core.\n"
                 "Read-only system, network, storage, service, mount, OSCam, tuner and log diagnostics enabled.\n\n"
                 "State-changing legacy functions remain gated until separately migrated and tested."
@@ -2498,10 +2498,10 @@ def startViaMenu(menuid, **kwargs):
 def Plugins(path=None, **kwargs):
     return [
         PluginDescriptor(name=_("Glass System Utility"),
-                         description=_("Glass System Utility Warder Evolution"),
+                         description=_("Glass System Utility - Warder Evolution"),
                          where=PluginDescriptor.WHERE_PLUGINMENU, icon="SysMgt.png", fnc=main),
         PluginDescriptor(name="Glass System Utility",
-                         description="Glass System Utility Warder Evolution",
+                         description="Glass System Utility - Warder Evolution",
                          where=PluginDescriptor.WHERE_MENU, fnc=startViaMenu),
         PluginDescriptor(where=PluginDescriptor.WHERE_SESSIONSTART, fnc=sessionAutostart),
     ]
