@@ -3307,14 +3307,14 @@ class SysUtilMngMain(Screen):
         "packagetools": _("User scripts and local IPK/DEB/TAR package tools."),
         "ecminfo": _("Displays current ECM and conditional-access information."),
         "cammanager": _("Manage and inspect the active CAM/SRV using image-supported mechanisms."),
-        "osdecm": _("OSD ECM information compatibility area."),
-        "swapmanager": _("Displays and manages swap using capability-gated operations."),
-        "channelsettings": _("Channel settings compatibility area."),
-        "devicemanager": _("Detected devices, filesystems and storage information."),
-        "autoinstall": _("Automatic installation compatibility area."),
-        "crond": _("Crond management compatibility area."),
-        "texteditor": _("Text editor compatibility area."),
-        "rootpassword": _("Root password maintenance compatibility area."),
+        "osdecm": _("Displays live service, CAID, CAM and ECM context using the modern receiver backend."),
+        "swapmanager": _("Displays active swap capacity, usage, priority and receiver memory information."),
+        "channelsettings": _("Inspects Enigma2 service databases, tuning definitions and bouquet contents read-only."),
+        "devicemanager": _("Displays mounted storage, block devices, model/vendor and removable-device information."),
+        "autoinstall": _("Inspects local IPK/DEB/archive/script installation candidates without remote execution."),
+        "crond": _("Displays cron daemon state, job files and a bounded schedule preview read-only."),
+        "texteditor": _("Inspects common Enigma2/system text configuration candidates; arbitrary writes remain gated."),
+        "rootpassword": _("Displays root account and password-tool capability; password mutation remains gated."),
     }
 
     def __init__(self, session):
