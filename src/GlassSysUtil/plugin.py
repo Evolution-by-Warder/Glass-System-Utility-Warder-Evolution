@@ -516,14 +516,40 @@ def cron_manager_information():
 
 def text_editor_information():
     """Safe read-only inventory for the original text-editor workflow."""
-    candidates = ("/etc/enigma2/settings", "/etc/hosts", "/etc/resolv.conf", "/etc/fstab", "/etc/hostname")
+    roots = ("/etc/enigma2", "/etc/tuxbox/config", "/usr/keys", "/var/keys")
+    preferred = ("/etc/enigma2/settings", "/etc/hosts", "/etc/resolv.conf", "/etc/fstab", "/etc/hostname")
     rows = [_("Text editor capability"), _("Readable common configuration files")]
-    for path in candidates:
+    seen = set()
+    for path in preferred:
         if os.path.isfile(path):
+            seen.add(path)
             try:
                 rows.append("%s  (%s)" % (path, _human_bytes(os.path.getsize(path))))
             except Exception:
                 rows.append(path)
+    rows += ["", _("Detected text/config files")]
+    detected = []
+    for root in roots:
+        if not os.path.isdir(root):
+            continue
+        try:
+            names = sorted(os.listdir(root))
+        except Exception:
+            continue
+        for name in names:
+            path = os.path.join(root, name)
+            if path in seen or not os.path.isfile(path):
+                continue
+            if name.lower().endswith((".conf", ".cfg", ".txt", ".xml", ".list", ".json")):
+                try:
+                    detected.append("%s  (%s)" % (path, _human_bytes(os.path.getsize(path))))
+                except Exception:
+                    detected.append(path)
+            if len(detected) >= 16:
+                break
+        if len(detected) >= 16:
+            break
+    rows += detected if detected else [_("No additional text/config candidates detected.")]
     rows += ["", _("Arbitrary system-file editing is intentionally not enabled in this migration stage.")]
     return "\n".join(rows)
 
