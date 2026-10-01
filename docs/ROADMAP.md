@@ -495,3 +495,12 @@ Next development line starts from the immutable original GSU 13.20 as architectu
 This candidate is the first consolidated receiver-test line after the GSU 13.20 restoration pass. It combines the original-style System and Channel dashboards with the Warder diagnostic backends, separates OSCam Information, CAM/SRV Manager and ECM Information into distinct workflows, restores safe read-only Device/Swap/package and legacy-maintenance capability areas, and keeps unsafe historical mutation paths gated.
 
 Static/build status must be green before publication. REAL RECEIVER PASS remains pending on GigaBlue Quad 4K Pro / OpenATV 8.x / Python 3.14. The proven OSCam fixed-column table backend and plugin-open-only updater semantics remain protected by regression tests. Published releases remain immutable.
+
+
+## 13.37-w18 published candidate — 2026-10-01
+
+- RELEASE PUBLISHED PASS: immutable GitHub Release `v13.37-w18`, target `1ebbf078fbdff9bef2d5ec5c572e0f51d2a0fee0`.
+- Release workflow `36860132197`: SUCCESS after source validation, regression tests, deterministic IPK build, package-content checks, gettext compilation and published-release verification.
+- IPK: `enigma2-plugin-glasssysutil_13.37-w18_all.ipk`, 48,356 bytes.
+- SHA-256: `8892dc6fdaebbefe3e8abe60efed934f4181a25b17f3ac02393413b1b042fbac`.
+- REAL RECEIVER status: REVIEW/PENDING. Do not promote this checkpoint to REAL RECEIVER PASS until the installed w17 -> w18 updater path and the integrated System / Channel / OSCam / CAM-SRV / ECM / Device / Swap / package / maintenance screens are exercised on the GigaBlue Quad 4K Pro.
