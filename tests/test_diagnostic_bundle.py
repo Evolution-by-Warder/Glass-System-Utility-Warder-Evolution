@@ -308,8 +308,10 @@ class UpdateDiscoveryUXTests(unittest.TestCase):
         plugin_body = source[source.index("def Plugins("):]
         forbidden = "PluginDescriptor." + "WHERE_" + "SESSIONSTART"
         self.assertNotIn(forbidden, plugin_body)
-        self.assertNotIn("def _auto_update_check", source)
-        self.assertNotIn("_AUTO_UPDATE_STARTED", source)
+        forbidden_helper = "def " + "_auto_" + "update_check"
+        self.assertNotIn(forbidden_helper, source)
+        forbidden_guard = "_AUTO_" + "UPDATE_STARTED"
+        self.assertNotIn(forbidden_guard, source)
         start = source.index("class SysUtilMngMain")
         end = source.index("def main(session", start)
         self.assertIn("GSUUpdater(self.session).check(silent=True)", source[start:end])
