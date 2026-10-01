@@ -2710,16 +2710,32 @@ class GSUChannelDashboard(Screen):
     """Original-style current-channel dashboard using live Enigma2 and CAM data."""
     skin = """
     <screen name="Channel Info Center" position="0,0" size="1920,1080" title="Channel Info Center" backgroundColor="#31000000" flags="wfNoBorder">
-        <widget name="channel" position="75,45" size="1770,55" font="Regular;32" foregroundColor="#e6d500" halign="center" transparent="1"/>
-        <eLabel position="75,135" size="820,42" text="ECM Information" font="Regular;27" foregroundColor="#666666" transparent="1"/>
-        <widget name="ecm" position="75,190" size="820,430" font="Regular;24" transparent="1"/>
-        <widget name="ids" position="75,640" size="820,200" font="Regular;22" foregroundColor="#aaaaaa" transparent="1"/>
-        <eLabel position="1000,135" size="845,42" text="Transponder / Service Information" font="Regular;27" foregroundColor="#666666" transparent="1"/>
-        <widget name="tuner" position="1000,190" size="845,650" font="Regular;23" transparent="1"/>
-        <eLabel position="75,870" size="1770,2" backgroundColor="#888888"/>
-        <widget name="key_red" position="75,970" size="350,45" font="Regular;27" foregroundColor="red" halign="center" transparent="1"/>
-        <widget name="key_green" position="785,970" size="350,45" font="Regular;27" foregroundColor="green" halign="center" transparent="1"/>
-        <widget name="key_yellow" position="1495,970" size="350,45" font="Regular;27" foregroundColor="yellow" halign="center" transparent="1"/>
+        <widget name="channel" position="0,30" size="1859,120" font="priveG;57" valign="center" halign="center" transparent="1"/>
+        <widget name="provider" position="592,127" size="675,90" font="priveG;39" valign="center" halign="center" transparent="1"/>
+        <eLabel text="ECM Info" font="priveG;39" position="165,120" size="300,120" halign="center" valign="center" foregroundColor="#ff9c00" transparent="1"/>
+        <widget name="ecmlabels" font="priveG;25" position="135,247" size="150,345" foregroundColor="#666666" transparent="1"/>
+        <widget name="ecmValues" font="priveG;25" position="277,247" size="292,345" transparent="1"/>
+        <eLabel text="Bitrate" font="priveG;39" position="180,619" size="300,120" halign="center" valign="center" foregroundColor="#ff9c00" transparent="1"/>
+        <widget name="bit_labels" font="priveG;25" position="132,747" size="150,150" foregroundColor="#666666" transparent="1"/>
+        <widget name="bit_min" font="priveG;25" position="244,747" size="135,150" transparent="1"/>
+        <widget name="bit_max" font="priveG;25" position="331,747" size="135,150" transparent="1"/>
+        <widget name="bit_avg" font="priveG;25" position="418,747" size="135,150" transparent="1"/>
+        <widget name="bit_act" font="priveG;25" position="505,747" size="135,150" transparent="1"/>
+        <widget name="stream_btr" font="priveG;25" position="244,839" size="450,30" transparent="1"/>
+        <eLabel text="Transporder" font="priveG;39" position="1297,120" size="450,120" halign="center" valign="center" foregroundColor="#ff9c00" transparent="1"/>
+        <widget name="tp_lab_sat" font="priveG;25" position="1300,247" size="200,30" foregroundColor="#666666" transparent="1"/>
+        <widget name="tp_sat" font="priveG;25" position="1485,247" size="335,60" transparent="1"/>
+        <widget name="tp_lab_ref" font="priveG;25" position="1300,312" size="200,30" foregroundColor="#666666" transparent="1"/>
+        <widget name="tp_ref" font="priveG;25" position="1485,312" size="335,60" transparent="1"/>
+        <widget name="tp_lab" font="priveG;25" position="1300,377" size="200,600" foregroundColor="#666666" transparent="1"/>
+        <widget name="tp_values" font="priveG;25" position="1485,377" size="335,600" transparent="1"/>
+        <eLabel text="Signal" font="priveG;39" position="780,619" size="300,120" halign="center" valign="center" foregroundColor="#ff9c00" transparent="1"/>
+        <widget name="signal" font="priveG;25" position="777,775" size="390,70" transparent="1"/>
+        <widget name="ids" position="715,855" size="500,105" font="priveG;22" transparent="1"/>
+        <widget name="ecm" position="0,0" size="1,1" font="priveG;1" transparent="1"/>
+        <widget name="technical" position="0,0" size="1,1" font="priveG;1" transparent="1"/>
+        <eLabel position="810,975" size="300,2" backgroundColor="red"/>
+        <widget name="red" font="priveG;30" position="0,985" size="1920,40" halign="center" foregroundColor="red" transparent="1"/>
     </screen>
     """
     def __init__(self, session):
@@ -2740,34 +2756,28 @@ class GSUChannelDashboard(Screen):
         self.onShown.append(self.refresh)
 
     def refresh(self):
-        name = _current_service_name() or _("Current service not exposed")
-        self["channel"].setText(name)
-        active = _active_cam()
-        rows = [active_cam_summary() if active else _("No supported active CAM detected.")]
-        if active and active.get("family") == "oscam":
-            live, reason = oscam_live_rows()
-            if live:
-                values = _oscam_table_values(live[0])
-                rows += ["", _("Reader / User: %s") % (values["name"] or "N/A"),
-                         _("Protocol: %s") % (values["protocol"] or "N/A"),
-                         _("Service: %s") % (values["service"] or "N/A"),
-                         _("ECM: %s") % (values["ecm"] or "N/A"),
-                         _("Status: %s") % (values["status"] or "N/A")]
-            elif reason:
-                rows += ["", reason]
-        self["ecm"].setText("\n".join(rows))
-        service = current_service_technical_information()
-        pid_rows = []
-        for key in ("video", "audio", "pcr", "pmt", "txt", "tsid", "onid", "sid"):
-            if key in service.get("pids", {}):
-                value = service["pids"][key]
-                pid_rows.append("%s: %s (0x%X)" % (key.upper(), value, value))
-        caids = service.get("caids") or []
-        if caids:
-            pid_rows.append(_("CAIDs: %s") % ", ".join("%04X" % value for value in caids))
-        self["ids"].setText("\n".join(pid_rows) if pid_rows else _("Service IDs / PIDs not exposed."))
-        technical = channel_technical_summary()
-        self["tuner"].setText(technical + "\n\n" + tuner_information())
+        data = current_service_technical_information()
+        self["channel"].setText(data.get("name") or _("Current service"))
+        self["provider"].setText(data.get("provider") or "")
+        labels = [_("CAM"), _("System"), _("CAID"), _("Provider"), _("PID"), _("Protocol"), _("Address"), _("ECM Time")]
+        values = []
+        active = detect_active_cam()
+        values.append(active.get("name") or "N/A"); values.append(active.get("family") or "N/A")
+        values.append(", ".join("%04X" % x for x in data.get("caids", [])) or "N/A"); values.append(data.get("provider") or "N/A")
+        values.append(str(data.get("pids", {}).get("video", "N/A")))
+        live, _reason = oscam_live_rows() if active.get("family") == "oscam" else ([], "")
+        row = _oscam_table_values(live[0]) if live else {}
+        values += [row.get("protocol") or "N/A", row.get("address") or "N/A", row.get("ecm") or "N/A"]
+        self["ecmlabels"].setText("\n".join(labels)); self["ecmValues"].setText("\n".join(values))
+        self["bit_labels"].setText(_("MIN\nMAX\nAVG\nACT")); self["bit_min"].setText("N/A"); self["bit_max"].setText("N/A"); self["bit_avg"].setText("N/A"); self["bit_act"].setText("N/A")
+        self["stream_btr"].setText(_("Bitrate backend not exposed by image."))
+        fe=data.get("frontend",{}); self["tp_lab_sat"].setText(_("Satellite")); self["tp_sat"].setText(_format_orbital_position(fe.get("orbital_position")) if fe.get("orbital_position") not in (None,"") else "N/A")
+        self["tp_lab_ref"].setText(_("Service ref.")); self["tp_ref"].setText(data.get("reference") or "N/A")
+        keys=(("tuner_type",_("System")),("frequency",_("Frequency")),("polarization_abbreviation",_("Polarization")),("symbol_rate",_("Symbol rate")),("fec_inner",_("FEC")),("modulation",_("Modulation")))
+        self["tp_lab"].setText("\n".join(label for key,label in keys)); self["tp_values"].setText("\n".join(str(fe.get(key) if fe.get(key) not in (None,"") else "N/A") for key,label in keys))
+        self["signal"].setText("SNR: %s    AGC: %s    BER: %s" % (fe.get("snr","N/A"),fe.get("agc","N/A"),fe.get("ber","N/A")))
+        self["ids"].setText(channel_technical_summary())
+        self["ecm"].setText(ecm_information()); self["technical"].setText(channel_technical_summary())
 
 
 class GSUECMInformation(Screen):
