@@ -326,7 +326,7 @@ def swap_manager_information():
     return "\n".join(rows)
 
 def package_tools_information():
-    """Capability audit for the original IPK/DEB and user-script area."""
+    """Read-only capability and local-content audit for the original package/script center."""
     package_manager = "opkg" if shutil.which("opkg") else ("apt" if shutil.which("apt") else "")
     shell = shutil.which("sh") or ""
     rows = [
@@ -334,14 +334,30 @@ def package_tools_information():
         _("Shell capability: %s") % (shell or _("not detected")),
         _("IPK support: %s") % (_("available") if package_manager == "opkg" else _("not detected")),
         _("DEB support: %s") % (_("available") if package_manager == "apt" else _("not detected")),
-        _("User scripts: explicit local execution only; legacy remote installers are not restored."),
-        "",
-        _("This migration stage is informational only. Package/script state changes remain gated."),
     ]
+    roots = ("/tmp", "/media/hdd", "/media/usb", "/usr/script")
+    total = 0
+    for root in roots:
+        if not os.path.isdir(root):
+            continue
+        try:
+            names = sorted(os.listdir(root))
+        except Exception:
+            continue
+        candidates = [name for name in names if name.lower().endswith((".ipk", ".deb", ".tar", ".tar.gz", ".tgz", ".sh"))]
+        total += len(candidates)
+        if candidates:
+            rows += ["", _("%s local candidates: %d") % (root, len(candidates))]
+            for name in candidates[:5]:
+                path = os.path.join(root, name)
+                try:
+                    rows.append("  %s  (%s)" % (name, _human_bytes(os.path.getsize(path))))
+                except Exception:
+                    rows.append("  %s" % name)
+    rows += ["", _("Detected local package/script candidates: %d") % total,
+             _("User scripts require explicit local execution; legacy remote installers are not restored."),
+             _("Package/script state changes remain gated until receiver validation.")]
     return "\n".join(rows)
-
-
-
 
 def automatic_installation_information():
     """Read-only local inventory for the original automatic-installation center."""
