@@ -328,6 +328,63 @@ def package_tools_information():
     return "\n".join(rows)
 
 
+
+def conditional_legacy_cam_information():
+    """Report legacy CAM families only when they really exist on this receiver."""
+    families = (("CCcam", "cccam"), ("Mbox", "mbox"), ("MGcamd", "mgcamd"), ("NCam", "ncam"))
+    rows = []
+    for label, needle in families:
+        matches = _find_processes(needle)
+        rows.append("%s: %s" % (label, _("RUNNING") if matches else _("not detected")))
+    return "\n".join(rows)
+
+
+def cron_manager_information():
+    """Read-only cron capability/state audit for the original GSU Crond manager."""
+    rows = []
+    cron_proc = bool(_find_processes("crond") or _find_processes("cron"))
+    rows.append(_("Crond process: %s") % (_("RUNNING") if cron_proc else _("not detected")))
+    locations = ("/etc/cron.d", "/etc/crontabs", "/var/spool/cron", "/var/spool/cron/crontabs")
+    found = []
+    for path in locations:
+        if os.path.isdir(path):
+            found.append(path)
+        elif os.path.isfile(path):
+            found.append(path)
+    rows.append(_("Cron storage: %s") % (", ".join(found) if found else _("not detected")))
+    rows += ["", _("Editing/enabling scheduled jobs remains disabled until receiver validation.")]
+    return "\n".join(rows)
+
+
+def text_editor_information():
+    """Safe migration status for the original text editor."""
+    return "\n".join((
+        _("Text editor capability"),
+        _("Read-only file inspection is available through diagnostics."),
+        _("Arbitrary system-file editing is intentionally not enabled in this migration stage."),
+    ))
+
+
+def root_password_information():
+    """Security-reviewed status for the legacy root password reset function."""
+    passwd = _read_text("/etc/passwd", "")
+    root_present = any(line.startswith("root:") for line in passwd.splitlines())
+    return "\n".join((
+        _("Root account: %s") % (_("detected") if root_present else _("not detected")),
+        _("Password reset is not exposed without a dedicated confirmation and receiver-safe implementation."),
+    ))
+
+
+def channel_settings_information():
+    """Capability status for legacy channel-setting helpers; never modifies bouquets."""
+    bouquet_paths = ("/etc/enigma2",)
+    available = any(os.path.isdir(path) for path in bouquet_paths)
+    return "\n".join((
+        _("Enigma2 channel settings: %s") % (_("detected") if available else _("not detected")),
+        _("Bouquet/channel modification is not enabled during migration."),
+    ))
+
+
 def service_information():
     rows = []
     patterns = ("enigma2", "oscam", "cccam", "ncam", "mgcamd", "samba", "smbd",
@@ -2751,6 +2808,11 @@ class SysUtilMngMain(Screen):
         (_("Device Manager"), "devicemanager"),
         (_("Swap Manager"), "swapmanager"),
         (_("IPK/DEB and user scripts"), "packagetools"),
+        (_("Channel settings"), "channelsettings"),
+        (_("Crond Manager"), "cronmanager"),
+        (_("Text editor"), "texteditor"),
+        (_("Reset root password"), "rootpassword"),
+        (_("Legacy CAM status"), "legacycams"),
         (_("Warder Diagnostics & Tools"), "tools"),
         (_("Check for updates"), "update"),
         (_("Restart Enigma2 GUI"), "restart"),
@@ -2763,6 +2825,11 @@ class SysUtilMngMain(Screen):
         "devicemanager": _("Detected devices and filesystems. Destructive legacy actions remain disabled."),
         "swapmanager": _("Current swap state. Creation and enable/disable actions remain safety-gated."),
         "packagetools": _("Local package/script capabilities. Obsolete remote installers are not restored."),
+        "channelsettings": _("Channel-setting capability status; bouquets remain untouched."),
+        "cronmanager": _("Crond capability and storage status; job editing remains gated."),
+        "texteditor": _("Text-editor migration status; arbitrary system-file writes remain gated."),
+        "rootpassword": _("Security-reviewed root account status; password reset remains gated."),
+        "legacycams": _("Conditional CCcam/Mbox/MGcamd/NCam detection; absent families stay unavailable."),
         "tools": _("Modern Warder health checks, network, mounts, runtime diagnostics, logs and support bundle."),
         "update": _("Check the immutable Warder Evolution release channel for an update."),
         "restart": _("Restart only the Enigma2 graphical interface after confirmation."),
@@ -2830,6 +2897,11 @@ class SysUtilMngMain(Screen):
             "devicemanager": (_("Device Manager"), device_manager_information),
             "swapmanager": (_("Swap Manager"), swap_manager_information),
             "packagetools": (_("IPK/DEB and user scripts"), package_tools_information),
+            "channelsettings": (_("Channel settings"), channel_settings_information),
+            "cronmanager": (_("Crond Manager"), cron_manager_information),
+            "texteditor": (_("Text editor"), text_editor_information),
+            "rootpassword": (_("Reset root password"), root_password_information),
+            "legacycams": (_("Legacy CAM status"), conditional_legacy_cam_information),
         }
         if action in actions:
             title, fnc = actions[action]
