@@ -268,49 +268,62 @@ def memory_information():
 
 
 def device_manager_information():
-    """Read-only first phase of the original GSU Device Manager."""
+    """Read-only device manager inventory including mounted and block devices."""
     rows = [_("Detected mounted devices")]
-    found = False
+    mounted = set()
     for line in _read_lines("/proc/mounts"):
         fields = line.split()
-        if len(fields) < 4:
+        if len(fields) < 4 or not fields[0].startswith("/dev/"):
             continue
         device, mountpoint, fstype, options = fields[:4]
-        if not device.startswith("/dev/"):
-            continue
-        found = True
+        mounted.add(os.path.basename(device))
         mode = _("read-only") if "ro" in options.split(",") else _("read/write")
         try:
             usage = shutil.disk_usage(mountpoint)
             rows.append("%s -> %s [%s, %s]" % (device, mountpoint, fstype, mode))
-            rows.append("  %.1f / %.1f GiB  (%s free)" % (
-                (usage.total - usage.free) / 1073741824.0,
-                usage.total / 1073741824.0,
-                _human_bytes(usage.free)))
+            rows.append("  %.1f / %.1f GiB  (%s free)" % ((usage.total - usage.free) / 1073741824.0, usage.total / 1073741824.0, _human_bytes(usage.free)))
         except Exception:
             rows.append("%s -> %s [%s, %s]" % (device, mountpoint, fstype, mode))
-    if not found:
-        rows.append(_("No physical storage mounts found."))
+    rows += ["", _("Block devices")]
+    try:
+        names = sorted(name for name in os.listdir("/sys/class/block") if not name.startswith(("loop", "ram", "zram")))
+    except Exception:
+        names = []
+    if not names:
+        rows.append(_("not exposed"))
+    for name in names[:24]:
+        sectors = _read_text("/sys/class/block/%s/size" % name, "0")
+        try:
+            size = _human_bytes(int(sectors) * 512)
+        except Exception:
+            size = _("N/A")
+        rows.append("%s  %s  %s" % (name, size, _("mounted") if name in mounted else _("not mounted directly")))
     rows += ["", _("Safety: format, partition, mount and unmount actions are disabled until receiver validation.")]
     return "\n".join(rows)
 
-
 def swap_manager_information():
-    """Read-only migration stage for the original GSU swap manager."""
+    """Read-only original-style swap inventory with capacity and priority."""
     rows = [_("Swap status")]
     lines = _read_lines("/proc/swaps")
+    total_kib = used_kib = 0
     if len(lines) <= 1:
         rows.append(_("No active swap devices/files."))
     else:
         for line in lines[1:]:
             fields = line.split()
             if len(fields) >= 5:
-                rows.append("%s  %s  %s KiB / %s KiB  priority %s" % (
-                    fields[0], fields[1], fields[3], fields[2], fields[4]))
-    rows += ["", memory_information(), "",
+                try:
+                    size, used = int(fields[2]), int(fields[3])
+                    total_kib += size
+                    used_kib += used
+                except Exception:
+                    pass
+                rows.append("%s" % fields[0])
+                rows.append("  %s | %s KiB / %s KiB | priority %s" % (fields[1], fields[3], fields[2], fields[4]))
+    rows += ["", _("Active swap total: %.1f MiB") % (total_kib / 1024.0),
+             _("Active swap used: %.1f MiB") % (used_kib / 1024.0), "", memory_information(), "",
              _("Safety: swap enable/disable/create actions remain gated until real-receiver validation.")]
     return "\n".join(rows)
-
 
 def package_tools_information():
     """Capability audit for the original IPK/DEB and user-script area."""
@@ -395,23 +408,30 @@ def cron_manager_information():
     return "\n".join(rows)
 
 def text_editor_information():
-    """Safe migration status for the original text editor."""
-    return "\n".join((
-        _("Text editor capability"),
-        _("Read-only file inspection is available through diagnostics."),
-        _("Arbitrary system-file editing is intentionally not enabled in this migration stage."),
-    ))
-
+    """Safe read-only inventory for the original text-editor workflow."""
+    candidates = ("/etc/enigma2/settings", "/etc/hosts", "/etc/resolv.conf", "/etc/fstab", "/etc/hostname")
+    rows = [_("Text editor capability"), _("Readable common configuration files")]
+    for path in candidates:
+        if os.path.isfile(path):
+            try:
+                rows.append("%s  (%s)" % (path, _human_bytes(os.path.getsize(path))))
+            except Exception:
+                rows.append(path)
+    rows += ["", _("Arbitrary system-file editing is intentionally not enabled in this migration stage.")]
+    return "\n".join(rows)
 
 def root_password_information():
     """Security-reviewed status for the legacy root password reset function."""
     passwd = _read_text("/etc/passwd", "")
-    root_present = any(line.startswith("root:") for line in passwd.splitlines())
-    return "\n".join((
-        _("Root account: %s") % (_("detected") if root_present else _("not detected")),
-        _("Password reset is not exposed without a dedicated confirmation and receiver-safe implementation."),
-    ))
-
+    root_line = next((line for line in passwd.splitlines() if line.startswith("root:")), "")
+    rows = [_("Root account: %s") % (_("detected") if root_line else _("not detected"))]
+    if root_line:
+        fields = root_line.split(":")
+        if len(fields) >= 7:
+            rows += [_("UID: %s") % fields[2], _("GID: %s") % fields[3], _("Home: %s") % fields[5], _("Shell: %s") % fields[6]]
+    rows.append(_("Shadow password database: %s") % (_("detected") if os.path.isfile("/etc/shadow") else _("not detected")))
+    rows += ["", _("Password reset is not exposed without a dedicated confirmation and receiver-safe implementation.")]
+    return "\n".join(rows)
 
 def channel_settings_information():
     """Read-only inventory of Enigma2 channel-setting files; never modifies bouquets."""
