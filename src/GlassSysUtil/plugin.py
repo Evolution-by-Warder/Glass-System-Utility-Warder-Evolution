@@ -2481,7 +2481,8 @@ class GSUChannelDashboard(Screen):
     <screen name="Channel Info Center" position="0,0" size="1920,1080" title="Channel Info Center" backgroundColor="#31000000" flags="wfNoBorder">
         <widget name="channel" position="75,45" size="1770,55" font="Regular;32" foregroundColor="#e6d500" halign="center" transparent="1"/>
         <eLabel position="75,135" size="820,42" text="ECM Information" font="Regular;27" foregroundColor="#666666" transparent="1"/>
-        <widget name="ecm" position="75,190" size="820,430" font="Regular;24" transparent="1"/>\n        <widget name="ids" position="75,640" size="820,200" font="Regular;22" foregroundColor="#aaaaaa" transparent="1"/>
+        <widget name="ecm" position="75,190" size="820,430" font="Regular;24" transparent="1"/>
+        <widget name="ids" position="75,640" size="820,200" font="Regular;22" foregroundColor="#aaaaaa" transparent="1"/>
         <eLabel position="1000,135" size="845,42" text="Transponder / Service Information" font="Regular;27" foregroundColor="#666666" transparent="1"/>
         <widget name="tuner" position="1000,190" size="845,650" font="Regular;23" transparent="1"/>
         <eLabel position="75,870" size="1770,2" backgroundColor="#888888"/>
@@ -2493,7 +2494,8 @@ class GSUChannelDashboard(Screen):
     def __init__(self, session):
         Screen.__init__(self, session)
         self["channel"] = Label("")
-        self["ecm"] = Label("")\n        self["ids"] = Label("")
+        self["ecm"] = Label("")
+        self["ids"] = Label("")
         self["tuner"] = Label("")
         self["key_red"] = Label(_("Close"))
         self["key_green"] = Label(_("CAM/SRV Manager"))
