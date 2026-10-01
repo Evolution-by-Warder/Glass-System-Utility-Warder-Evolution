@@ -1889,7 +1889,7 @@ class GSUUpdater(object):
         self.silent = silent
         if eTimer is None:
             if not silent:
-                self.session.open(MessageBox, "Update check is unavailable on this Enigma2 image.",
+                self.session.open(MessageBox, _("Update check is unavailable on this Enigma2 image."),
                                   MessageBox.TYPE_INFO, timeout=5)
             return
         self.result = None
@@ -1912,7 +1912,7 @@ class GSUUpdater(object):
         if not release or _version_key(release["version"]) <= _version_key(VERSION):
             if not self.silent:
                 self.session.open(MessageBox,
-                                  "Glass System Utility %s is up to date." % VERSION,
+                                  _("Glass System Utility %s is up to date.") % VERSION,
                                   MessageBox.TYPE_INFO, timeout=5)
             return
         self.release = release
@@ -1930,11 +1930,11 @@ class GSUUpdater(object):
         if not answer or not self.release:
             return
         if eTimer is None or not self._start_timer():
-            self.session.open(MessageBox, "Update installation is unavailable on this Enigma2 image.",
+            self.session.open(MessageBox, _("Update installation is unavailable on this Enigma2 image."),
                               MessageBox.TYPE_ERROR)
             return
         self.result = None
-        self.progress = self.session.open(MessageBox, "Downloading, verifying and installing the update...",
+        self.progress = self.session.open(MessageBox, _("Downloading, verifying and installing the update..."),
                                           MessageBox.TYPE_INFO)
         try:
             self.worker = threading.Thread(target=self._install_worker, daemon=True)
@@ -2093,13 +2093,13 @@ class GSUActiveCAM(Screen):
             self["table"] = List([])
         else:
             self["table"] = MenuList([])
-        self["key_red"] = Label("Close")
+        self["key_red"] = Label(_("Close"))
         command, detail = _active_cam_restart_command()
         self.restart_command = command
         self.restart_detail = detail
-        self["key_green"] = Label("Restart CAM" if command else "Restart unavailable")
-        self["key_yellow"] = Label("Refresh")
-        self["key_blue"] = Label("Details")
+        self["key_green"] = Label(_("Restart CAM") if command else _("Restart unavailable"))
+        self["key_yellow"] = Label(_("Refresh"))
+        self["key_blue"] = Label(_("Details"))
         self["actions"] = ActionMap(
             ["OkCancelActions", "ColorActions", "DirectionActions"], {
                 "cancel": self.close,
@@ -2285,7 +2285,7 @@ class GSUActiveCAM(Screen):
     def show_details(self):
         active = _active_cam()
         if not active:
-            self.session.open(MessageBox, "No supported active CAM detected.", MessageBox.TYPE_INFO, timeout=6)
+            self.session.open(MessageBox, _("No supported active CAM detected."), MessageBox.TYPE_INFO, timeout=6)
             return
         parts = [active_cam_information()]
         if active.get("family") == "oscam":
@@ -2339,7 +2339,7 @@ class GSUActiveCAM(Screen):
                                       MessageBox.TYPE_INFO, timeout=6)
                 else:
                     self.session.open(MessageBox,
-                                      "Restart command completed, but no active CAM was detected afterwards.",
+                                      _("Restart command completed, but no active CAM was detected afterwards."),
                                       MessageBox.TYPE_ERROR, timeout=10)
                 timer = getattr(self, "_restart_finish_timer", None)
                 if timer is not None:
@@ -2363,7 +2363,7 @@ class GSUActiveCAM(Screen):
             threading.Thread(target=worker, name="GSU-CAM-Restart", daemon=True).start()
         except Exception:
             self._restart_in_progress = False
-            self.session.open(MessageBox, "Unable to start CAM restart worker.", MessageBox.TYPE_ERROR, timeout=8)
+            self.session.open(MessageBox, _("Unable to start CAM restart worker."), MessageBox.TYPE_ERROR, timeout=8)
 
 class SysUtilMngMain(Screen):
     skin = """
