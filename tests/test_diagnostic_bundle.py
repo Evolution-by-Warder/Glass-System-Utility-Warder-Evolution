@@ -110,10 +110,6 @@ class DiagnosticRedactionTests(unittest.TestCase):
             os.unlink(path)
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class OSCamW11ReleaseContractTests(unittest.TestCase):
     def test_oscam_w11_fixed_table_contract(self):
         source = open(PLUGIN, encoding="utf-8").read()
@@ -354,3 +350,7 @@ class LocalizationContractTests(unittest.TestCase):
             data = open(path, encoding="utf-8").read()
             self.assertIn('msgid "Health Check"', data)
             self.assertIn('msgid "Check for updates"', data)
+
+
+if __name__ == "__main__":
+    unittest.main()
