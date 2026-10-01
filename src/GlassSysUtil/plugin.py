@@ -2840,6 +2840,8 @@ class GSUECMInformation(Screen):
                 rows += [
                     "",
                     _("Reader / User: %s") % (values["name"] or "N/A"),
+                    _("Address: %s") % (values["address"] or "N/A"),
+                    _("Port: %s") % (values["port"] or "N/A"),
                     _("Protocol: %s") % (values["protocol"] or "N/A"),
                     _("Service: %s") % (values["service"] or "N/A"),
                     _("Channel: %s") % (values["channel"] or name or "N/A"),
