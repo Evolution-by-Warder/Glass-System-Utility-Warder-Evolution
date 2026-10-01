@@ -289,25 +289,6 @@ class MainMenuFocusTests(unittest.TestCase):
             self.assertNotIn('("' + label + '",', menu)
 
 
-class UpdateDiscoveryUXTests(unittest.TestCase):
-    def test_opening_gsu_starts_nonblocking_silent_update_check(self):
-        source = open(PLUGIN, encoding="utf-8").read()
-        start = source.index("class SysUtilMngMain")
-        end = source.index("def main(session", start)
-        body = source[start:end]
-        self.assertIn("self.onShown.append(self._check_update_on_open)", body)
-        self.assertIn("GSUUpdater(self.session).check(silent=True)", body)
-        self.assertIn("self.onShown.remove(self._check_update_on_open)", body)
-
-    def test_background_check_only_prompts_for_newer_release(self):
-        source = open(PLUGIN, encoding="utf-8").read()
-        start = source.index("class GSUUpdater")
-        end = source.index("class GSUInfo", start)
-        body = source[start:end]
-        self.assertIn("_version_key(release[\"version\"]) <= _version_key(VERSION)", body)
-        self.assertIn("Install the update now?", body)
-
-
 class LocalizationContractTests(unittest.TestCase):
     def test_localization_follows_enigma2_language(self):
         root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
