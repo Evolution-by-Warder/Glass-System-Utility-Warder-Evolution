@@ -331,16 +331,22 @@ def package_tools_information():
 
 
 def automatic_installation_information():
-    """Read-only capability view for the original automatic-installation center."""
+    """Read-only inventory for the original automatic-installation center."""
     roots = ("/etc/enigma2", "/usr/script", "/media/hdd", "/media/usb")
-    present = [path for path in roots if os.path.exists(path)]
-    return "\n".join((
-        _("Automatic installation"),
-        _("Available local roots: %s") % (", ".join(present) if present else _("not detected")),
-        "",
-        _("Legacy remote installers are not executed. Local install actions remain gated until receiver validation."),
-    ))
-
+    rows = [_("Automatic installation"), ""]
+    for path in roots:
+        if not os.path.exists(path):
+            rows.append("%s: %s" % (path, _("not detected")))
+            continue
+        try:
+            entries = os.listdir(path)
+            candidates = [name for name in entries if name.lower().endswith((".ipk", ".deb", ".tar", ".tar.gz", ".tgz", ".sh"))]
+            rows.append("%s: %d %s" % (path, len(candidates), _("local install candidates")))
+        except Exception:
+            rows.append("%s: %s" % (path, _("detected")))
+    rows += ["", _("Legacy remote installers are not executed."),
+             _("Local install actions remain gated until receiver validation.")]
+    return "\n".join(rows)
 
 def osd_ecm_information():
     """Compatibility view for the original OSD ECM area using the modern ECM backend."""
@@ -366,21 +372,27 @@ def conditional_legacy_cam_information():
 
 
 def cron_manager_information():
-    """Read-only cron capability/state audit for the original GSU Crond manager."""
+    """Read-only cron capability and job inventory for the original Crond manager."""
     rows = []
     cron_proc = bool(_find_processes("crond") or _find_processes("cron"))
     rows.append(_("Crond process: %s") % (_("RUNNING") if cron_proc else _("not detected")))
     locations = ("/etc/cron.d", "/etc/crontabs", "/var/spool/cron", "/var/spool/cron/crontabs")
     found = []
+    jobs = 0
     for path in locations:
         if os.path.isdir(path):
             found.append(path)
+            try:
+                jobs += sum(1 for name in os.listdir(path) if not name.startswith("."))
+            except Exception:
+                pass
         elif os.path.isfile(path):
             found.append(path)
+            jobs += 1
     rows.append(_("Cron storage: %s") % (", ".join(found) if found else _("not detected")))
+    rows.append(_("Cron entries/files: %d") % jobs)
     rows += ["", _("Editing/enabling scheduled jobs remains disabled until receiver validation.")]
     return "\n".join(rows)
-
 
 def text_editor_information():
     """Safe migration status for the original text editor."""
@@ -402,14 +414,29 @@ def root_password_information():
 
 
 def channel_settings_information():
-    """Capability status for legacy channel-setting helpers; never modifies bouquets."""
-    bouquet_paths = ("/etc/enigma2",)
-    available = any(os.path.isdir(path) for path in bouquet_paths)
-    return "\n".join((
-        _("Enigma2 channel settings: %s") % (_("detected") if available else _("not detected")),
-        _("Bouquet/channel modification is not enabled during migration."),
-    ))
-
+    """Read-only inventory of Enigma2 channel-setting files; never modifies bouquets."""
+    root = "/etc/enigma2"
+    rows = [_("Enigma2 channel settings")]
+    if not os.path.isdir(root):
+        rows.append(_("not detected"))
+        return "\n".join(rows)
+    try:
+        names = os.listdir(root)
+    except Exception:
+        names = []
+    bouquets = [name for name in names if name.startswith(("bouquets.", "userbouquet."))]
+    lamedb = [name for name in names if name.startswith("lamedb")]
+    rows += [
+        _("Settings root: %s") % root,
+        _("Bouquet files: %d") % len(bouquets),
+        _("Service database files: %d") % len(lamedb),
+    ]
+    if bouquets:
+        rows += ["", _("Detected bouquets"), "\n".join(sorted(bouquets)[:12])]
+        if len(bouquets) > 12:
+            rows.append(_("... and %d more") % (len(bouquets) - 12))
+    rows += ["", _("Bouquet/channel modification remains disabled until receiver validation.")]
+    return "\n".join(rows)
 
 def service_information():
     rows = []
