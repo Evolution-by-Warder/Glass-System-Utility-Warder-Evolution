@@ -350,9 +350,10 @@ class ReceiverCandidateContractTests(unittest.TestCase):
 
     def test_original_primary_screens_are_distinct(self):
         source = open(PLUGIN, encoding="utf-8").read()
-        for title in ("System Information", "Channel Information", "OSCam Information",
-                      "CAM/SRV Manager", "ECM Information"):
+        for title in ("OSCam Information", "CAM/SRV Manager", "ECM Information"):
             self.assertIn('title="' + title + '"', source)
+        self.assertIn('name="GlassSysInfo"', source)
+        self.assertIn('name="Channel Info Center"', source)
 
     def test_no_session_start_updater_registration_returned(self):
         source = open(PLUGIN, encoding="utf-8").read()
