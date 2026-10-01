@@ -167,7 +167,7 @@ def hardware_identity_information():
     rows.append(_("CPU: %s") % (cpu or _("N/A")))
     # Serial is deliberately reported only as presence, not exposed in UI.
     serial_present = any(bool(_read_text(path, "")) for path in serial_paths)
-    rows.append("Hardware serial interface: %s" % ("available (hidden)" if serial_present else "not exposed"))
+    rows.append(_("Hardware serial interface: %s") % (_("available (hidden)") if serial_present else _("not exposed")))
 
     cpu_count = os.cpu_count()
     rows.append(_("CPU cores: %s") % (cpu_count if cpu_count is not None else _("N/A")))
@@ -184,7 +184,7 @@ def hardware_identity_information():
     except Exception:
         pass
     if freq_values:
-        rows.append("CPU frequency: %.0f-%.0f MHz" % (min(freq_values), max(freq_values)))
+        rows.append(_("CPU frequency: %.0f-%.0f MHz") % (min(freq_values), max(freq_values)))
 
     return "\n".join(rows)
 
@@ -294,14 +294,14 @@ def oscam_information():
     matches = _find_processes("oscam")
     rows.append(_("Process: %s") % (_("RUNNING") if matches else _("not detected")))
     if matches:
-        rows.append("Process IDs: %s" % ", ".join(pid for pid, argv in matches[:8]))
+        rows.append(_("Process IDs: %s") % ", ".join(pid for pid, argv in matches[:8]))
     config_dir = _process_option(matches, "--config-dir")
 
     if not config_dir:
         pidfiles = ("/var/tmp/oscam-uni.pid", "/var/volatile/tmp/oscam-uni.pid")
         for pidfile in pidfiles:
             if os.path.isfile(pidfile):
-                rows.append("PID file: %s" % pidfile)
+                rows.append(_("PID file: %s") % pidfile)
                 break
 
     candidates = []
@@ -318,7 +318,7 @@ def oscam_information():
     rows.append("")
     rows.append(_("Config: %s") % (found if found else _("not found")))
     if config_dir:
-        rows.append("Config dir: %s" % config_dir)
+        rows.append(_("Config dir: %s") % config_dir)
     return "\n".join(rows)
 
 
@@ -915,7 +915,7 @@ def tuner_information():
                           if name.startswith("adapter"))
     except Exception:
         pass
-    rows += ["", "DVB device adapters: %s" %
+    rows += ["", _("DVB device adapters: %s") %
              (", ".join(adapters) if adapters else "not exposed")]
 
     if not nim_sockets and not discovered and not adapters:
@@ -1248,7 +1248,7 @@ def _cam_process_metrics(pid):
         days, seconds = divmod(seconds, 86400)
         hours, seconds = divmod(seconds, 3600)
         minutes, seconds = divmod(seconds, 60)
-        rows.append("Process runtime: %dd %02d:%02d:%02d" % (days, hours, minutes, seconds))
+        rows.append(_("Process runtime: %dd %02d:%02d:%02d") % (days, hours, minutes, seconds))
     return rows
 
 def active_cam_summary():
@@ -1300,7 +1300,7 @@ def oscam_runtime_information():
     )
     version_file = next((path for path in version_files if os.path.isfile(path)), "")
     if version_file:
-        rows.append("Runtime version file: %s" % version_file)
+        rows.append(_("Runtime version file: %s") % version_file)
         for line in _read_lines(version_file)[:30]:
             text = line.strip()
             if text and not any(secret in text.lower() for secret in ("password", "passwd", "pwd=")):
@@ -1315,7 +1315,7 @@ def oscam_runtime_information():
         users = os.path.join(config_dir, "oscam.user")
         reader_count = sum(1 for line in _read_lines(server) if line.strip().lower() == "[reader]")
         user_count = sum(1 for line in _read_lines(users) if line.strip().lower() in ("[account]", "[user]"))
-        rows += ["", "Readers configured: %d" % reader_count, "Accounts configured: %d" % user_count]
+        rows += ["", _("Readers configured: %d") % reader_count, _("Accounts configured: %d") % user_count]
     return "\n".join(rows)
 
 
@@ -1331,8 +1331,8 @@ def package_information():
             elif line.startswith("Status:"):
                 status = line.split(":", 1)[1].strip()
         rows.append("%s" % package)
-        rows.append("  Version: %s" % (version or "N/A"))
-        rows.append("  Status: %s" % (status or "N/A"))
+        rows.append(_("Version: %s") % (version or _("N/A")))
+        rows.append(_("Status: %s") % (status or _("N/A")))
     rows += ["", _("Available upgrades: not checked here (repository queries may block this screen).")]
     return "\n".join(rows)
 
@@ -1450,7 +1450,7 @@ def time_health_information():
         path = _run(["which", binary], 2)
         if path:
             detected.append("%s (available)" % binary)
-    rows.append("Time sync: %s" % (", ".join(detected) if detected else "no known time-sync facility detected"))
+    rows.append(_("Time sync: %s") % (", ".join(detected) if detected else _("no known time-sync facility detected")))
 
     # Prefer status commands only when the corresponding client exists.
     chronyc = _run(["which", "chronyc"], 2)
@@ -1487,7 +1487,7 @@ def runtime_health_information():
             rows.append("[INFO] %s: %s" % (label, status[key]))
     fd_path = "/proc/%s/fd" % pid
     try:
-        rows.append("[INFO] Open file descriptors: %d" % len(os.listdir(fd_path)))
+        rows.append(_("[INFO] Open file descriptors: %d") % len(os.listdir(fd_path)))
     except Exception:
         rows.append(_("[INFO] Open file descriptors: not exposed"))
     crash_logs = []
@@ -1497,7 +1497,7 @@ def runtime_health_information():
                 crash_logs.append("%s (%.1f KiB)" % (path, os.stat(path).st_size / 1024.0))
             except Exception:
                 crash_logs.append(path)
-    rows.append("[%s] Known crash logs: %d" % ("INFO" if crash_logs else "PASS", len(crash_logs)))
+    rows.append(_("[%s] Known crash logs: %d") % ("INFO" if crash_logs else "PASS", len(crash_logs)))
     rows.extend("       %s" % item for item in crash_logs[:3])
     rows += ["", _("Runtime Health is read-only; it does not restart Enigma2 or delete logs.")]
     return "\n".join(rows)
@@ -1600,11 +1600,11 @@ def service_dashboard_information():
         fields = line.split()
         if len(fields) >= 3 and fields[2].lower() in ("nfs", "nfs4", "cifs", "smbfs"):
             mounts.append("%s -> %s (%s)" % (fields[0], fields[1], fields[2]))
-    rows.append("[INFO   ] Net mounts %d active" % len(mounts))
+    rows.append(_("[INFO   ] Net mounts %d active") % len(mounts))
     rows.extend("           %s" % item for item in mounts[:6])
     listeners = _run(["ss", "-lntup"], 4) or _run(["netstat", "-lntup"], 4)
     count = max(0, len(listeners.splitlines()) - 1) if listeners else 0
-    rows.append("[INFO   ] Listeners  %d detected" % count)
+    rows.append(_("[INFO   ] Listeners  %d detected") % count)
     rows += ["", _("Dashboard is read-only. Use dedicated screens for full diagnostics.")]
     return "\n".join(rows)
 
