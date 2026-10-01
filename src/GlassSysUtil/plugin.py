@@ -1920,7 +1920,7 @@ class GSUActiveCAM(Screen):
                 self["table"].moveToIndex(min(selected, len(rows) - 1))
             except Exception:
                 pass
-            self["live_status"].setText("Live OSCam: %d active client/reader row%s" %
+            self["live_status"].setText("Live OSCam: %d active client/reader row%s  |  OK = row details" %
                                         (len(rows), "" if len(rows) == 1 else "s"))
         else:
             self["live_status"].setText("Live OSCam: %s" % reason)
@@ -1989,6 +1989,12 @@ class GSUActiveCAM(Screen):
                         pass
                 finally:
                     self._live_fetch_running = False
+                    timer = getattr(self, "_live_finish_timer", None)
+                    if timer is not None:
+                        try:
+                            timer.stop()
+                        except Exception:
+                            pass
 
             if eTimer is None:
                 finish()
@@ -2025,7 +2031,10 @@ class GSUActiveCAM(Screen):
             current = None
         row = None
         if self._table_uses_list_source and current:
-            row = current[0] if isinstance(current, (tuple, list)) else None
+            if isinstance(current, dict):
+                row = current
+            elif isinstance(current, (tuple, list)) and current:
+                row = current[0]
         elif current:
             # Text fallback cannot safely reconstruct the original row.
             row = None
