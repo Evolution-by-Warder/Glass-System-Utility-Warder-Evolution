@@ -1857,34 +1857,34 @@ class GSUActiveCAM(Screen):
     <screen name="GSUActiveCAM" position="center,center" size="1500,760" title="Active CAM / OSCam Monitor">
         <widget name="summary" position="25,20" size="1450,105" font="Regular;22" />
         <widget name="live_status" position="25,128" size="1450,32" font="Regular;20" foregroundColor="#33cc33" />
-        <eLabel position="45,170" size="210,34" font="Regular;18" foregroundColor="#e6d500" text="Reader / User" />
-        <eLabel position="270,170" size="190,34" font="Regular;18" foregroundColor="#e6d500" text="Address" />
-        <eLabel position="475,170" size="75,34" font="Regular;18" foregroundColor="#e6d500" text="Port" />
-        <eLabel position="565,170" size="120,34" font="Regular;18" foregroundColor="#e6d500" text="Protocol" />
-        <eLabel position="700,170" size="230,34" font="Regular;18" foregroundColor="#e6d500" text="srvid:caid@provid" />
-        <eLabel position="945,170" size="230,34" font="Regular;18" foregroundColor="#e6d500" text="Channel" />
-        <eLabel position="1190,170" size="95,34" font="Regular;18" foregroundColor="#e6d500" text="ECM" />
-        <eLabel position="1300,170" size="80,34" font="Regular;18" foregroundColor="#e6d500" text="Idle" />
-        <eLabel position="1395,170" size="105,34" font="Regular;18" foregroundColor="#e6d500" text="Status" />
-        <eLabel position="260,168" size="1,485" backgroundColor="#555555" />
-        <eLabel position="465,168" size="1,485" backgroundColor="#555555" />
-        <eLabel position="555,168" size="1,485" backgroundColor="#555555" />
-        <eLabel position="690,168" size="1,485" backgroundColor="#555555" />
-        <eLabel position="935,168" size="1,485" backgroundColor="#555555" />
-        <eLabel position="1180,168" size="1,485" backgroundColor="#555555" />
-        <eLabel position="1290,168" size="1,485" backgroundColor="#555555" />
-        <eLabel position="1385,168" size="1,485" backgroundColor="#555555" />
+        <eLabel position="45,170" size="165,34" font="Regular;18" foregroundColor="#e6d500" text="Reader / User" />
+        <eLabel position="225,170" size="190,34" font="Regular;18" foregroundColor="#e6d500" text="Address" />
+        <eLabel position="430,170" size="75,34" font="Regular;18" foregroundColor="#e6d500" text="Port" />
+        <eLabel position="520,170" size="130,34" font="Regular;18" foregroundColor="#e6d500" text="Protocol" />
+        <eLabel position="665,170" size="225,34" font="Regular;18" foregroundColor="#e6d500" text="srvid:caid@provid" />
+        <eLabel position="905,170" size="225,34" font="Regular;18" foregroundColor="#e6d500" text="Channel" />
+        <eLabel position="1145,170" size="95,34" font="Regular;18" foregroundColor="#e6d500" text="ECM" />
+        <eLabel position="1255,170" size="80,34" font="Regular;18" foregroundColor="#e6d500" text="Idle" />
+        <eLabel position="1350,170" size="150,34" font="Regular;18" foregroundColor="#e6d500" text="Status" />
+        <eLabel position="215,168" size="1,485" backgroundColor="#555555" />
+        <eLabel position="420,168" size="1,485" backgroundColor="#555555" />
+        <eLabel position="510,168" size="1,485" backgroundColor="#555555" />
+        <eLabel position="655,168" size="1,485" backgroundColor="#555555" />
+        <eLabel position="895,168" size="1,485" backgroundColor="#555555" />
+        <eLabel position="1135,168" size="1,485" backgroundColor="#555555" />
+        <eLabel position="1245,168" size="1,485" backgroundColor="#555555" />
+        <eLabel position="1340,168" size="1,485" backgroundColor="#555555" />
         <widget source="table" render="Listbox" position="25,207" size="1450,445" scrollbarMode="showOnDemand">
             <convert type="TemplatedMultiContent">
-                {"template": [MultiContentEntryText(pos=(20,0),size=(210,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=1),
-                              MultiContentEntryText(pos=(245,0),size=(190,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=2),
-                              MultiContentEntryText(pos=(450,0),size=(75,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=3),
-                              MultiContentEntryText(pos=(540,0),size=(120,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=4),
-                              MultiContentEntryText(pos=(675,0),size=(230,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=5),
-                              MultiContentEntryText(pos=(920,0),size=(230,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=6),
-                              MultiContentEntryText(pos=(1165,0),size=(95,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=7),
-                              MultiContentEntryText(pos=(1275,0),size=(80,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=8),
-                              MultiContentEntryText(pos=(1370,0),size=(130,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=9)],
+                {"template": [MultiContentEntryText(pos=(20,0),size=(165,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=1),
+                              MultiContentEntryText(pos=(200,0),size=(190,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=2),
+                              MultiContentEntryText(pos=(405,0),size=(75,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=3),
+                              MultiContentEntryText(pos=(495,0),size=(130,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=4),
+                              MultiContentEntryText(pos=(640,0),size=(225,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=5),
+                              MultiContentEntryText(pos=(880,0),size=(225,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=6),
+                              MultiContentEntryText(pos=(1120,0),size=(95,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=7),
+                              MultiContentEntryText(pos=(1230,0),size=(80,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=8),
+                              MultiContentEntryText(pos=(1325,0),size=(150,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=9)],
                  "fonts":[gFont("Regular",18)],"itemHeight":34}
             </convert>
         </widget>
