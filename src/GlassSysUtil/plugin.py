@@ -359,6 +359,45 @@ def package_tools_information():
              _("Package/script state changes remain gated until receiver validation.")]
     return "\n".join(rows)
 
+def package_center_selection_information(index):
+    """Read-only detail for one original package/script-center operation."""
+    labels = (_("User scripts"), _("Install IPK"), _("Uninstall IPK"), _("Install TAR"), _("Install/Uninstall DEB"))
+    title = labels[index] if 0 <= index < len(labels) else _("Package tools")
+    rows = [title, "=" * 42, ""]
+    if index == 0:
+        roots, suffixes = ("/usr/script", "/tmp", "/media/hdd", "/media/usb"), (".sh",)
+    elif index == 1:
+        roots, suffixes = ("/tmp", "/media/hdd", "/media/usb"), (".ipk",)
+    elif index == 2:
+        manager = "opkg" if shutil.which("opkg") else ""
+        rows += [_("Package manager: %s") % (manager or _("not detected")),
+                 _("Installed-package removal remains gated until receiver validation.")]
+        return "\n".join(rows)
+    elif index == 3:
+        roots, suffixes = ("/tmp", "/media/hdd", "/media/usb"), (".tar", ".tar.gz", ".tgz")
+    else:
+        manager = "apt" if shutil.which("apt") else ""
+        rows.append(_("DEB package manager: %s") % (manager or _("not detected")))
+        roots, suffixes = ("/tmp", "/media/hdd", "/media/usb"), (".deb",)
+    found = []
+    for root in roots:
+        if not os.path.isdir(root):
+            continue
+        try:
+            names = sorted(name for name in os.listdir(root) if name.lower().endswith(suffixes))
+        except Exception:
+            continue
+        for name in names[:12]:
+            path = os.path.join(root, name)
+            try:
+                found.append("%s  (%s)" % (path, _human_bytes(os.path.getsize(path))))
+            except Exception:
+                found.append(path)
+    rows += found if found else [_("No matching local candidates detected.")]
+    rows += ["", _("State-changing actions remain gated until receiver validation.")]
+    return "\n".join(rows)
+
+
 def automatic_installation_information():
     """Read-only local inventory for the original automatic-installation center."""
     roots = ("/etc/enigma2", "/usr/script", "/media/hdd", "/media/usb")
@@ -3447,8 +3486,9 @@ class GSUPackageCenter(Screen):
     def down(self):
         self["list"].down(); self.refresh()
     def open_selected(self):
-        self.session.open(GSUInfo, self.MENU[self["list"].getSelectedIndex()][0],
-                          package_tools_information())
+        index = self["list"].getSelectedIndex()
+        self.session.open(GSUInfo, self.MENU[index][0],
+                          package_center_selection_information(index))
 
 
 class GSUWarderTools(Screen):
