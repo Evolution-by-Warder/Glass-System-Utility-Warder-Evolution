@@ -323,3 +323,11 @@ This supersedes the previous receiver candidate source while keeping version `13
 - Includes fixed Enigma2 column layout, static skin binding cleanup, useful-row filtering, normalized OSCam aliases, duplicate suppression, row details, non-blocking refresh, selection preservation and guarded CAM restart lifecycle.
 - Publication remains gated by exact-version source/control/postinst agreement, full tests, deterministic build and immutable release verification.
 - Receiver acceptance: update discovery/install/restart plus one OSCam monitor visual/function smoke test.
+
+
+### 13.31-w12 receiver polish
+- Built directly from the successful 13.30-w11 real updater test.
+- Receiver feedback: Reader/User was wider than necessary, Status clipped CONNECTED, and OSCam status JSON supplied service identifiers but no human channel name.
+- Rebalanced the fixed-column table to give Status more room while preserving independent Address/Port/Protocol/service cells.
+- Added a capability-safe Enigma2 current-service-name fallback only for DVBAPI/client rows when OSCam omits the channel label; OSCam-provided channel names remain authoritative when present.
+- Release acceptance: in-plugin update from w11, automatic GUI restart, Status visible without clipping, and current watched service visible in Channel for DVBAPI.
