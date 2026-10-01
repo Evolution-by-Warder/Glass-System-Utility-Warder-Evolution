@@ -1905,6 +1905,7 @@ class GSUActiveCAM(Screen):
         self._live_fetch_running = False
         self._restart_in_progress = False
         self._closing_live_monitor = False
+        # w11 fixed-column monitor contract: source, package and receiver UI move together.
         self._refresh()
         self._start_auto_refresh()
 
