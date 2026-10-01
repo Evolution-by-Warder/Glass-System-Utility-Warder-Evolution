@@ -358,3 +358,10 @@ The post-w12 batch now also includes:
 - **Enigma2 Runtime Health**: compact procfs-based view of Enigma2 PID, resident/virtual memory, thread count, open file-descriptor count and presence of known crash logs. It never kills/restarts Enigma2 or deletes logs.
 
 These remain development features for the next coherent release. Existing detailed screens stay available; the doctors provide concise first-line diagnosis rather than another layer of administration.
+
+
+### Focused main menu checkpoint
+- Added **Network Health** for a fast read-only view of interface state/addressing, default gateway reachability and resolver configuration.
+- Applied the anti-bloat rule to the main menu: high-value operational tools are first; raw/duplicate diagnostic pages such as Hardware Identity, Filesystem Health, Block Devices, Listening Ports, CAM Inventory, Package information, Image & Runtime, Diagnostic Summary and Detected Capabilities are no longer top-level entries.
+- Their underlying diagnostic functions remain in source and support-bundle coverage; no capability was deleted merely to simplify navigation.
+- Main menu is deliberately bounded to 20 operational entries for this development checkpoint.
