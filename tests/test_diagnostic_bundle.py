@@ -320,6 +320,13 @@ class LocalizationContractTests(unittest.TestCase):
                       "Restart Enigma2 GUI", "About this build"):
             self.assertIn('_("' + label + '")', source)
 
+    def test_build_compiles_gettext_catalogs(self):
+        root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        build = open(os.path.join(root, "tools", "build-ipk.sh"), encoding="utf-8").read()
+        self.assertIn("msgfmt", build)
+        self.assertIn("GlassSysUtil.po", build)
+        self.assertIn(".mo", build)
+
     def test_core_languages_are_present(self):
         root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
         for lang in ("sk", "cs", "de", "pl", "it", "es", "fr"):
