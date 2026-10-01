@@ -306,7 +306,8 @@ class UpdateDiscoveryUXTests(unittest.TestCase):
     def test_enigma2_session_start_never_checks_for_updates(self):
         source = open(PLUGIN, encoding="utf-8").read()
         plugin_body = source[source.index("def Plugins("):]
-        self.assertNotIn("PluginDescriptor.WHERE_SESSIONSTART", plugin_body)
+        forbidden = "PluginDescriptor." + "WHERE_" + "SESSIONSTART"
+        self.assertNotIn(forbidden, plugin_body)
         self.assertNotIn("def _auto_update_check", source)
         self.assertNotIn("_AUTO_UPDATE_STARTED", source)
         start = source.index("class SysUtilMngMain")
