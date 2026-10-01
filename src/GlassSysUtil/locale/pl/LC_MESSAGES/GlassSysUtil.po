@@ -473,3 +473,36 @@ msgstr "IPK/DEB i skrypty użytkownika"
 
 msgid "Legacy & Maintenance"
 msgstr "Funkcje starsze i konserwacja"
+
+msgid "CCcam Information"
+msgstr "Informacje CCcam"
+
+msgid "Mbox Information"
+msgstr "Informacje Mbox"
+
+msgid "OSD ECM Information"
+msgstr "Informacje OSD ECM"
+
+msgid "Channel settings"
+msgstr "Ustawienia kanałów"
+
+msgid "Automatic installations"
+msgstr "Automatyczne instalacje"
+
+msgid "Crond Manager"
+msgstr "Menedżer Crond"
+
+msgid "Text editor"
+msgstr "Edytor tekstu"
+
+msgid "Reset root user password"
+msgstr "Reset hasła użytkownika root"
+
+msgid "Warder tools"
+msgstr "Narzędzia Warder"
+
+msgid "Exit"
+msgstr "Wyjście"
+
+msgid "OK"
+msgstr "OK"
