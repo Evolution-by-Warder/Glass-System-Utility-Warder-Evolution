@@ -3478,19 +3478,19 @@ class GSUOriginalStatusCenter(Screen):
     """Original GSU maintenance-center visual shell with modern safe providers."""
     skin = """
     <screen name="GlassOriginalMaintenanceCenter" position="center,center" size="930,790" title="GSU" backgroundColor="#31000000">
-        <widget name="titleline" position="30,20" size="870,45" font="Regular;29" foregroundColor="#e6d500" halign="center" transparent="1"/>
+        <widget name="titleline" position="30,20" size="870,45" font="priveG;30" foregroundColor="#e6d500" halign="center" transparent="1"/>
         <eLabel position="0,80" size="930,2" backgroundColor="#888888"/>
-        <widget name="body" position="35,100" size="860,485" font="Regular;23" transparent="1"/>
+        <widget name="body" position="35,100" size="860,485" font="priveG;25" transparent="1"/>
         <eLabel position="0,600" size="930,2" backgroundColor="#888888"/>
-        <widget name="info" position="35,615" size="860,70" font="Regular;20" foregroundColor="#888888" halign="center" valign="center" transparent="1"/>
+        <widget name="info" position="35,615" size="860,70" font="priveG;25" foregroundColor="#888888" halign="center" valign="center" transparent="1"/>
         <eLabel position="0,705" size="232,2" backgroundColor="red"/>
         <eLabel position="232,705" size="233,2" backgroundColor="green"/>
         <eLabel position="465,705" size="232,2" backgroundColor="yellow"/>
         <eLabel position="697,705" size="233,2" backgroundColor="blue"/>
-        <widget name="red" position="0,725" size="232,40" font="Regular;25" foregroundColor="red" halign="center" transparent="1"/>
-        <widget name="green" position="232,725" size="233,40" font="Regular;25" foregroundColor="green" halign="center" transparent="1"/>
-        <widget name="yellow" position="465,725" size="232,40" font="Regular;25" foregroundColor="yellow" halign="center" transparent="1"/>
-        <widget name="blue" position="697,725" size="233,40" font="Regular;25" foregroundColor="blue" halign="center" transparent="1"/>
+        <widget name="red" position="0,725" size="232,40" font="priveG;30" foregroundColor="red" halign="center" transparent="1"/>
+        <widget name="green" position="232,725" size="233,40" font="priveG;30" foregroundColor="green" halign="center" transparent="1"/>
+        <widget name="yellow" position="465,725" size="232,40" font="priveG;30" foregroundColor="yellow" halign="center" transparent="1"/>
+        <widget name="blue" position="697,725" size="233,40" font="priveG;30" foregroundColor="blue" halign="center" transparent="1"/>
     </screen>
     """
     def __init__(self, session, title, provider, help_text):
