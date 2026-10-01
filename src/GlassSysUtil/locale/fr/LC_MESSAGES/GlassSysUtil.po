@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Glass System Utility Warder Evolution\n"
+"Project-Id-Version: Glass System Utility - Warder Evolution\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: fr\n"
@@ -8,8 +8,8 @@ msgstr ""
 msgid "Glass System Utility"
 msgstr "Glass System Utility"
 
-msgid "Glass System Utility Warder Evolution"
-msgstr "Glass System Utility Warder Evolution"
+msgid "Glass System Utility - Warder Evolution"
+msgstr "Glass System Utility - Warder Evolution"
 
 msgid "Health Check"
 msgstr "Vérification du système"
