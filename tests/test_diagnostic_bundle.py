@@ -137,12 +137,12 @@ class OSCamW11ReleaseContractTests(unittest.TestCase):
         self.assertEqual(item[1:], ("reader1", "192.168.10.6", "3333", "cs378x",
                                    "3C3C:0668@000000", "Example TV", "115 ms", "7s", "CONNECTED"))
 
-    def test_w11_release_identity_is_consistent(self):
+    def test_release_identity_is_consistent(self):
         root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
         version = open(os.path.join(root, "src", "GlassSysUtil", "version"), encoding="utf-8").read().strip()
         control = open(os.path.join(root, "packaging", "CONTROL", "control"), encoding="utf-8").read()
         postinst = open(os.path.join(root, "packaging", "CONTROL", "postinst"), encoding="utf-8").read()
-        self.assertEqual(version, "13.33-w14")
+        self.assertEqual(version, "13.34-w15")
         self.assertIn("Version: " + version, control)
         self.assertIn(version, postinst)
 
