@@ -1558,7 +1558,7 @@ def _percent_bar(value, width=18):
 
 
 def original_resource_dashboard_information():
-    """Compact GSU-style resource meters using proc/statvfs data only."""
+    """Compact GSU-style resource meters with original RAM/Swap/Root facts."""
     rows = []
     try:
         mem = {}
@@ -1568,20 +1568,27 @@ def original_resource_dashboard_information():
                 mem[key] = int(value.strip().split()[0])
         total = mem.get("MemTotal", 0)
         avail = mem.get("MemAvailable", mem.get("MemFree", 0))
-        used_pct = int(round(100.0 * (total - avail) / total)) if total else 0
+        used = max(0, total - avail)
+        used_pct = int(round(100.0 * used / total)) if total else 0
         rows.append("RAM   " + _percent_bar(used_pct))
+        if total:
+            rows.append("      %.1f / %.1f MiB" % (used / 1024.0, total / 1024.0))
         stotal = mem.get("SwapTotal", 0)
         sfree = mem.get("SwapFree", 0)
-        swap_pct = int(round(100.0 * (stotal - sfree) / stotal)) if stotal else 0
+        sused = max(0, stotal - sfree)
+        swap_pct = int(round(100.0 * sused / stotal)) if stotal else 0
         rows.append("Swap  " + _percent_bar(swap_pct))
+        rows.append("      %.1f / %.1f MiB" % (sused / 1024.0, stotal / 1024.0))
     except Exception:
         rows += ["RAM   " + _percent_bar(None), "Swap  " + _percent_bar(None)]
     try:
         stat = os.statvfs("/")
         total = stat.f_blocks * stat.f_frsize
         free = stat.f_bavail * stat.f_frsize
-        root_pct = int(round(100.0 * (total - free) / total)) if total else 0
+        used = max(0, total - free)
+        root_pct = int(round(100.0 * used / total)) if total else 0
         rows.append("Root  " + _percent_bar(root_pct))
+        rows.append("      %s / %s" % (_human_bytes(used), _human_bytes(total)))
     except Exception:
         rows.append("Root  " + _percent_bar(None))
     temps = _temperature_values()
@@ -1589,7 +1596,6 @@ def original_resource_dashboard_information():
         hottest = max(value for _name, value in temps)
         rows += ["", _("Temperature: %.1f C") % hottest]
     return "\n".join(rows)
-
 
 def original_protocol_indicators():
     """Original-style service indicators backed by process/listener discovery."""
