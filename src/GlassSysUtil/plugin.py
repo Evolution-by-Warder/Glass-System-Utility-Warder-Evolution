@@ -1974,7 +1974,7 @@ class GSUUpdater(object):
         except Exception:
             pass
         try:
-            progress.setTitle("Glass System Utility")
+            progress.setTitle(_("Glass System Utility"))
         except Exception:
             pass
 
@@ -2093,6 +2093,7 @@ class GSUActiveCAM(Screen):
             self["table"] = List([])
         else:
             self["table"] = MenuList([])
+        self.setTitle(_("Active CAM / OSCam Monitor"))
         self["key_red"] = Label(_("Close"))
         command, detail = _active_cam_restart_command()
         self.restart_command = command
@@ -2400,6 +2401,7 @@ class SysUtilMngMain(Screen):
         self["actions"] = ActionMap(["OkCancelActions"], {"ok": self.ok, "cancel": self.close}, -1)
         # Check again whenever the user actually opens GSU.  The updater is
         # asynchronous, so opening the plugin never waits on GitHub/network I/O.
+        self.setTitle(_("Glass System Utility - Warder Evolution"))
         self.onShown.append(self._check_update_on_open)
 
     def _check_update_on_open(self):
