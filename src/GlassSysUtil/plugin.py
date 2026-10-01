@@ -53,9 +53,18 @@ except ImportError:
     RT_HALIGN_LEFT = 0
     RT_VALIGN_CENTER = 0
 try:
-    from enigma import eTimer
+    from enigma import eTimer, addFont
 except ImportError:
     eTimer = None
+    addFont = None
+
+_PLUGIN_DIR = os.path.dirname(__file__)
+_PRIVE_FONT = os.path.join(_PLUGIN_DIR, "font", "priveG.ttf")
+if addFont is not None and os.path.isfile(_PRIVE_FONT):
+    try:
+        addFont(_PRIVE_FONT, "priveG", 100, False)
+    except Exception:
+        pass
 
 def _installed_version():
     try:
