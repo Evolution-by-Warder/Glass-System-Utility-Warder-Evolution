@@ -1457,6 +1457,35 @@ def cam_inventory_information():
     return "\n".join(rows) if rows else "No known CAM components detected."
 
 
+def service_dashboard_information():
+    """Compact operational dashboard for services users actually troubleshoot."""
+    rows = ["GSU Service Dashboard", ""]
+    e2 = _find_processes("enigma2")
+    rows.append("[%-7s] Enigma2  %s" % ("RUNNING" if e2 else "DOWN",
+                ("PID " + ", ".join(str(pid) for pid, cmd in e2[:3])) if e2 else "not detected"))
+    cam = _active_cam()
+    if cam:
+        name, matches = cam
+        rows.append("[RUNNING] CAM       %s  PID %s" % (name, ", ".join(str(pid) for pid, cmd in matches[:3])))
+    else:
+        rows.append("[INFO   ] CAM       no known CAM process detected")
+    sync = [name for name in ("chronyd", "ntpd", "systemd-timesyncd") if _find_processes(name)]
+    rows.append("[%-7s] Time sync %s" % ("RUNNING" if sync else "INFO",
+                ", ".join(sync) if sync else "no known daemon detected"))
+    mounts = []
+    for line in _read_lines("/proc/mounts"):
+        fields = line.split()
+        if len(fields) >= 3 and fields[2].lower() in ("nfs", "nfs4", "cifs", "smbfs"):
+            mounts.append("%s -> %s (%s)" % (fields[0], fields[1], fields[2]))
+    rows.append("[INFO   ] Net mounts %d active" % len(mounts))
+    rows.extend("           %s" % item for item in mounts[:6])
+    listeners = _run(["ss", "-lntup"], 4) or _run(["netstat", "-lntup"], 4)
+    count = max(0, len(listeners.splitlines()) - 1) if listeners else 0
+    rows.append("[INFO   ] Listeners  %d detected" % count)
+    rows += ["", "Dashboard is read-only. Use dedicated screens for full diagnostics."]
+    return "\n".join(rows)
+
+
 def listening_ports_information():
     output = _run(["ss", "-lntup"], 5) or _run(["netstat", "-lntup"], 5)
     return "\n".join(output.splitlines()[:45]) if output else "No listener information available."
@@ -2192,6 +2221,7 @@ class SysUtilMngMain(Screen):
         ("Filesystem Health", "fshealth"),
         ("Block Devices", "devices"),
         ("Memory & Swap", "memory"),
+        ("Service Dashboard", "servicedashboard"),
         ("Services & Processes", "services"),
         ("Listening Ports", "ports"),
         ("Network Mounts (NFS/CIFS)", "mounts"),
@@ -2233,6 +2263,7 @@ class SysUtilMngMain(Screen):
             "fshealth": ("Filesystem Health", filesystem_health_information),
             "devices": ("Block Devices", device_information),
             "memory": ("Memory & Swap", memory_information),
+            "servicedashboard": ("Service Dashboard", service_dashboard_information),
             "services": ("Services & Processes", service_information),
             "ports": ("Listening Ports", listening_ports_information),
             "mounts": ("Network Mounts", mount_information),
