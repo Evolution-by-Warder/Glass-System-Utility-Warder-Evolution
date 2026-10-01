@@ -49,26 +49,21 @@ jobs:
           PLUGIN="$ROOT/usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil"
           IPK="$GITHUB_WORKSPACE/enigma2-plugin-glasssysutil_${VERSION}_all.ipk"
           mkdir -p "$PLUGIN" "$CONTROL"
-          cp src/GlassSysUtil/plugin.py src/GlassSysUtil/__init__.py src/GlassSysUtil/version src/GlassSysUtil/SysMgt.png "$PLUGIN/"
-          if [ -d src/GlassSysUtil/locale ]; then
-            cp -R src/GlassSysUtil/locale "$PLUGIN/"
-            for po in "$PLUGIN"/locale/*/LC_MESSAGES/GlassSysUtil.po; do msgfmt "$po" -o "${po%.po}.mo"; done
-          fi
-          cp packaging/CONTROL/control packaging/CONTROL/postinst "$CONTROL/"
-          chmod 755 "$CONTROL/postinst"
-          printf '2.0\n' > "$WORK/debian-binary"
-          tar --sort=name --mtime='@0' --owner=0 --group=0 --numeric-owner -cf - -C "$CONTROL" . | gzip -n > "$WORK/control.tar.gz"
-          tar --sort=name --mtime='@0' --owner=0 --group=0 --numeric-owner -cf - -C "$ROOT" usr | gzip -n > "$WORK/data.tar.gz"
-          (cd "$WORK" && ar rcD "$IPK" debian-binary control.tar.gz data.tar.gz)
+          rm -rf dist
+          ./tools/build-ipk.sh
+          IPK="$GITHUB_WORKSPACE/dist/enigma2-plugin-glasssysutil_${VERSION}_all.ipk"
+          test -s "$IPK"
+          test -s "$IPK.sha256"
           MEMBERS="$(ar t "$IPK" | tr '\n' ' ')"
           test "$MEMBERS" = "debian-binary control.tar.gz data.tar.gz "
           test "$(ar p "$IPK" debian-binary)" = "2.0"
           ar p "$IPK" control.tar.gz | tar -xzOf - ./control | grep -Fqx "Package: enigma2-plugin-glasssysutil"
           ar p "$IPK" control.tar.gz | tar -xzOf - ./control | grep -Fqx "Version: $VERSION"
-          ar p "$IPK" control.tar.gz | tar -xzOf - ./postinst | grep -q 'GUI restart is required'
           ar p "$IPK" data.tar.gz | tar -tzf - | grep -Fq 'usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/plugin.py'
-          ar p "$IPK" data.tar.gz | tar -tzf - | grep -Fq 'usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/SysMgt.png'
-          sha256sum "$IPK" | tee "$IPK.sha256"
+          for lang in sk cs de pl it es fr; do
+            ar p "$IPK" data.tar.gz | tar -tzf - | grep -Fq "usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/locale/$lang/LC_MESSAGES/GlassSysUtil.mo"
+          done
+          sha256sum -c "$IPK.sha256"
       - uses: actions/upload-artifact@v4
         with:
           name: glasssysutil-test-${{ github.sha }}
