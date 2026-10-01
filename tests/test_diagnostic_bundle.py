@@ -162,3 +162,21 @@ class OSCamReceiverPolishTests(unittest.TestCase):
         self.assertIn('("name", 20, 165)', source)
         self.assertIn('("status", 1325, 175)', source)
         self.assertIn('position="1350,170" size="150,34"', source)
+
+
+class ServiceDashboardTests(unittest.TestCase):
+    def test_dashboard_is_read_only_and_bounded(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        start = source.index("def service_dashboard_information")
+        end = source.index("def listening_ports_information", start)
+        body = source[start:end]
+        self.assertIn("_active_cam()", body)
+        self.assertIn("/proc/mounts", body)
+        self.assertIn('["ss", "-lntup"]', body)
+        self.assertNotIn("restart", body.lower())
+        self.assertNotIn("kill", body.lower())
+
+    def test_dashboard_is_wired_once_in_main_menu(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        self.assertEqual(source.count('("Service Dashboard", "servicedashboard")'), 1)
+        self.assertEqual(source.count('"servicedashboard": ("Service Dashboard", service_dashboard_information)'), 1)
