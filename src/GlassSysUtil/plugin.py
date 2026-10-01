@@ -586,6 +586,23 @@ def _oscam_normalize_idle(value):
         return value
 
 
+def _oscam_row_is_noise(row):
+    """Hide transport/WebIF infrastructure from the TV table, never from diagnostics."""
+    typ = _oscam_display(row.get("type")).lower()
+    protocol = _oscam_display(row.get("protocol")).lower()
+    address = _oscam_display(row.get("address")).lower()
+    name = _oscam_display(row.get("name")).lower()
+    service = _oscam_service_display(row)
+    status = _oscam_display(row.get("status"))
+    if typ in ("http", "webif") or protocol in ("http", "https"):
+        return True
+    if typ == "server" and address in ("127.0.0.1", "::1", "localhost") and not service:
+        return True
+    if not any((name, service, status, protocol)) and not address:
+        return True
+    return False
+
+
 def oscam_live_rows():
     """Return sanitized, display-ready OSCam client rows plus a status message."""
     payload, reason = _oscam_live_status()
@@ -692,7 +709,19 @@ def _oscam_status_display(row):
 def _oscam_table_values(row):
     name = _oscam_display(row.get("name"))
     role = _oscam_row_role(row)
-    if role.strip():
+    protocol = _oscam_display(row.get("protocol")).lower()
+    if not name:
+        if protocol == "emu":
+            name = "EMU"
+        elif protocol == "dvbapi":
+            name = "DVBAPI"
+        elif role == "R":
+            name = "Reader"
+        elif role == "C":
+            name = "Client"
+        elif role == "S":
+            name = "Server"
+    if role.strip() and name:
         name = "%s  %s" % (role, name)
     return {
         "name": name,
@@ -1884,9 +1913,8 @@ class GSUActiveCAM(Screen):
                         self["table"].moveToIndex(min(selected, len(table_rows) - 1))
                     except Exception:
                         pass
-                    self["live_status"].setText("Live OSCam: %d row%s | mapped %s" %
-                                                (len(table_rows), "" if len(table_rows) == 1 else "s",
-                                                 _oscam_live_quality(table_rows)))
+                    self["live_status"].setText("Live OSCam: %d active client/reader row%s" %
+                                                (len(table_rows), "" if len(table_rows) == 1 else "s"))
                 else:
                     self["live_status"].setText("Live OSCam: %s" % reason)
             except Exception:
@@ -1940,9 +1968,8 @@ class GSUActiveCAM(Screen):
                             self["table"].moveToIndex(min(selected, len(rows) - 1))
                         except Exception:
                             pass
-                        self["live_status"].setText("Live OSCam: %d row%s | mapped %s" %
-                                                    (len(rows), "" if len(rows) == 1 else "s",
-                                                     _oscam_live_quality(rows)))
+                        self["live_status"].setText("Live OSCam: %d active client/reader row%s" %
+                                                    (len(rows), "" if len(rows) == 1 else "s"))
                     else:
                         self["live_status"].setText("Live OSCam: %s" % reason)
                     try:
