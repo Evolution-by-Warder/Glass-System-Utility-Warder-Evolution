@@ -82,7 +82,7 @@ jobs:
           ROOT="$WORK/root"
           CONTROL="$WORK/control"
           PLUGIN="$ROOT/usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil"
-          IPK="$GITHUB_WORKSPACE/enigma2-plugin-glasssysutil_${VERSION}_all.ipk"
+          IPK="$GITHUB_WORKSPACE/dist/enigma2-plugin-glasssysutil_${VERSION}_all.ipk"
           mkdir -p "$PLUGIN" "$CONTROL"
           cp src/GlassSysUtil/plugin.py src/GlassSysUtil/__init__.py src/GlassSysUtil/version src/GlassSysUtil/SysMgt.png "$PLUGIN/"
           if [ -d src/GlassSysUtil/locale ]; then
