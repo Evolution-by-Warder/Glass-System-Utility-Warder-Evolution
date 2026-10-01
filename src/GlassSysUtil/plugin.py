@@ -588,7 +588,7 @@ def oscam_live_rows():
                     "r": "reader", "c": "client"}
         row_type = type_map.get(raw_type.lower(), raw_type)
         srvid, caid, provid, channel = _oscam_service_parts(flat)
-        rows.append({
+        row = {
             "name": _oscam_find_scalar(flat, "name", "user", "label", "reader", "username"),
             "type": row_type,
             "address": _oscam_find_scalar(flat, "ip", "address", "host", "hostname"),
@@ -601,8 +601,10 @@ def oscam_live_rows():
             "status": _oscam_find_scalar(flat, "status", "connection", "state"),
             "ecm": _oscam_normalize_ecm(_oscam_find_scalar(flat, "ecmtime", "ecm_time", "lastresponsetime", "lastresponse")),
             "idle": _oscam_normalize_idle(_oscam_find_scalar(flat, "idle", "idletime")),
-        })
-    return rows, "" if rows else "API reachable, no client rows recognized."
+        }
+        if not _oscam_row_is_noise(row):
+            rows.append(row)
+    return rows, "" if rows else "API reachable, no useful client/reader rows recognized."
 
 
 def _oscam_display(value):
@@ -661,6 +663,22 @@ def _oscam_status_display(row):
         return status.upper()
     idle = _oscam_display(row.get("idle"))
     return "IDLE" if idle else ""
+
+
+def _oscam_row_is_noise(row):
+    """Hide OSCam infrastructure rows that add no useful service/client information."""
+    typ = (row.get("type") or "").lower()
+    protocol = (row.get("protocol") or "").lower()
+    name = _oscam_display(row.get("name")).lower()
+    address = _oscam_display(row.get("address"))
+    has_service = bool(_oscam_service_display(row) or _oscam_display(row.get("channel")))
+    if typ == "http" or protocol == "http":
+        return True
+    if typ == "server" and address in ("127.0.0.1", "::1") and not has_service:
+        return True
+    if name in ("", "-") and not has_service and not _oscam_display(row.get("status")):
+        return True
+    return False
 
 
 def _oscam_table_line(row):
