@@ -270,7 +270,8 @@ class RemainingLegacyAreasTests(unittest.TestCase):
         source = open(PLUGIN, encoding="utf-8").read()
         for token in ("conditional_legacy_cam_information", "cron_manager_information",
                       "text_editor_information", "root_password_information",
-                      "channel_settings_information", '_("Legacy & Maintenance")'):
+                      "channel_settings_information", '_("Crond Manager")',
+                      '_("Text editor")', '_("Reset root user password")'):
             self.assertIn(token, source)
 
     def test_remaining_legacy_areas_do_not_mutate_receiver(self):
@@ -394,23 +395,31 @@ class CombinedSystemAuditTests(unittest.TestCase):
 
 
 class MainMenuConsolidationTests(unittest.TestCase):
-    def test_main_menu_has_no_duplicate_maintenance_entries(self):
+    def test_main_menu_restores_original_1320_hierarchy(self):
         source = open(PLUGIN, encoding="utf-8").read()
         start = source.index("class SysUtilMngMain")
         end = source.index("    HELP = {", start)
         menu = source[start:end]
-        for action in ("channelsettings", "cronmanager", "texteditor", "rootpassword", "legacycams"):
-            self.assertNotIn('"' + action + '"', menu)
-        self.assertIn('(_("Legacy & Maintenance"), "legacymaintenance")', menu)
+        expected = ("System Information", "Channel Information", "CCcam Information",
+                    "OSCam Information", "Mbox Information", "IPK/DEB and user scripts",
+                    "ECM Information", "CAM/SRV Manager", "OSD ECM Information",
+                    "Swap Manager", "Channel settings", "Device Manager",
+                    "Automatic installations", "Crond Manager", "Text editor",
+                    "Reset root user password")
+        positions = [menu.index(label) for label in expected]
+        self.assertEqual(positions, sorted(positions))
+        self.assertNotIn("Legacy & Maintenance", menu)
+        self.assertNotIn("Warder Diagnostics & Tools", menu)
 
-    def test_primary_workflows_have_unique_action_ids(self):
+    def test_original_action_ids_are_unique(self):
         source = open(PLUGIN, encoding="utf-8").read()
         start = source.index("class SysUtilMngMain")
         end = source.index("    HELP = {", start)
         menu = source[start:end]
-        for action in ("originalsystem", "originalchannel", "oscaminfo", "cammanager",
-                       "ecminfo", "devicemanager", "swapmanager", "packagetools",
-                       "legacymaintenance", "tools", "update", "restart", "about"):
+        for action in ("originalsystem", "originalchannel", "cccaminfo", "oscaminfo",
+                       "mboxinfo", "packagetools", "ecminfo", "cammanager", "osdecm",
+                       "swapmanager", "channelsettings", "devicemanager", "autoinstall",
+                       "crond", "texteditor", "rootpassword"):
             self.assertEqual(menu.count('"' + action + '"'), 1, action)
 
 
@@ -463,9 +472,10 @@ class MainMenuFocusTests(unittest.TestCase):
         menu = source[start:end]
         entries = re.findall(r'^\s*\(".*?",\s*".*?"\),\s*$', menu, re.M)
         self.assertLessEqual(len(entries), 20)
-        for label in ("System Information", "Channel Information", "OSCam Information",
-                      "CAM/SRV Manager", "ECM Information", "Device Manager", "Swap Manager",
-                      "IPK/DEB and user scripts", "Warder Diagnostics & Tools", "Check for updates"):
+        for label in ("System Information", "Channel Information", "CCcam Information",
+                      "OSCam Information", "Mbox Information", "CAM/SRV Manager",
+                      "ECM Information", "Device Manager", "Swap Manager",
+                      "IPK/DEB and user scripts", "Crond Manager", "Text editor"):
             self.assertIn(label, menu)
 
     def test_low_value_raw_duplicates_are_not_top_level(self):
@@ -492,16 +502,16 @@ class LocalizationContractTests(unittest.TestCase):
 
     def test_menu_labels_use_gettext(self):
         source = open(PLUGIN, encoding="utf-8").read()
-        for label in ("System Information", "Channel Information", "OSCam Information",
-                      "CAM/SRV Manager", "ECM Information", "Device Manager", "Swap Manager",
-                      "IPK/DEB and user scripts", "Warder Diagnostics & Tools", "Health Check", "Network Health",
-                      "Storage Health", "Check for updates", "Restart Enigma2 GUI", "About this build"):
+        for label in ("System Information", "Channel Information", "CCcam Information",
+                      "OSCam Information", "Mbox Information", "CAM/SRV Manager",
+                      "ECM Information", "Device Manager", "Swap Manager",
+                      "IPK/DEB and user scripts", "Crond Manager", "Text editor",
+                      "Health Check", "Network Health", "Storage Health"):
             self.assertIn('_("' + label + '")', source)
 
     def test_runtime_titles_and_dialogs_are_localizable(self):
         source = open(PLUGIN, encoding="utf-8").read()
-        for text in ("Glass System Utility - Warder Evolution",
-                     "CAM/SRV Manager",
+        for text in ("CAM/SRV Manager",
                      "System Information",
                      "Channel Information",
                      "Unable to check for updates.\\n\\n%s",
