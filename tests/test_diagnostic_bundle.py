@@ -303,6 +303,15 @@ class UpdateDiscoveryUXTests(unittest.TestCase):
         self.assertIn("GSUUpdater(self.session).check(silent=True)", body)
         self.assertIn("self.onShown.remove(self._check_update_on_open)", body)
 
+    def test_enigma2_session_start_never_checks_for_updates(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        self.assertNotIn("WHERE_SESSIONSTART", source)
+        self.assertNotIn("_auto_update_check", source)
+        self.assertNotIn("_AUTO_UPDATE_STARTED", source)
+        start = source.index("class SysUtilMngMain")
+        end = source.index("def main(session", start)
+        self.assertIn("GSUUpdater(self.session).check(silent=True)", source[start:end])
+
     def test_background_check_only_prompts_for_newer_release(self):
         source = open(PLUGIN, encoding="utf-8").read()
         start = source.index("class GSUUpdater")
