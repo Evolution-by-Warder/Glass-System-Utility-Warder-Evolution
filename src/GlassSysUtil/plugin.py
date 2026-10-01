@@ -679,15 +679,15 @@ def _oscam_table_cell(value, width):
 
 
 _OSCAM_COLUMNS = (
-    ("name", 20, 210),
-    ("address", 245, 190),
-    ("port", 450, 75),
-    ("protocol", 540, 120),
-    ("service", 675, 230),
-    ("channel", 920, 230),
-    ("ecm", 1165, 95),
-    ("idle", 1275, 80),
-    ("status", 1370, 130),
+    ("name", 20, 165),
+    ("address", 200, 190),
+    ("port", 405, 75),
+    ("protocol", 495, 130),
+    ("service", 640, 225),
+    ("channel", 880, 225),
+    ("ecm", 1120, 95),
+    ("idle", 1230, 80),
+    ("status", 1325, 175),
 )
 
 
@@ -738,6 +738,31 @@ def _oscam_status_display(row):
     return "IDLE" if idle else ""
 
 
+def _current_service_name():
+    """Best-effort current Enigma2 service name; empty when unavailable."""
+    try:
+        from NavigationInstance import instance as navigation
+        service = navigation and navigation.getCurrentService()
+        info = service and service.info()
+        name = info and info.getName()
+        return _oscam_display(name)
+    except Exception:
+        return ""
+
+
+def _oscam_row_channel(row):
+    channel = _oscam_display(row.get("channel"))
+    if channel:
+        return channel
+    # OSCam status often exposes SID/CAID but omits the human channel name.
+    # Only DVBAPI/client rows represent the service currently watched by Enigma2.
+    protocol = _oscam_display(row.get("protocol")).lower()
+    role = _oscam_row_role(row)
+    if protocol.startswith("dvbapi") or role == "C":
+        return _current_service_name()
+    return ""
+
+
 def _oscam_table_values(row):
     name = _oscam_name_display(row)
     return {
@@ -746,7 +771,7 @@ def _oscam_table_values(row):
         "port": _oscam_display(row.get("port")),
         "protocol": _oscam_display(row.get("protocol")),
         "service": _oscam_service_display(row),
-        "channel": _oscam_display(row.get("channel")),
+        "channel": _oscam_row_channel(row),
         "ecm": _oscam_display(row.get("ecm")),
         "idle": _oscam_display(row.get("idle")),
         "status": _oscam_status_display(row),
