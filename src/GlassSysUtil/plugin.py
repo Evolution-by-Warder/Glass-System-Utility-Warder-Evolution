@@ -329,6 +329,32 @@ def package_tools_information():
 
 
 
+
+def automatic_installation_information():
+    """Read-only capability view for the original automatic-installation center."""
+    roots = ("/etc/enigma2", "/usr/script", "/media/hdd", "/media/usb")
+    present = [path for path in roots if os.path.exists(path)]
+    return "\n".join((
+        _("Automatic installation"),
+        _("Available local roots: %s") % (", ".join(present) if present else _("not detected")),
+        "",
+        _("Legacy remote installers are not executed. Local install actions remain gated until receiver validation."),
+    ))
+
+
+def osd_ecm_information():
+    """Compatibility view for the original OSD ECM area using the modern ECM backend."""
+    active = _active_cam()
+    service = current_service_technical_information()
+    caids = service.get("caids") or []
+    return "\n".join((
+        _("Current service: %s") % (_current_service_name() or _("not exposed")),
+        active_cam_summary() if active else _("No supported active CAM detected."),
+        _("Available CAIDs: %s") % (", ".join("%04X" % value for value in caids) if caids else _("not exposed")),
+        "",
+        _("OSD ECM display settings remain gated until receiver validation."),
+    ))
+
 def conditional_legacy_cam_information():
     """Report legacy CAM families only when they really exist on this receiver."""
     families = (("CCcam", "cccam"), ("Mbox", "mbox"), ("MGcamd", "mgcamd"), ("NCam", "ncam"))
@@ -3066,9 +3092,10 @@ class SysUtilMngMain(Screen):
             self.session.open(GSUTextEditorCenter)
         elif action == "rootpassword":
             self.session.open(GSURootPasswordCenter)
-        elif action in ("osdecm", "autoinstall"):
-            self._info(self.MENU[self["list"].getSelectedIndex()][0],
-                       _("This original GSU function is retained in the migration map and remains gated until its Python 3.14 implementation is receiver-validated."))
+        elif action == "osdecm":
+            self.session.open(GSUOSDECMCenter)
+        elif action == "autoinstall":
+            self.session.open(GSUAutoInstallCenter)
 
 
 
@@ -3108,6 +3135,13 @@ class GSUChannelSettingsCenter(GSUOriginalStatusCenter):
     def __init__(self, session): GSUOriginalStatusCenter.__init__(self, session, _("Channel settings"), channel_settings_information, _("Channel capability is detected without modifying bouquets."))
 class GSURootPasswordCenter(GSUOriginalStatusCenter):
     def __init__(self, session): GSUOriginalStatusCenter.__init__(self, session, _("Reset root user password"), root_password_information, _("Password mutation remains disabled until a receiver-safe confirmation flow is validated."))
+
+
+class GSUAutoInstallCenter(GSUOriginalStatusCenter):
+    def __init__(self, session): GSUOriginalStatusCenter.__init__(self, session, _("Automatic installations"), automatic_installation_information, _("Original automatic-installation workflow is retained without reviving unsafe remote installers."))
+
+class GSUOSDECMCenter(GSUOriginalStatusCenter):
+    def __init__(self, session): GSUOriginalStatusCenter.__init__(self, session, _("OSD ECM Information"), osd_ecm_information, _("OSD ECM uses the modern live service/CAM backend; display mutation remains gated."))
 
 
 class GSUPackageCenter(Screen):
