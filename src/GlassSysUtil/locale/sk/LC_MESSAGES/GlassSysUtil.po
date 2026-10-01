@@ -242,3 +242,102 @@ msgstr "Python: %s"
 
 msgid "Enigma2 binary: %s"
 msgstr "Binárny súbor Enigma2: %s"
+
+msgid "Enigma2 tuner sockets"
+msgstr "Enigma2 tuner sockety"
+
+msgid "Enigma2 tuner socket table: not exposed"
+msgstr "Tabuľka Enigma2 tuner socketov nie je dostupná"
+
+msgid "Kernel log: %s"
+msgstr "Log jadra: %s"
+
+msgid "available"
+msgstr "dostupné"
+
+msgid "not available"
+msgstr "nedostupné"
+
+msgid "[INFO] Network interfaces not exposed."
+msgstr "[INFO] Sieťové rozhrania nie sú dostupné."
+
+msgid "[WARNING] Default gateway not detected."
+msgstr "[UPOZORNENIE] Predvolená brána nebola zistená."
+
+msgid "Gateway reachability: %s"
+msgstr "Dostupnosť brány: %s"
+
+msgid "no reply"
+msgstr "bez odpovede"
+
+msgid "Routes:"
+msgstr "Trasy:"
+
+msgid "[INFO] No active NFS/CIFS mounts."
+msgstr "[INFO] Žiadne aktívne NFS/CIFS pripojenia."
+
+msgid "Client capabilities:"
+msgstr "Možnosti klienta:"
+
+msgid "NFS client: %s"
+msgstr "NFS klient: %s"
+
+msgid "CIFS client: %s"
+msgstr "CIFS klient: %s"
+
+msgid "Persistent mount configuration: %s"
+msgstr "Trvalá konfigurácia pripojení: %s"
+
+msgid "[WARNING] Enigma2 process not detected."
+msgstr "[UPOZORNENIE] Proces Enigma2 nebol zistený."
+
+msgid "[INFO] Open file descriptors: not exposed"
+msgstr "[INFO] Otvorené deskriptory súborov nie sú dostupné"
+
+msgid "Init scripts:"
+msgstr "Init skripty:"
+
+msgid "Detected CAM binaries:"
+msgstr "Zistené CAM binárne súbory:"
+
+msgid "[INFO   ] CAM       no known CAM process detected"
+msgstr "[INFO   ] CAM       nebol zistený známy CAM proces"
+
+msgid "[INFO] No physical mounted filesystems detected."
+msgstr "[INFO] Neboli zistené fyzické pripojené súborové systémy."
+
+msgid "Detected runtime capabilities"
+msgstr "Zistené runtime možnosti"
+
+msgid "[INFO] Memory: data not exposed"
+msgstr "[INFO] Pamäť: údaje nie sú dostupné"
+
+msgid "[INFO] Storage: no physical filesystem mounts detected"
+msgstr "[INFO] Úložisko: neboli zistené fyzické pripojené súborové systémy"
+
+msgid "[WARNING] Network link: no detected interface is up"
+msgstr "[UPOZORNENIE] Sieť: žiadne zistené rozhranie nie je aktívne"
+
+msgid "[INFO] Network link: interfaces not exposed"
+msgstr "[INFO] Sieť: rozhrania nie sú dostupné"
+
+msgid "[INFO] Temperature: measurement not exposed"
+msgstr "[INFO] Teplota: meranie nie je dostupné"
+
+msgid "[PASS] Tuner interfaces: detected"
+msgstr "[PASS] Tuner rozhrania: zistené"
+
+msgid "[INFO] Tuner interfaces: not exposed through detected system interfaces"
+msgstr "[INFO] Tuner rozhrania nie sú dostupné cez zistené systémové rozhrania"
+
+msgid "OSCam runtime version file: not found"
+msgstr "Súbor runtime verzie OSCam: nenájdený"
+
+msgid "Available upgrades: not checked here (repository queries may block this screen)."
+msgstr "Dostupné aktualizácie sa tu nekontrolujú (dotazy na repozitár môžu túto obrazovku blokovať)."
+
+msgid "chrony tracking:"
+msgstr "sledovanie chrony:"
+
+msgid "NTP peers:"
+msgstr "NTP servery:"
