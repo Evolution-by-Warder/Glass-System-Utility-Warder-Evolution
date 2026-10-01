@@ -2566,7 +2566,18 @@ class GSUCamSrvManager(Screen):
             ", ".join("%04X" % value for value in caids) if caids else _("not exposed")))
         self["service"].setText("\n".join(rows))
         command, detail = _active_cam_restart_command()
+        active = _active_cam()
+        live_summary = _("Live ECM: unavailable")
+        if active and active.get("family") == "oscam":
+            live, reason = oscam_live_rows()
+            if live:
+                values = _oscam_table_values(live[0])
+                live_summary = _("Live ECM: %s | %s | %s") % (
+                    values["name"] or "N/A", values["ecm"] or "N/A", values["status"] or "N/A")
+            elif reason:
+                live_summary = reason
         self["status"].setText("\n".join((
+            live_summary,
             _("CAM restart: %s") % (_("available") if command else _("unavailable")),
             detail or _("No image-supported restart command exposed."),
             _("Stop / activate / download / delete actions remain disabled until receiver validation."),
