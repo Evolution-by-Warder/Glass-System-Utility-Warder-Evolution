@@ -47,6 +47,7 @@ jobs:
           IPK="$GITHUB_WORKSPACE/enigma2-plugin-glasssysutil_${VERSION}_all.ipk"
           mkdir -p "$PLUGIN" "$CONTROL"
           cp src/GlassSysUtil/plugin.py src/GlassSysUtil/__init__.py src/GlassSysUtil/version src/GlassSysUtil/SysMgt.png "$PLUGIN/"
+          if [ -d src/GlassSysUtil/locale ]; then cp -R src/GlassSysUtil/locale "$PLUGIN/"; fi
           cp packaging/CONTROL/control packaging/CONTROL/postinst "$CONTROL/"
           chmod 755 "$CONTROL/postinst"
           printf '2.0\n' > "$WORK/debian-binary"
