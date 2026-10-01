@@ -226,3 +226,22 @@ class OperationalDoctorsTests(unittest.TestCase):
         source = open(PLUGIN, encoding="utf-8").read()
         self.assertEqual(source.count('("Network Mount Doctor", "mountdoctor")'), 1)
         self.assertEqual(source.count('("Enigma2 Runtime Health", "runtimehealth")'), 1)
+
+
+class NetworkHealthTests(unittest.TestCase):
+    def test_network_health_is_bounded_and_read_only(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        start = source.index("def network_health_information")
+        end = source.index("def network_diagnostics", start)
+        body = source[start:end]
+        self.assertIn("/sys/class/net", body)
+        self.assertIn("_default_gateway()", body)
+        self.assertIn('["ping", "-c", "1", "-W", "2", gateway]', body)
+        self.assertIn("/etc/resolv.conf", body)
+        self.assertNotIn("ifconfig", body)
+        self.assertNotIn("ip addr add", body)
+
+    def test_network_health_menu_wiring(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        self.assertEqual(source.count('("Network Health", "nethealth")'), 1)
+        self.assertEqual(source.count('"nethealth": ("Network Health", network_health_information)'), 1)
