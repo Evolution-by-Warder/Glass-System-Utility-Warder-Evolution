@@ -309,7 +309,7 @@ class OriginalSystemDashboardTests(unittest.TestCase):
         source = open(PLUGIN, encoding="utf-8").read()
         for token in ("original_resource_dashboard_information", "_percent_bar",
                       "original_protocol_indicators", '"FTP"', '"Telnet"', '"VPN"',
-                      '"Samba"', '"NFS"', '"protocols"'):
+                      '"Samba"', '"NFS"', '"ftp_on"', '"telnet_on"', '"vpn_on"', '"smb_on"', '"nfs_on"'):
             self.assertIn(token, source)
 
     def test_resource_dashboard_is_read_only(self):
