@@ -92,8 +92,10 @@ jobs:
           test "$(ar p "$IPK" debian-binary)" = "2.0"
           ar p "$IPK" control.tar.gz | tar -xzOf - ./control | grep -Fqx "Package: enigma2-plugin-glasssysutil"
           ar p "$IPK" control.tar.gz | tar -xzOf - ./control | grep -Fqx "Version: $VERSION"
-          ar p "$IPK" data.tar.gz | tar -tzf - | grep -Fq 'usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/plugin.py'
-          ar p "$IPK" data.tar.gz | tar -tzf - | grep -Fq 'usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/SysMgt.png'
+          ar p "$IPK" data.tar.gz > "$WORK/data-check.tar.gz"
+          tar -tzf "$WORK/data-check.tar.gz" > "$WORK/data-files.txt"
+          grep -Fqx 'usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/plugin.py' "$WORK/data-files.txt"
+          grep -Fqx 'usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/SysMgt.png' "$WORK/data-files.txt"
           SHA256="$(sha256sum "$IPK" | awk '{print $1}')"
           printf '%s  %s\n' "$SHA256" "$(basename "$IPK")" | tee "$IPK.sha256"
           echo "ipk=$IPK" >> "$GITHUB_OUTPUT"
