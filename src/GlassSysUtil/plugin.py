@@ -1886,6 +1886,25 @@ class GSUActiveCAM(Screen):
         self._refresh()
         self._start_auto_refresh()
 
+    def _set_live_rows(self, rows, reason=""):
+        selected = 0
+        try:
+            selected = self["table"].getSelectionIndex()
+        except Exception:
+            pass
+        items = ([_oscam_list_tuple(row) for row in rows] if self._table_uses_list_source
+                 else [_oscam_table_line(row) for row in rows])
+        self["table"].setList(items)
+        if rows:
+            try:
+                self["table"].moveToIndex(min(selected, len(rows) - 1))
+            except Exception:
+                pass
+            self["live_status"].setText("Live OSCam: %d active client/reader row%s" %
+                                        (len(rows), "" if len(rows) == 1 else "s"))
+        else:
+            self["live_status"].setText("Live OSCam: %s" % reason)
+
     def _refresh(self):
         if getattr(self, "_refresh_in_progress", False):
             return
@@ -1900,21 +1919,7 @@ class GSUActiveCAM(Screen):
             if active and active.get("family") == "oscam":
                 table_rows, reason = oscam_live_rows()
             try:
-                selected = 0
-                try:
-                    selected = self["table"].getSelectionIndex()
-                except Exception:
-                    pass
-                self["table"].setList([_oscam_list_tuple(row) for row in table_rows] if self._table_uses_list_source else [_oscam_table_line(row) for row in table_rows])
-                if table_rows:
-                    try:
-                        self["table"].moveToIndex(min(selected, len(table_rows) - 1))
-                    except Exception:
-                        pass
-                    self["live_status"].setText("Live OSCam: %d active client/reader row%s" %
-                                                (len(table_rows), "" if len(table_rows) == 1 else "s"))
-                else:
-                    self["live_status"].setText("Live OSCam: %s" % reason)
+                self._set_live_rows(table_rows, reason)
             except Exception:
                 pass
             command, detail = _active_cam_restart_command()
@@ -1955,21 +1960,7 @@ class GSUActiveCAM(Screen):
                     self._live_fetch_running = False
                     return
                 try:
-                    selected = 0
-                    try:
-                        selected = self["table"].getSelectionIndex()
-                    except Exception:
-                        pass
-                    self["table"].setList([_oscam_list_tuple(row) for row in rows] if self._table_uses_list_source else [_oscam_table_line(row) for row in rows])
-                    if rows:
-                        try:
-                            self["table"].moveToIndex(min(selected, len(rows) - 1))
-                        except Exception:
-                            pass
-                        self["live_status"].setText("Live OSCam: %d active client/reader row%s" %
-                                                    (len(rows), "" if len(rows) == 1 else "s"))
-                    else:
-                        self["live_status"].setText("Live OSCam: %s" % reason)
+                    self._set_live_rows(rows, reason)
                     try:
                         self["summary"].setText(active_cam_summary())
                     except Exception:
