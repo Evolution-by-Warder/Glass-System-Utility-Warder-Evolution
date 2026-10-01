@@ -2442,6 +2442,107 @@ class GSUChannelDashboard(Screen):
         self["tuner"].setText(technical + "\n\n" + tuner_information())
 
 
+class GSUECMInformation(Screen):
+    """Focused original-style ECM view; no CAM state changes."""
+    skin = """
+    <screen name="GSUECMInformation" position="center,center" size="1050,620" title="ECM Information">
+        <widget name="service" position="30,25" size="990,55" font="Regular;27" foregroundColor="#e6d500" />
+        <widget name="ecm" position="30,95" size="990,430" font="Regular;22" />
+        <widget name="key_red" position="35,550" size="250,45" font="Regular;24" foregroundColor="#ff3333" />
+        <widget name="key_yellow" position="760,550" size="250,45" font="Regular;24" foregroundColor="#e6d500" />
+    </screen>
+    """
+    def __init__(self, session):
+        Screen.__init__(self, session)
+        self["service"] = Label("")
+        self["ecm"] = Label("")
+        self["key_red"] = Label(_("Close"))
+        self["key_yellow"] = Label(_("Refresh"))
+        self["actions"] = ActionMap(["OkCancelActions", "ColorActions"], {
+            "cancel": self.close, "red": self.close, "yellow": self.refresh,
+        }, -1)
+        self.setTitle(_("ECM Information"))
+        self.onShown.append(self.refresh)
+
+    def refresh(self):
+        self["service"].setText(_current_service_name() or _("Current service not exposed"))
+        active = _active_cam()
+        rows = [active_cam_summary() if active else _("No supported active CAM detected.")]
+        service = current_service_technical_information()
+        caids = service.get("caids") or []
+        rows.append(_("Available CAIDs: %s") % (
+            ", ".join("%04X" % value for value in caids) if caids else _("not exposed")))
+        if active and active.get("family") == "oscam":
+            live, reason = oscam_live_rows()
+            if live:
+                for row in live:
+                    values = _oscam_table_values(row)
+                    rows.append("")
+                    rows.append(_("Reader / User: %s") % (values["name"] or "N/A"))
+                    rows.append(_("Service: %s") % (values["service"] or "N/A"))
+                    rows.append(_("ECM: %s") % (values["ecm"] or "N/A"))
+                    rows.append(_("Status: %s") % (values["status"] or "N/A"))
+                    if values["status"]:
+                        break
+            elif reason:
+                rows += ["", reason]
+        self["ecm"].setText("\n".join(rows))
+
+
+class GSUCamSrvManager(Screen):
+    """Original CAM/SRV landing screen wrapping the proven OSCam monitor backend."""
+    skin = """
+    <screen name="GSUCamSrvManager" position="center,center" size="1180,700" title="CAM/SRV Manager">
+        <eLabel position="30,22" size="520,38" text="CAM / SRV" font="Regular;26" foregroundColor="#3399ff" />
+        <widget name="cam" position="30,70" size="520,245" font="Regular;22" />
+        <eLabel position="610,22" size="540,38" text="Current service / CA" font="Regular;26" foregroundColor="#3399ff" />
+        <widget name="service" position="610,70" size="540,245" font="Regular;22" />
+        <eLabel position="30,340" size="1120,38" text="Safety / capability status" font="Regular;24" foregroundColor="#e6d500" />
+        <widget name="status" position="30,388" size="1120,190" font="Regular;21" />
+        <widget name="key_red" position="35,625" size="230,45" font="Regular;24" foregroundColor="#ff3333" />
+        <widget name="key_green" position="330,625" size="260,45" font="Regular;24" foregroundColor="#33cc33" />
+        <widget name="key_yellow" position="650,625" size="230,45" font="Regular;24" foregroundColor="#e6d500" />
+        <widget name="key_blue" position="930,625" size="220,45" font="Regular;24" foregroundColor="#3399ff" />
+    </screen>
+    """
+    def __init__(self, session):
+        Screen.__init__(self, session)
+        self["cam"] = Label("")
+        self["service"] = Label("")
+        self["status"] = Label("")
+        self["key_red"] = Label(_("Close"))
+        self["key_green"] = Label(_("OSCam monitor"))
+        self["key_yellow"] = Label(_("Refresh"))
+        self["key_blue"] = Label(_("ECM details"))
+        self["actions"] = ActionMap(["OkCancelActions", "ColorActions"], {
+            "cancel": self.close, "red": self.close,
+            "green": lambda: self.session.open(GSUActiveCAM),
+            "yellow": self.refresh,
+            "blue": lambda: self.session.open(GSUECMInformation),
+        }, -1)
+        self.setTitle(_("CAM/SRV Manager"))
+        self.onShown.append(self.refresh)
+
+    def refresh(self):
+        self["cam"].setText(cam_srv_context_information())
+        technical = current_service_technical_information()
+        fe = technical.get("frontend") or {}
+        rows = [_("Channel: %s") % (technical.get("name") or _("not exposed")),
+                _("Provider: %s") % (technical.get("provider") or _("not exposed"))]
+        if fe.get("orbital_position") not in (None, ""):
+            rows.append(_("Orbital position: %s") % fe.get("orbital_position"))
+        caids = technical.get("caids") or []
+        rows.append(_("Available CAIDs: %s") % (
+            ", ".join("%04X" % value for value in caids) if caids else _("not exposed")))
+        self["service"].setText("\n".join(rows))
+        command, detail = _active_cam_restart_command()
+        self["status"].setText("\n".join((
+            _("CAM restart: %s") % (_("available") if command else _("unavailable")),
+            detail or _("No image-supported restart command exposed."),
+            _("Stop / activate / download / delete actions remain disabled until receiver validation."),
+        )))
+
+
 class GSUActiveCAM(Screen):
     """Visual OSCam/CAM monitor with a compact live table and safe actions."""
     skin = """
@@ -2802,16 +2903,12 @@ class SysUtilMngMain(Screen):
     MENU = [
         (_("System Information"), "originalsystem"),
         (_("Channel Information"), "originalchannel"),
-        (_("OSCam Information"), "cammonitor"),
-        (_("CAM/SRV Manager"), "cammonitor"),
-        (_("ECM Information"), "cammonitor"),
+        (_("OSCam Information"), "oscaminfo"),
+        (_("CAM/SRV Manager"), "cammanager"),
+        (_("ECM Information"), "ecminfo"),
         (_("Device Manager"), "devicemanager"),
         (_("Swap Manager"), "swapmanager"),
         (_("IPK/DEB and user scripts"), "packagetools"),
-        (_("Channel settings"), "channelsettings"),
-        (_("Crond Manager"), "cronmanager"),
-        (_("Text editor"), "texteditor"),
-        (_("Reset root password"), "rootpassword"),
         (_("Legacy & Maintenance"), "legacymaintenance"),
         (_("Warder Diagnostics & Tools"), "tools"),
         (_("Check for updates"), "update"),
@@ -2821,7 +2918,9 @@ class SysUtilMngMain(Screen):
     HELP = {
         "originalsystem": _("System, memory, swap, storage, temperature, process and service overview."),
         "originalchannel": _("Current service, tuner/frontend and CAM/ECM information in one dashboard."),
-        "cammonitor": _("Detected CAM/SRV state, live ECM/OSCam information and safe receiver actions."),
+        "oscaminfo": _("Detailed live OSCam client/reader monitor and runtime information."),
+        "cammanager": _("Detected CAM/SRV state, current service context and safe CAM actions."),
+        "ecminfo": _("Focused current-service ECM, CAID and decoding status."),
         "devicemanager": _("Detected devices and filesystems. Destructive legacy actions remain disabled."),
         "swapmanager": _("Current swap state. Creation and enable/disable actions remain safety-gated."),
         "packagetools": _("Local package/script capabilities. Obsolete remote installers are not restored."),
@@ -2901,8 +3000,12 @@ class SysUtilMngMain(Screen):
             self.session.open(GSUSystemDashboard)
         elif action == "originalchannel":
             self.session.open(GSUChannelDashboard)
-        elif action == "cammonitor":
+        elif action == "oscaminfo":
             self.session.open(GSUActiveCAM)
+        elif action == "cammanager":
+            self.session.open(GSUCamSrvManager)
+        elif action == "ecminfo":
+            self.session.open(GSUECMInformation)
         elif action == "legacymaintenance":
             self._info(_("Legacy & Maintenance"), "\\n\\n".join((conditional_legacy_cam_information(), channel_settings_information(), cron_manager_information(), text_editor_information(), root_password_information())))
         elif action == "tools":
