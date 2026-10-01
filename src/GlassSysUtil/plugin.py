@@ -38,6 +38,10 @@ except ImportError:
     ScrollLabel = None
 from Components.MenuList import MenuList
 try:
+    from Components.ProgressBar import ProgressBar
+except ImportError:
+    ProgressBar = Label
+try:
     from Components.Sources.List import List
     from Components.MultiContent import MultiContentEntryText
     from enigma import eListboxPythonMultiContent, gFont, RT_HALIGN_LEFT, RT_VALIGN_CENTER
