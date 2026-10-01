@@ -444,8 +444,8 @@ msgstr "Unable to check for updates.\n\n%s"
 msgid "Update installation failed.\n\n%s"
 msgstr "Update installation failed.\n\n%s"
 
-msgid "Live OSCam: %d active client/reader row%s  |  OK = row details"
-msgstr "Live OSCam: %d active client/reader row%s  |  OK = row details"
+msgid "Live OSCam: %d active client/reader rows  |  OK = row details"
+msgstr "Live OSCam: %d active client/reader rows  |  OK = row details"
 
 msgid "Active CAM restart failed.\n\n%s"
 msgstr "Active CAM restart failed.\n\n%s"
