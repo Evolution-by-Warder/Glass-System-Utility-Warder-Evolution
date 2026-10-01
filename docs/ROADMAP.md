@@ -456,3 +456,12 @@ Known non-blocking follow-up: localization is not yet complete inside every diag
 - Release is immutable by project policy; do not edit, replace or delete published assets.
 - STATIC/CI/PUBLISH: PASS.
 - REAL RECEIVER: REVIEW REQUIRED. Do not promote w16 to recovery/reference checkpoint until GigaBlue Quad 4K Pro validation passes.
+
+
+## 13.36-w17 hotfix candidate — 2026-10-01
+
+- Removes Enigma2/session-start update discovery; silent automatic update discovery runs only when the GSU main screen is opened. Manual update check remains available.
+- Fixes the localized OSCam live-row status formatting crash seen after the OpenATV 20260930 update by using one stable integer placeholder across source and all seven catalogs.
+- CI enforces the updater lifecycle policy and validates the OSCam translation placeholder contract against production files.
+- 13.35-w16 remains immutable and is not REAL RECEIVER PASS. 13.33-w14 and 13.34-w15 remain receiver-validated recovery/reference checkpoints until w17 is tested on hardware.
+- STATIC/CI: pending final green build. REAL RECEIVER: REVIEW REQUIRED.
