@@ -191,6 +191,8 @@ def hardware_identity_information():
 def system_information():
     model = _read_text("/proc/stb/info/model", platform.machine())
     brand = _read_text("/proc/stb/info/brand", "")
+    chipset = _read_text("/proc/stb/info/chipset", "")
+    boxtype = _read_text("/proc/stb/info/boxtype", "")
     image = _read_text("/etc/image-version", "N/A")
     cpu = "N/A"
     for line in _read_lines("/proc/cpuinfo"):
@@ -198,9 +200,11 @@ def system_information():
             cpu = line.split(":", 1)[1].strip()
             if cpu:
                 break
-    return "\n".join((
+    rows = (
         "Glass System Utility - Warder Evolution %s" % VERSION, "",
         "Receiver: %s %s" % (brand, model),
+        "Box type: %s" % (boxtype or "N/A"),
+        "Chipset: %s" % (chipset or "N/A"),
         "Hostname: %s" % socket.gethostname(),
         "CPU: %s" % cpu,
         "Architecture: %s" % platform.machine(),
@@ -208,8 +212,8 @@ def system_information():
         "Python: %s" % platform.python_version(),
         "Uptime: %s" % _uptime(),
         "Image: %s" % image,
-    ))
-
+    )
+    return "\n".join(rows)
 
 def network_information():
     rows = [_("Default gateway: %s") % _default_gateway()]
