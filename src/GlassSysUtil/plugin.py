@@ -1491,6 +1491,42 @@ def listening_ports_information():
     return "\n".join(output.splitlines()[:45]) if output else "No listener information available."
 
 
+def storage_health_information():
+    """Concise storage health view focused on actionable receiver conditions."""
+    rows = ["GSU Storage Health", ""]
+    seen = 0
+    warnings = 0
+    for line in _read_lines("/proc/mounts"):
+        fields = line.split()
+        if len(fields) < 4 or not fields[0].startswith("/dev/"):
+            continue
+        device, mountpoint, fstype, options = fields[:4]
+        try:
+            usage = shutil.disk_usage(mountpoint)
+            free_pct = usage.free * 100.0 / usage.total if usage.total else 0
+        except Exception:
+            continue
+        seen += 1
+        read_only = "ro" in options.split(",")
+        low_space = free_pct < 5
+        if read_only or low_space:
+            warnings += 1
+        state = "WARNING" if (read_only or low_space) else "PASS"
+        notes = []
+        if read_only:
+            notes.append("read-only")
+        if low_space:
+            notes.append("low free space")
+        rows.append("[%s] %s -> %s  %s  %.1f%% free%s" % (
+            state, device, mountpoint, fstype, free_pct,
+            ("  " + ", ".join(notes)) if notes else ""))
+    if not seen:
+        rows.append("[INFO] No physical mounted filesystems detected.")
+    rows += ["", "Summary: %d filesystem(s), %d warning(s)." % (seen, warnings),
+             "Storage Health is read-only and does not run destructive filesystem tests."]
+    return "\n".join(rows)
+
+
 def filesystem_health_information():
     rows = []
     for line in _read_lines("/proc/mounts"):
@@ -2218,6 +2254,7 @@ class SysUtilMngMain(Screen):
         ("Network Diagnostics", "netdiag"),
         ("Time & Synchronization", "timehealth"),
         ("Storage & Filesystems", "storage"),
+        ("Storage Health", "storagehealth"),
         ("Filesystem Health", "fshealth"),
         ("Block Devices", "devices"),
         ("Memory & Swap", "memory"),
@@ -2260,6 +2297,7 @@ class SysUtilMngMain(Screen):
             "netdiag": ("Network Diagnostics", network_diagnostics),
             "timehealth": ("Time & Synchronization", time_health_information),
             "storage": ("Storage & Filesystems", storage_information),
+            "storagehealth": ("Storage Health", storage_health_information),
             "fshealth": ("Filesystem Health", filesystem_health_information),
             "devices": ("Block Devices", device_information),
             "memory": ("Memory & Swap", memory_information),
