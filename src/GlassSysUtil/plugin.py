@@ -2386,7 +2386,8 @@ class GSUSystemDashboard(Screen):
 
     def refresh(self):
         self["system"].setText(system_information())
-        self["resources"].setText(memory_information() + "\n\n" + temperature_information())
+        self["resources"].setText(original_resource_dashboard_information())
+        self["protocols"].setText(original_protocol_indicators())
         self["services"].setText(service_dashboard_information())
         self["health"].setText(storage_health_information() + "\n\n" + network_mount_doctor_information())
 
@@ -2415,7 +2416,7 @@ class GSUChannelDashboard(Screen):
         self["key_yellow"] = Label(_("Refresh"))
         self["actions"] = ActionMap(["OkCancelActions", "ColorActions"], {
             "cancel": self.close, "red": self.close,
-            "green": lambda: self.session.open(GSUActiveCAM),
+            "green": lambda: self.session.open(GSUCamSrvManager),
             "yellow": self.refresh,
         }, -1)
         self.setTitle(_("Channel Information"))
@@ -2546,7 +2547,7 @@ class GSUCamSrvManager(Screen):
 class GSUActiveCAM(Screen):
     """Visual OSCam/CAM monitor with a compact live table and safe actions."""
     skin = """
-    <screen name="GSUActiveCAM" position="center,center" size="1500,820" title="CAM/SRV Manager">
+    <screen name="GSUActiveCAM" position="center,center" size="1500,820" title="OSCam Information">
         <eLabel position="25,12" size="710,32" text="CAM / SRV status" font="Regular;21" foregroundColor="#3399ff" />\n        <widget name="summary" position="25,48" size="710,95" font="Regular;21" />
         <widget name="service_context" position="760,20" size="715,52" font="Regular;21" foregroundColor="#e6d500" />
         <widget name="ecm_context" position="760,73" size="715,52" font="Regular;20" foregroundColor="#33cc33" />
@@ -2601,7 +2602,7 @@ class GSUActiveCAM(Screen):
             self["table"] = List([])
         else:
             self["table"] = MenuList([])
-        self.setTitle(_("CAM/SRV Manager"))
+        self.setTitle(_("OSCam Information"))
         self["key_red"] = Label(_("Close"))
         command, detail = _active_cam_restart_command()
         self.restart_command = command
