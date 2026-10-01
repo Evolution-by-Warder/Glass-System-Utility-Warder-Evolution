@@ -3338,10 +3338,10 @@ class SysUtilMngMain(Screen):
         self["red"] = Label(_("Exit"))
         self["green"] = Label(_("OK"))
         self["yellow"] = Label(_("Refresh"))
-        self["blue"] = Label(_("Warder tools"))
+        self["blue"] = Label(_("Help"))
         self["actions"] = ActionMap(["OkCancelActions", "ColorActions", "DirectionActions"], {
             "ok": self.ok, "cancel": self.close, "red": self.close, "green": self.ok,
-            "yellow": self._refresh_context, "blue": self.open_tools,
+            "yellow": self._refresh_context, "blue": self.open_help,
             "up": self._up, "down": self._down,
         }, -1)
         self.setTitle("GSU ver. %s" % VERSION)
@@ -3378,8 +3378,10 @@ class SysUtilMngMain(Screen):
     def _info(self, title, text):
         self.session.open(GSUInfo, title, text)
 
-    def open_tools(self):
-        self.session.open(GSUWarderTools)
+    def open_help(self):
+        action = self._selected_action()
+        title = self.MENU[self["list"].getSelectedIndex()][0] if action else _("Glass System Utility")
+        self.session.open(GSUInfo, title, self.HELP.get(action, _("No additional information.")))
 
     def ok(self):
         action = self._selected_action()
