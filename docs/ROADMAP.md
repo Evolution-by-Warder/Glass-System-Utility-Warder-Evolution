@@ -306,3 +306,12 @@ Further work completed without consuming additional receiver test cycles:
 Validated implementation commit: `610c527cacdadf601b4401ffdf3801148f9c114a`.
 GitHub Actions run `36823001271`: PASS.
 This supersedes the previous receiver candidate source while keeping version `13.29-w10` and the same release HOLD.
+
+
+### 13.29-w10 OSCam monitor presentation checkpoint
+- Live OSCam API data is rendered as a true fixed-column Enigma2 table rather than a space-padded terminal line.
+- Address, port, protocol, service identity, channel, ECM, idle and status have independent fixed cells.
+- WebIF/HTTP and empty localhost infrastructure rows are hidden from the primary TV table while remaining available to diagnostics.
+- Missing reader/user names use neutral role labels (Reader, Client, EMU, DVBAPI); real API names always win.
+- Refresh preserves selection, is centralized, remains non-blocking for periodic live updates, and screen close stops owned timers.
+- Release remains HOLD until this presentation batch passes CI and one real-receiver Update smoke test.
