@@ -290,6 +290,9 @@ class OriginalGSURestorationTests(unittest.TestCase):
         self.assertIn('self.setTitle(_("CAM/SRV Manager"))', source)
         self.assertIn('"service_context"', source)
         self.assertIn('"ecm_context"', source)
+        self.assertIn("cam_srv_context_information", source)
+        self.assertIn("Available CAIDs", source)
+        self.assertIn("orbital_position", source)
 
     def test_original_top_level_routes_to_rich_dashboards(self):
         source = open(PLUGIN, encoding="utf-8").read()
