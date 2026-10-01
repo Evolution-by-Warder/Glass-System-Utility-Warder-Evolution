@@ -95,3 +95,39 @@ msgstr "Pobieranie, weryfikacja i instalowanie aktualizacji..."
 msgid "Update installed successfully.\\nEnigma2 GUI will restart in 3 seconds."
 msgstr "Aktualizacja została zainstalowana.\\nGUI Enigma2 uruchomi się ponownie za 3 sekundy."
 
+msgid "Glass System Utility %s is up to date."
+msgstr "Glass System Utility %s jest aktualny."
+
+msgid "Unable to check for updates.\\n\\n%s"
+msgstr "Nie udało się sprawdzić aktualizacji.\\n\\n%s"
+
+msgid "Update installation is unavailable on this Enigma2 image."
+msgstr "Instalacja aktualizacji nie jest dostępna w tym obrazie Enigma2."
+
+msgid "Update installation failed.\\n\\n%s"
+msgstr "Instalacja aktualizacji nie powiodła się.\\n\\n%s"
+
+msgid "No supported active CAM detected."
+msgstr "Nie wykryto obsługiwanego aktywnego CAM."
+
+msgid "Active CAM restart failed.\\n\\n%s"
+msgstr "Restart CAM nie powiódł się.\\n\\n%s"
+
+msgid "Active CAM restart verified%s."
+msgstr "Restart CAM został potwierdzony%s."
+
+msgid "Restart command completed, but no active CAM was detected afterwards."
+msgstr "Polecenie restartu zakończono, ale później nie wykryto aktywnego CAM."
+
+msgid "Unable to start CAM restart worker."
+msgstr "Nie udało się uruchomić procesu restartu CAM."
+
+msgid "Diagnostic bundle created:\\n%s"
+msgstr "Utworzono pakiet diagnostyczny:\\n%s"
+
+msgid "Unable to create diagnostic bundle.\\n\\n%s"
+msgstr "Nie udało się utworzyć pakietu diagnostycznego.\\n\\n%s"
+
+msgid "About"
+msgstr "Informacje"
+
