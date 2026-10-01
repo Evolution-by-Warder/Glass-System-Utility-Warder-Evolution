@@ -131,3 +131,42 @@ msgstr "Diagnostický balíček se nepodařilo vytvořit.\\n\\n%s"
 msgid "About"
 msgstr "O pluginu"
 
+
+msgid "GSU Service Dashboard"
+msgstr "GSU Přehled služeb"
+
+msgid "Dashboard is read-only. Use dedicated screens for full diagnostics."
+msgstr "Přehled je pouze pro čtení. Pro úplnou diagnostiku použijte příslušné obrazovky."
+
+msgid "GSU Network Health"
+msgstr "GSU Stav sítě"
+
+msgid "GSU Network Mount Doctor"
+msgstr "GSU Diagnostika síťových připojení"
+
+msgid "GSU Enigma2 Runtime Health"
+msgstr "GSU Stav Enigma2"
+
+msgid "GSU Storage Health"
+msgstr "GSU Stav úložišť"
+
+msgid "Active CAM: %s"
+msgstr "Aktivní CAM: %s"
+
+msgid "Family: %s"
+msgstr "Rodina: %s"
+
+msgid "Resident memory: %s"
+msgstr "Rezidentní paměť: %s"
+
+msgid "Live OSCam: %s"
+msgstr "Živý OSCam: %s"
+
+msgid "No active client/reader rows."
+msgstr "Žádné aktivní řádky klientů/readerů."
+
+msgid "Network Diagnostics"
+msgstr "Diagnostika sítě"
+
+msgid "Diagnostic Summary"
+msgstr "Souhrn diagnostiky"
