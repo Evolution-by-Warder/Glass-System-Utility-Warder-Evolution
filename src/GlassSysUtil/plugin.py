@@ -2111,6 +2111,7 @@ class GSUActiveCAM(Screen):
         # Final w11 release candidate validation marker.
         # Receiver polish: narrower identity column, wider status, DVBAPI channel fallback.
         # 13.31-w12 release validation.
+        # post-w12 operational batch validation
         self._refresh()
         self._start_auto_refresh()
 
