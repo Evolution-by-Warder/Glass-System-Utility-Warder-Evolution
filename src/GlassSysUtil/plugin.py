@@ -2501,50 +2501,89 @@ class GSUChannelDashboard(Screen):
 
 
 class GSUECMInformation(Screen):
-    """Focused original-style ECM view; no CAM state changes."""
+    """Original-character ECM center composed from live Enigma2/CAM data only."""
     skin = """
-    <screen name="GSUECMInformation" position="center,center" size="1050,620" title="ECM Information">
-        <widget name="service" position="30,25" size="990,55" font="Regular;27" foregroundColor="#e6d500" />
-        <widget name="ecm" position="30,95" size="990,430" font="Regular;22" />
-        <widget name="key_red" position="35,550" size="250,45" font="Regular;24" foregroundColor="#ff3333" />
-        <widget name="key_yellow" position="760,550" size="250,45" font="Regular;24" foregroundColor="#e6d500" />
+    <screen name="GSUECMInformation" position="center,center" size="930,790" title="ECM Information" backgroundColor="#31000000">
+        <widget name="service" position="30,20" size="870,45" font="Regular;29" foregroundColor="#e6d500" halign="center" transparent="1"/>
+        <eLabel position="0,80" size="930,2" backgroundColor="#888888"/>
+        <widget name="service_context" position="35,100" size="410,210" font="Regular;22" transparent="1"/>
+        <widget name="ecm_context" position="485,100" size="410,430" font="Regular;22" transparent="1"/>
+        <eLabel position="465,100" size="2,430" backgroundColor="#888888"/>
+        <widget name="ca_context" position="35,330" size="410,200" font="Regular;22" transparent="1"/>
+        <eLabel position="0,550" size="930,2" backgroundColor="#888888"/>
+        <widget name="info" position="35,570" size="860,105" font="Regular;20" foregroundColor="#888888" halign="center" valign="center" transparent="1"/>
+        <eLabel position="0,705" size="310,2" backgroundColor="red"/>
+        <eLabel position="310,705" size="310,2" backgroundColor="yellow"/>
+        <eLabel position="620,705" size="310,2" backgroundColor="blue"/>
+        <widget name="key_red" position="0,725" size="310,40" font="Regular;25" foregroundColor="red" halign="center" transparent="1"/>
+        <widget name="key_yellow" position="310,725" size="310,40" font="Regular;25" foregroundColor="yellow" halign="center" transparent="1"/>
+        <widget name="key_blue" position="620,725" size="310,40" font="Regular;25" foregroundColor="blue" halign="center" transparent="1"/>
     </screen>
     """
+
     def __init__(self, session):
         Screen.__init__(self, session)
         self["service"] = Label("")
-        self["ecm"] = Label("")
-        self["key_red"] = Label(_("Close"))
+        self["service_context"] = Label("")
+        self["ca_context"] = Label("")
+        self["ecm_context"] = Label("")
+        self["info"] = Label(_("Live ECM information uses receiver-exposed service and CAM data; unavailable values are never invented."))
+        self["key_red"] = Label(_("Exit"))
         self["key_yellow"] = Label(_("Refresh"))
+        self["key_blue"] = Label(_("CAM/SRV"))
         self["actions"] = ActionMap(["OkCancelActions", "ColorActions"], {
             "cancel": self.close, "red": self.close, "yellow": self.refresh,
+            "blue": self.open_cam_manager,
         }, -1)
         self.setTitle(_("ECM Information"))
         self.onShown.append(self.refresh)
 
+    def open_cam_manager(self):
+        self.session.open(GSUCamSrvManager)
+
     def refresh(self):
-        self["service"].setText(_current_service_name() or _("Current service not exposed"))
+        service = current_service_technical_information()
+        name = service.get("name") or _current_service_name() or _("Current service not exposed")
+        self["service"].setText(name)
+
+        service_rows = [
+            _("Provider: %s") % (service.get("provider") or _("not exposed")),
+        ]
+        frontend = service.get("frontend") or {}
+        orbital = frontend.get("orbital_position")
+        if orbital not in (None, ""):
+            service_rows.append(_("Orbital position: %s") % _format_orbital_position(orbital))
+        reference = service.get("reference")
+        if reference:
+            service_rows.append(_("Service reference: %s") % reference)
+        self["service_context"].setText("\n".join(service_rows))
+
+        caids = service.get("caids") or []
+        ca_rows = [_("Available CAIDs")]
+        ca_rows.extend("%04X" % value for value in caids)
+        if not caids:
+            ca_rows.append(_("not exposed"))
+        self["ca_context"].setText("\n".join(ca_rows))
+
         active = _active_cam()
         rows = [active_cam_summary() if active else _("No supported active CAM detected.")]
-        service = current_service_technical_information()
-        caids = service.get("caids") or []
-        rows.append(_("Available CAIDs: %s") % (
-            ", ".join("%04X" % value for value in caids) if caids else _("not exposed")))
         if active and active.get("family") == "oscam":
             live, reason = oscam_live_rows()
             if live:
-                for row in live:
-                    values = _oscam_table_values(row)
-                    rows.append("")
-                    rows.append(_("Reader / User: %s") % (values["name"] or "N/A"))
-                    rows.append(_("Service: %s") % (values["service"] or "N/A"))
-                    rows.append(_("ECM: %s") % (values["ecm"] or "N/A"))
-                    rows.append(_("Status: %s") % (values["status"] or "N/A"))
-                    if values["status"]:
-                        break
+                values = _oscam_table_values(live[0])
+                rows += [
+                    "",
+                    _("Reader / User: %s") % (values["name"] or "N/A"),
+                    _("Protocol: %s") % (values["protocol"] or "N/A"),
+                    _("Service: %s") % (values["service"] or "N/A"),
+                    _("Channel: %s") % (values["channel"] or name or "N/A"),
+                    _("ECM: %s") % (values["ecm"] or "N/A"),
+                    _("Idle: %s") % (values["idle"] or "N/A"),
+                    _("Status: %s") % (values["status"] or "N/A"),
+                ]
             elif reason:
                 rows += ["", reason]
-        self["ecm"].setText("\n".join(rows))
+        self["ecm_context"].setText("\n".join(rows))
 
 
 class GSUCamSrvManager(Screen):
