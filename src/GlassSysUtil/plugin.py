@@ -1576,8 +1576,14 @@ def service_dashboard_information():
                 ("PID " + ", ".join(str(pid) for pid, cmd in e2[:3])) if e2 else "not detected"))
     cam = _active_cam()
     if cam:
-        name, matches = cam
-        rows.append("[RUNNING] CAM       %s  PID %s" % (name, ", ".join(str(pid) for pid, cmd in matches[:3])))
+        # _active_cam() returns the shared capability record used by the
+        # OSCam monitor, not the legacy (name, matches) tuple.
+        name = cam.get("name") or cam.get("family") or "unknown"
+        matches = cam.get("matches") or []
+        pids = [str(pid) for pid, cmd in matches[:3]]
+        if not pids and cam.get("pid") is not None:
+            pids = [str(cam["pid"])]
+        rows.append("[RUNNING] CAM       %s  PID %s" % (name, ", ".join(pids) if pids else "not exposed"))
     else:
         rows.append("[INFO   ] CAM       no known CAM process detected")
     sync = [name for name in ("chronyd", "ntpd", "systemd-timesyncd") if _find_processes(name)]
