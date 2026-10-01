@@ -437,3 +437,21 @@ msgstr "[INFO] %s -> %s [%s] pripojené; využitie nie je dostupné"
 
 msgid "[PASS] Enigma2 running  PID %s"
 msgstr "[PASS] Enigma2 beží  PID %s"
+
+msgid "Unable to check for updates.\n\n%s"
+msgstr "Aktualizácie sa nepodarilo skontrolovať.\n\n%s"
+
+msgid "Update installation failed.\n\n%s"
+msgstr "Inštalácia aktualizácie zlyhala.\n\n%s"
+
+msgid "Live OSCam: %d active client/reader row%s  |  OK = row details"
+msgstr "Živý OSCam: %d aktívnych riadkov klientov/readerov  |  OK = detaily riadka"
+
+msgid "Active CAM restart failed.\n\n%s"
+msgstr "Reštart aktívneho CAM zlyhal.\n\n%s"
+
+msgid "Diagnostic bundle created:\n%s"
+msgstr "Diagnostický balík bol vytvorený:\n%s"
+
+msgid "Unable to create diagnostic bundle.\n\n%s"
+msgstr "Diagnostický balík sa nepodarilo vytvoriť.\n\n%s"
