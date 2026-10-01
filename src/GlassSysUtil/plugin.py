@@ -344,20 +344,31 @@ def package_tools_information():
 
 
 def automatic_installation_information():
-    """Read-only inventory for the original automatic-installation center."""
+    """Read-only local inventory for the original automatic-installation center."""
     roots = ("/etc/enigma2", "/usr/script", "/media/hdd", "/media/usb")
     rows = [_("Automatic installation"), ""]
+    total = 0
     for path in roots:
         if not os.path.exists(path):
             rows.append("%s: %s" % (path, _("not detected")))
             continue
         try:
-            entries = os.listdir(path)
+            entries = sorted(os.listdir(path))
             candidates = [name for name in entries if name.lower().endswith((".ipk", ".deb", ".tar", ".tar.gz", ".tgz", ".sh"))]
+            total += len(candidates)
             rows.append("%s: %d %s" % (path, len(candidates), _("local install candidates")))
+            for name in candidates[:6]:
+                candidate = os.path.join(path, name)
+                try:
+                    rows.append("  %s  (%s)" % (name, _human_bytes(os.path.getsize(candidate))))
+                except Exception:
+                    rows.append("  %s" % name)
+            if len(candidates) > 6:
+                rows.append(_("  ... and %d more") % (len(candidates) - 6))
         except Exception:
             rows.append("%s: %s" % (path, _("detected")))
-    rows += ["", _("Legacy remote installers are not executed."),
+    rows += ["", _("Total local candidates: %d") % total,
+             _("Legacy remote installers are not executed."),
              _("Local install actions remain gated until receiver validation.")]
     return "\n".join(rows)
 
@@ -385,25 +396,31 @@ def conditional_legacy_cam_information():
 
 
 def cron_manager_information():
-    """Read-only cron capability and job inventory for the original Crond manager."""
+    """Read-only cron capability and bounded job inventory for the original Crond manager."""
     rows = []
     cron_proc = bool(_find_processes("crond") or _find_processes("cron"))
     rows.append(_("Crond process: %s") % (_("RUNNING") if cron_proc else _("not detected")))
     locations = ("/etc/cron.d", "/etc/crontabs", "/var/spool/cron", "/var/spool/cron/crontabs")
-    found = []
+    found, samples = [], []
     jobs = 0
     for path in locations:
         if os.path.isdir(path):
             found.append(path)
             try:
-                jobs += sum(1 for name in os.listdir(path) if not name.startswith("."))
+                names = sorted(name for name in os.listdir(path) if not name.startswith("."))
+                jobs += len(names)
+                samples.extend("%s/%s" % (path, name) for name in names[:5])
             except Exception:
                 pass
         elif os.path.isfile(path):
             found.append(path)
             jobs += 1
+            samples.append(path)
     rows.append(_("Cron storage: %s") % (", ".join(found) if found else _("not detected")))
     rows.append(_("Cron entries/files: %d") % jobs)
+    if samples:
+        rows += ["", _("Detected cron files")]
+        rows.extend(samples[:12])
     rows += ["", _("Editing/enabling scheduled jobs remains disabled until receiver validation.")]
     return "\n".join(rows)
 
