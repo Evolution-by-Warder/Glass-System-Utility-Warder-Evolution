@@ -1274,6 +1274,63 @@ def active_cam_information():
 
 
 
+
+def _percent_bar(value, width=18):
+    try:
+        value = max(0, min(100, int(float(value))))
+    except Exception:
+        return "[" + ("-" * width) + "]"
+    filled = int(round((value / 100.0) * width))
+    return "[" + ("#" * filled) + ("-" * (width - filled)) + "] %d%%" % value
+
+
+def original_resource_dashboard_information():
+    """Compact GSU-style resource meters using proc/statvfs data only."""
+    rows = []
+    try:
+        mem = {}
+        with open("/proc/meminfo", "r") as handle:
+            for line in handle:
+                key, value = line.split(":", 1)
+                mem[key] = int(value.strip().split()[0])
+        total = mem.get("MemTotal", 0)
+        avail = mem.get("MemAvailable", mem.get("MemFree", 0))
+        used_pct = int(round(100.0 * (total - avail) / total)) if total else 0
+        rows.append("RAM   " + _percent_bar(used_pct))
+        stotal = mem.get("SwapTotal", 0)
+        sfree = mem.get("SwapFree", 0)
+        swap_pct = int(round(100.0 * (stotal - sfree) / stotal)) if stotal else 0
+        rows.append("Swap  " + _percent_bar(swap_pct))
+    except Exception:
+        rows += ["RAM   " + _percent_bar(None), "Swap  " + _percent_bar(None)]
+    try:
+        stat = os.statvfs("/")
+        total = stat.f_blocks * stat.f_frsize
+        free = stat.f_bavail * stat.f_frsize
+        root_pct = int(round(100.0 * (total - free) / total)) if total else 0
+        rows.append("Root  " + _percent_bar(root_pct))
+    except Exception:
+        rows.append("Root  " + _percent_bar(None))
+    temps = _temperature_values()
+    if temps:
+        hottest = max(value for _name, value in temps)
+        rows += ["", _("Temperature: %.1f C") % hottest]
+    return "\n".join(rows)
+
+
+def original_protocol_indicators():
+    """Original-style service indicators backed by process/listener discovery."""
+    processes = _process_snapshot()
+    names = " ".join(item.get("name", "").lower() for item in processes)
+    mapping = (("FTP", ("vsftpd", "proftpd", "pure-ftpd")),
+               ("Telnet", ("telnetd",)),
+               ("VPN", ("openvpn", "wireguard", "wg-quick")),
+               ("Samba", ("smbd", "nmbd")),
+               ("NFS", ("nfsd", "rpc.mountd")))
+    return "   ".join("%s:%s" % (label, "ON" if any(x in names for x in needles) else "--")
+                    for label, needles in mapping)
+
+
 def cam_srv_context_information():
     """Original GSU CAM/SRV context assembled without exposing secrets."""
     cam = _active_cam()
@@ -2181,7 +2238,7 @@ class GSUSystemDashboard(Screen):
         <eLabel position="25,18" size="680,38" text="System / Hardware" font="Regular;25" foregroundColor="#e6d500" />
         <eLabel position="745,18" size="680,38" text="Memory / Storage / Temperature" font="Regular;25" foregroundColor="#e6d500" />
         <widget name="system" position="25,65" size="680,265" font="Regular;21" />
-        <widget name="resources" position="745,65" size="680,265" font="Regular;21" />
+        <widget name="resources" position="745,65" size="680,215" font="Regular;21" />\n        <widget name="protocols" position="745,286" size="680,44" font="Regular;20" foregroundColor="#33cc33" />
         <eLabel position="25,350" size="680,38" text="Services / Processes" font="Regular;25" foregroundColor="#3399ff" />
         <eLabel position="745,350" size="680,38" text="Health / Mounts" font="Regular;25" foregroundColor="#3399ff" />
         <widget name="services" position="25,397" size="680,280" font="Regular;20" />
@@ -2193,7 +2250,7 @@ class GSUSystemDashboard(Screen):
     """
     def __init__(self, session):
         Screen.__init__(self, session)
-        for key in ("system", "resources", "services", "health"):
+        for key in ("system", "resources", "protocols", "services", "health"):
             self[key] = Label("")
         self["key_red"] = Label(_("Close"))
         self["key_yellow"] = Label(_("Refresh"))
