@@ -71,3 +71,27 @@ msgstr "Reštartovať Enigma2 GUI"
 msgid "About this build"
 msgstr "O tejto verzii"
 
+msgid "Close"
+msgstr "Zavrieť"
+
+msgid "Refresh"
+msgstr "Obnoviť"
+
+msgid "Details"
+msgstr "Detaily"
+
+msgid "Restart CAM"
+msgstr "Reštartovať CAM"
+
+msgid "Restart unavailable"
+msgstr "Reštart nie je dostupný"
+
+msgid "Update check is unavailable on this Enigma2 image."
+msgstr "Kontrola aktualizácií nie je na tomto Enigma2 image dostupná."
+
+msgid "Downloading, verifying and installing the update..."
+msgstr "Sťahujem, overujem a inštalujem aktualizáciu..."
+
+msgid "Update installed successfully.\\nEnigma2 GUI will restart in 3 seconds."
+msgstr "Aktualizácia bola úspešne nainštalovaná.\\nEnigma2 GUI sa reštartuje o 3 sekundy."
+
