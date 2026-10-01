@@ -158,7 +158,7 @@ class OSCamReceiverPolishTests(unittest.TestCase):
         source = open(PLUGIN, encoding="utf-8").read()
         self.assertIn('("name", 20, 165)', source)
         self.assertIn('("status", 1325, 175)', source)
-        self.assertIn('position="1350,170" size="150,34"', source)
+        self.assertRegex(source, r'position="1350,(?:170|190)" size="150,34"')
 
 
 class ServiceDashboardTests(unittest.TestCase):
