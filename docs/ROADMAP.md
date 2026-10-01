@@ -504,3 +504,10 @@ Static/build status must be green before publication. REAL RECEIVER PASS remains
 - IPK: `enigma2-plugin-glasssysutil_13.37-w18_all.ipk`, 48,356 bytes.
 - SHA-256: `8892dc6fdaebbefe3e8abe60efed934f4181a25b17f3ac02393413b1b042fbac`.
 - REAL RECEIVER status: REVIEW/PENDING. Do not promote this checkpoint to REAL RECEIVER PASS until the installed w17 -> w18 updater path and the integrated System / Channel / OSCam / CAM-SRV / ECM / Device / Swap / package / maintenance screens are exercised on the GigaBlue Quad 4K Pro.
+
+
+## Post-w18 original-continuation restoration — 2026-10-01
+
+W18 remains the Python 3.14/runtime foundation, but the outward product is being converged back onto the original GSU 13.20 contract. Completed in this restoration batch: original 930x790 top-level hierarchy and contextual/color-key language; fullscreen original-style System and Channel information centers; 1530x895 CAM/SRV presentation; dedicated IPK/DEB/user-script center; dedicated Swap, Device, Crond, Text editor, Channel settings and root-password maintenance centers; dedicated OSD ECM and Automatic installations workflows. Modern w18 capability detection, OSCam/service backends, updater and safety gates remain underneath.
+
+No post-w18 restoration build is a REAL RECEIVER PASS yet. Unsafe historical mutation paths remain gated until their individual Python 3.14 implementations are validated on the GigaBlue Quad 4K Pro.
