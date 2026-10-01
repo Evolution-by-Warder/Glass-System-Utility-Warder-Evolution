@@ -670,15 +670,15 @@ def _oscam_table_line(row):
     if role.strip():
         name = "%s %s" % (role, name)
     return " ".join((
-        _oscam_table_cell(name, 14),
-        _oscam_table_cell(_oscam_display(row["address"]), 15),
-        _oscam_table_cell(_oscam_display(row["port"]), 5),
+        _oscam_table_cell(name, 16),
+        _oscam_table_cell(_oscam_display(row["address"]), 16),
+        _oscam_table_cell(_oscam_display(row["port"]), 6),
         _oscam_table_cell(_oscam_display(row["protocol"]), 10),
-        _oscam_table_cell(service, 21),
-        _oscam_table_cell(_oscam_display(row["channel"]), 20),
-        _oscam_table_cell(_oscam_display(row["ecm"]), 8),
-        _oscam_table_cell(_oscam_display(row["idle"]), 8),
-        _oscam_table_cell(_oscam_status_display(row), 12),
+        _oscam_table_cell(service, 20),
+        _oscam_table_cell(_oscam_display(row["channel"]), 24),
+        _oscam_table_cell(_oscam_display(row["ecm"]), 9),
+        _oscam_table_cell(_oscam_display(row["idle"]), 9),
+        _oscam_table_cell(_oscam_status_display(row), 13),
     ))
 
 
@@ -1727,15 +1727,15 @@ class GSUActiveCAM(Screen):
     <screen name="GSUActiveCAM" position="center,center" size="1500,760" title="Active CAM / OSCam Monitor">
         <widget name="summary" position="25,20" size="1450,105" font="Regular;22" />
         <widget name="live_status" position="25,128" size="1450,32" font="Regular;20" foregroundColor="#33cc33" />
-        <widget name="table_header" position="25,170" size="1450,34" font="Console;18" foregroundColor="#e6d500" />
-        <widget name="table" position="25,207" size="1450,445" font="Console;18" itemHeight="32" scrollbarMode="showOnDemand" />
+        <widget name="table_header" position="25,170" size="1450,34" font="Console;17" foregroundColor="#e6d500" />
+        <widget name="table" position="25,207" size="1450,445" font="Console;17" itemHeight="34" scrollbarMode="showOnDemand" />
         <widget name="key_red" position="35,680" size="230,45" font="Regular;24" foregroundColor="#ff3333" />
         <widget name="key_green" position="380,680" size="250,45" font="Regular;24" foregroundColor="#33cc33" />
         <widget name="key_yellow" position="760,680" size="220,45" font="Regular;24" foregroundColor="#e6d500" />
         <widget name="key_blue" position="1180,680" size="220,45" font="Regular;24" foregroundColor="#3399ff" />
     </screen>
     """
-    TABLE_HEADER = "  Reader/User   Address         Port  Protocol   srvid:caid@provid      Channel              ECM      Idle     Status"
+    TABLE_HEADER = "  Reader/User     Address          Port   Protocol   srvid:caid@provid     Channel                  ECM       Idle      Status"
 
     def __init__(self, session):
         Screen.__init__(self, session)
