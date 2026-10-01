@@ -591,7 +591,10 @@ def root_password_information():
         fields = root_line.split(":")
         if len(fields) >= 7:
             rows += [_("UID: %s") % fields[2], _("GID: %s") % fields[3], _("Home: %s") % fields[5], _("Shell: %s") % fields[6]]
-    rows.append(_("Shadow password database: %s") % (_("detected") if os.path.isfile("/etc/shadow") else _("not detected")))
+    shadow_present = os.path.isfile("/etc/shadow")
+    rows.append(_("Shadow password database: %s") % (_("detected") if shadow_present else _("not detected")))
+    rows.append(_("Interactive password tool: %s") % (_("available") if shutil.which("passwd") else _("not detected")))
+    rows.append(_("Root shell usable: %s") % (_("yes") if root_line and len(root_line.split(":")) >= 7 and root_line.split(":")[6] not in ("/bin/false", "/sbin/nologin") else _("no")))
     rows += ["", _("Password reset is not exposed without a dedicated confirmation and receiver-safe implementation.")]
     return "\n".join(rows)
 
