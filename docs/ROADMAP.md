@@ -350,3 +350,11 @@ Added two focused, read-only tools chosen for practical support value:
 - **Storage Health**: concise PASS/WARNING view for mounted physical filesystems, highlighting read-only mounts and genuinely low free space (<5%). It performs no fsck/mkfs or destructive probing.
 
 Both follow capability-first detection and keep detailed legacy/raw diagnostics in their existing screens. They are development work for the next coherent release batch, not a reason for an immediate receiver update.
+
+
+### Operational doctors continuation
+The post-w12 batch now also includes:
+- **Network Mount Doctor**: read-only inspection of active NFS/CIFS mounts, free-space visibility, detected NFS/CIFS client capability and presence (names only) of common persistent-mount configuration files. It deliberately does not read/display mount configuration values or credentials.
+- **Enigma2 Runtime Health**: compact procfs-based view of Enigma2 PID, resident/virtual memory, thread count, open file-descriptor count and presence of known crash logs. It never kills/restarts Enigma2 or deletes logs.
+
+These remain development features for the next coherent release. Existing detailed screens stay available; the doctors provide concise first-line diagnosis rather than another layer of administration.
