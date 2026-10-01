@@ -2335,11 +2335,11 @@ class GSUActiveCAM(Screen):
                                       MessageBox.TYPE_ERROR, timeout=10)
                 elif verified:
                     changed = " (new PID %s)" % verified["pid"] if verified["pid"] != before_pid else ""
-                    self.session.open(MessageBox, "Active CAM restart verified%s." % changed,
+                    self.session.open(MessageBox, _("Active CAM restart verified%s.") % changed,
                                       MessageBox.TYPE_INFO, timeout=6)
                 else:
                     self.session.open(MessageBox,
-                                      _("Restart command completed, but no active CAM was detected afterwards."),
+                                      _(_("Restart command completed, but no active CAM was detected afterwards.")),
                                       MessageBox.TYPE_ERROR, timeout=10)
                 timer = getattr(self, "_restart_finish_timer", None)
                 if timer is not None:
@@ -2469,7 +2469,7 @@ class SysUtilMngMain(Screen):
             except Exception as exc:
                 self.session.open(MessageBox, str(exc), MessageBox.TYPE_ERROR)
         elif action == "about":
-            self._info("About", (
+            self._info(_("About"), (
                 "Glass System Utility - Warder Evolution %s\n\n"
                 "Modern Python 3 source core.\n"
                 "Read-only system, network, storage, service, mount, OSCam, tuner and log diagnostics enabled.\n\n"
