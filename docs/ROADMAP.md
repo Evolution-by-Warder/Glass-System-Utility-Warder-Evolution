@@ -488,3 +488,10 @@ Known non-blocking follow-up: localization is not yet complete inside every diag
 - REAL RECEIVER: REVIEW REQUIRED. Published does not imply receiver PASS.
 
 Next development line starts from the immutable original GSU 13.20 as architectural/visual authority: audit and repair original functions first, then integrate the Warder Evolution backends into that repaired structure and validate the combined system.
+
+
+## 13.37-w18 integrated receiver candidate — 2026-10-01
+
+This candidate is the first consolidated receiver-test line after the GSU 13.20 restoration pass. It combines the original-style System and Channel dashboards with the Warder diagnostic backends, separates OSCam Information, CAM/SRV Manager and ECM Information into distinct workflows, restores safe read-only Device/Swap/package and legacy-maintenance capability areas, and keeps unsafe historical mutation paths gated.
+
+Static/build status must be green before publication. REAL RECEIVER PASS remains pending on GigaBlue Quad 4K Pro / OpenATV 8.x / Python 3.14. The proven OSCam fixed-column table backend and plugin-open-only updater semantics remain protected by regression tests. Published releases remain immutable.
