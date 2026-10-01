@@ -2800,6 +2800,7 @@ class GSUECMInformation(Screen):
         <widget name="ecmlabels" font="priveG;24" position="30,22" zPosition="1" size="150,390" backgroundColor="#31000000" foregroundColor="#666666" transparent="1"/>
         <widget name="ecmValues" font="priveG;24" position="174,22" zPosition="2" size="351,390" backgroundColor="#31000000" transparent="1"/>
         <ePixmap pixmap="/usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/fhd/frame_hd.png" position="168,430" size="189,123" zPosition="3" backgroundColor="#31000000" alphatest="off"/>
+        <widget name="piccode" position="188,446" size="150,90" zPosition="4" alphatest="on"/>
         <widget name="service" position="0,0" size="1,1" font="priveG;1" transparent="1"/>
         <widget name="service_context" position="0,0" size="1,1" font="priveG;1" transparent="1"/>
         <widget name="ca_context" position="0,0" size="1,1" font="priveG;1" transparent="1"/>
