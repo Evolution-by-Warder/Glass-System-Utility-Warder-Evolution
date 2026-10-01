@@ -444,7 +444,7 @@ msgstr "Aktualizácie sa nepodarilo skontrolovať.\n\n%s"
 msgid "Update installation failed.\n\n%s"
 msgstr "Inštalácia aktualizácie zlyhala.\n\n%s"
 
-msgid "Live OSCam: %d active client/reader row%s  |  OK = row details"
+msgid "Live OSCam: %d active client/reader rows  |  OK = row details"
 msgstr "Živý OSCam: %d aktívnych riadkov klientov/readerov  |  OK = detaily riadka"
 
 msgid "Active CAM restart failed.\n\n%s"
