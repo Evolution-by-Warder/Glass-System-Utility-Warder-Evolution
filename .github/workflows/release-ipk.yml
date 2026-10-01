@@ -1,6 +1,10 @@
 name: Publish GSU Release
 
 on:
+  push:
+    branches: [warder-master-production]
+    paths:
+      - '.release-request'
   workflow_dispatch:
     inputs:
       expected_version:
@@ -30,7 +34,10 @@ jobs:
         run: |
           set -euo pipefail
           VERSION="$(tr -d '\r\n' < src/GlassSysUtil/version)"
-          EXPECTED="${{ inputs.expected_version }}"
+          EXPECTED="${{ inputs.expected_version || '' }}"
+          if [ -z "$EXPECTED" ] && [ -f .release-request ]; then
+            EXPECTED="$(tr -d '\r\n' < .release-request)"
+          fi
           test -n "$VERSION"
           test "$VERSION" = "$EXPECTED"
           grep -Fqx "Version: $VERSION" packaging/CONTROL/control
