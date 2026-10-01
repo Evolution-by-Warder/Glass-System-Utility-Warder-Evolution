@@ -707,6 +707,12 @@ def _oscam_table_values(row):
     }
 
 
+def _oscam_list_tuple(row):
+    values = _oscam_table_values(row)
+    return (row, values["name"], values["address"], values["port"], values["protocol"],
+            values["service"], values["channel"], values["ecm"], values["idle"], values["status"])
+
+
 def _oscam_multicontent_row(row):
     values = _oscam_table_values(row)
     if MultiContentEntryText is None:
@@ -1789,6 +1795,14 @@ class GSUActiveCAM(Screen):
         <widget name="h_ecm" position="1190,170" size="95,34" font="Regular;18" foregroundColor="#e6d500" text="ECM" />
         <widget name="h_idle" position="1300,170" size="80,34" font="Regular;18" foregroundColor="#e6d500" text="Idle" />
         <widget name="h_status" position="1395,170" size="105,34" font="Regular;18" foregroundColor="#e6d500" text="Status" />
+        <widget name="sep1" position="260,168" size="1,485" backgroundColor="#555555" />
+        <widget name="sep2" position="465,168" size="1,485" backgroundColor="#555555" />
+        <widget name="sep3" position="555,168" size="1,485" backgroundColor="#555555" />
+        <widget name="sep4" position="690,168" size="1,485" backgroundColor="#555555" />
+        <widget name="sep5" position="935,168" size="1,485" backgroundColor="#555555" />
+        <widget name="sep6" position="1180,168" size="1,485" backgroundColor="#555555" />
+        <widget name="sep7" position="1290,168" size="1,485" backgroundColor="#555555" />
+        <widget name="sep8" position="1385,168" size="1,485" backgroundColor="#555555" />
         <widget source="table" render="Listbox" position="25,207" size="1450,445" scrollbarMode="showOnDemand">
             <convert type="TemplatedMultiContent">
                 {"template": [MultiContentEntryText(pos=(20,0),size=(210,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=1),
@@ -1864,7 +1878,7 @@ class GSUActiveCAM(Screen):
                     selected = self["table"].getSelectionIndex()
                 except Exception:
                     pass
-                self["table"].setList([tuple([row] + list(_oscam_table_values(row).values())) for row in table_rows] if self._table_uses_list_source else [_oscam_table_line(row) for row in table_rows])
+                self["table"].setList([_oscam_list_tuple(row) for row in table_rows] if self._table_uses_list_source else [_oscam_table_line(row) for row in table_rows])
                 if table_rows:
                     try:
                         self["table"].moveToIndex(min(selected, len(table_rows) - 1))
@@ -1920,7 +1934,7 @@ class GSUActiveCAM(Screen):
                         selected = self["table"].getSelectionIndex()
                     except Exception:
                         pass
-                    self["table"].setList([tuple([row] + list(_oscam_table_values(row).values())) for row in rows] if self._table_uses_list_source else [_oscam_table_line(row) for row in rows])
+                    self["table"].setList([_oscam_list_tuple(row) for row in rows] if self._table_uses_list_source else [_oscam_table_line(row) for row in rows])
                     if rows:
                         try:
                             self["table"].moveToIndex(min(selected, len(rows) - 1))
