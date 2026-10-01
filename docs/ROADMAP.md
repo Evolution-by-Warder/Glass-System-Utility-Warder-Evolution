@@ -293,3 +293,16 @@ Receiver gate:
 - inspect which real fields populate;
 - if important fields remain empty, use Details -> OSCam API schema (field names only) to guide mapping without exposing credentials or raw API values;
 - do not publish v13.29-w10 until this gate passes.
+
+
+### 2026-10-01 OSCam monitor pre-hardware completion batch
+
+Further work completed without consuming additional receiver test cycles:
+- support bundles now include the privacy-safe `oscam-api-schema.txt` when OSCam is active; it contains field names/shape only and passes through the existing bundle redaction path;
+- live worker lifecycle now refuses work while the screen is closing and safely clears its running flag if thread creation itself fails;
+- the live status line now reports mapping completeness (populated safe diagnostic fields / total fields and percentage), allowing receiver screenshots to quantify parser usefulness immediately without exposing additional values;
+- all changes remain read-only except the already receiver-approved explicit CAM restart action.
+
+Validated implementation commit: `610c527cacdadf601b4401ffdf3801148f9c114a`.
+GitHub Actions run `36823001271`: PASS.
+This supersedes the previous receiver candidate source while keeping version `13.29-w10` and the same release HOLD.
