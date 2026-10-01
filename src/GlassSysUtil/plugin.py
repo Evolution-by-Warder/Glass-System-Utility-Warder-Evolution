@@ -213,7 +213,7 @@ def system_information():
 
 
 def network_information():
-    rows = ["Default gateway: %s" % _default_gateway()]
+    rows = [_("Default gateway: %s") % _default_gateway()]
     resolvers = []
     for line in _read_lines("/etc/resolv.conf"):
         fields = line.split()
@@ -865,10 +865,10 @@ def tuner_information():
     rows = []
     nim_sockets = _read_lines("/proc/bus/nim_sockets")
     if nim_sockets:
-        rows.append("Enigma2 tuner sockets")
+        rows.append(_("Enigma2 tuner sockets"))
         rows.extend(line.rstrip() for line in nim_sockets[:80])
     else:
-        rows.append("Enigma2 tuner socket table: not exposed")
+        rows.append(_("Enigma2 tuner socket table: not exposed"))
 
     frontend_roots = ("/proc/stb/frontend", "/sys/class/dvb")
     discovered = False
@@ -939,7 +939,7 @@ def log_information():
             except Exception:
                 rows.append(path)
     dmesg = _run(["dmesg"], 4)
-    rows.append("Kernel log: %s" % ("available" if dmesg else "not available"))
+    rows.append(_("Kernel log: %s") % (_("available") if dmesg else _("not available")))
     return "\n".join(rows) if rows else "No known diagnostic logs found."
 
 
@@ -1356,7 +1356,7 @@ def network_health_information():
         rows.append("[%s] %-10s link=%s  IPv4=%s" % (
             "PASS" if state == "up" else "INFO", name, state, ipv4))
     if not names:
-        rows.append("[INFO] Network interfaces not exposed.")
+        rows.append(_("[INFO] Network interfaces not exposed."))
 
     gateway = _default_gateway()
     if gateway != "N/A":
@@ -1365,7 +1365,7 @@ def network_health_information():
             "PASS" if rc == 0 else "WARNING", gateway,
             "reachable" if rc == 0 else "no ping reply"))
     else:
-        rows.append("[WARNING] Default gateway not detected.")
+        rows.append(_("[WARNING] Default gateway not detected."))
 
     resolvers = []
     for line in _read_lines("/etc/resolv.conf"):
@@ -1386,7 +1386,7 @@ def network_diagnostics():
     rows.append(_("Default gateway: %s") % gateway)
     if gateway != "N/A":
         rc, ping = _run_status(["ping", "-c", "1", "-W", "2", gateway], 4)
-        rows.append("Gateway reachability: %s" % ("OK" if rc == 0 else "no reply"))
+        rows.append(_("Gateway reachability: %s") % ("OK" if rc == 0 else _("no reply")))
 
     resolvers = []
     for line in _read_lines("/etc/resolv.conf"):
@@ -1397,7 +1397,7 @@ def network_diagnostics():
 
     route = _run(["ip", "route"], 4)
     if route:
-        rows += ["", "Routes:"]
+        rows += ["", _("Routes:")]
         rows.extend(route.splitlines()[:20])
     return "\n".join(rows)
 
@@ -1421,24 +1421,24 @@ def network_mount_doctor_information():
         except Exception:
             rows.append("[INFO] %s -> %s [%s] mounted; usage unavailable" % (source, target, fstype))
     if not active:
-        rows.append("[INFO] No active NFS/CIFS mounts.")
+        rows.append(_("[INFO] No active NFS/CIFS mounts."))
 
-    rows += ["", "Client capabilities:"]
+    rows += ["", _("Client capabilities:")]
     nfs = bool(shutil.which("mount.nfs") or shutil.which("mount.nfs4") or os.path.exists("/sbin/mount.nfs"))
     cifs = bool(shutil.which("mount.cifs") or os.path.exists("/sbin/mount.cifs"))
-    rows.append("  NFS client: %s" % ("available" if nfs else "not detected"))
-    rows.append("  CIFS client: %s" % ("available" if cifs else "not detected"))
+    rows.append(_("NFS client: %s") % (_("available") if nfs else _("not detected")))
+    rows.append(_("CIFS client: %s") % (_("available") if cifs else _("not detected")))
 
     files = [path for path in ("/etc/fstab", "/etc/enigma2/automounts.xml", "/etc/auto.network")
              if os.path.isfile(path)]
-    rows.append("  Persistent mount configuration: %s" % (", ".join(files) if files else "not detected"))
+    rows.append(_("Persistent mount configuration: %s") % (", ".join(files) if files else _("not detected")))
     rows += ["", _("Doctor is read-only; credentials and mount configuration values are not displayed.")]
     return "\n".join(rows)
 
 
 def time_health_information():
     """Report clock and detected time-sync facilities without assuming an image."""
-    rows = ["Local time: %s" % time.strftime("%Y-%m-%d %H:%M:%S %Z")]
+    rows = [_("Local time: %s") % time.strftime("%Y-%m-%d %H:%M:%S %Z")]
     rows.append(_("UTC time: %s") % time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()))
 
     detected = []
@@ -1473,7 +1473,7 @@ def runtime_health_information():
     rows = [_("GSU Enigma2 Runtime Health"), ""]
     matches = _find_processes("enigma2")
     if not matches:
-        rows.append("[WARNING] Enigma2 process not detected.")
+        rows.append(_("[WARNING] Enigma2 process not detected."))
         return "\n".join(rows)
     pid = matches[0][0]
     rows.append("[PASS] Enigma2 running  PID %s" % pid)
@@ -1489,7 +1489,7 @@ def runtime_health_information():
     try:
         rows.append("[INFO] Open file descriptors: %d" % len(os.listdir(fd_path)))
     except Exception:
-        rows.append("[INFO] Open file descriptors: not exposed")
+        rows.append(_("[INFO] Open file descriptors: not exposed"))
     crash_logs = []
     for path in ("/home/root/logs/enigma2_crash.log", "/media/hdd/enigma2_crash.log", "/tmp/enigma2_crash.log"):
         if os.path.isfile(path):
@@ -1552,7 +1552,7 @@ def cam_inventory_information():
     except Exception:
         names = []
     if names:
-        rows.append("Init scripts:")
+        rows.append(_("Init scripts:"))
         rows.extend("  %s" % name for name in names[:30])
 
     binaries = []
@@ -1569,7 +1569,7 @@ def cam_inventory_information():
         except Exception:
             pass
     if binaries:
-        rows += ["", "Detected CAM binaries:"]
+        rows += ["", _("Detected CAM binaries:")]
         rows.extend("  %s" % path for path in sorted(set(binaries))[:40])
     return "\n".join(rows) if rows else "No known CAM components detected."
 
@@ -1591,7 +1591,7 @@ def service_dashboard_information():
             pids = [str(cam["pid"])]
         rows.append("[RUNNING] CAM       %s  PID %s" % (name, ", ".join(pids) if pids else "not exposed"))
     else:
-        rows.append("[INFO   ] CAM       no known CAM process detected")
+        rows.append(_("[INFO   ] CAM       no known CAM process detected"))
     sync = [name for name in ("chronyd", "ntpd", "systemd-timesyncd") if _find_processes(name)]
     rows.append("[%-7s] Time sync %s" % ("RUNNING" if sync else "INFO",
                 ", ".join(sync) if sync else "no known daemon detected"))
@@ -1644,7 +1644,7 @@ def storage_health_information():
             state, device, mountpoint, fstype, free_pct,
             ("  " + ", ".join(notes)) if notes else ""))
     if not seen:
-        rows.append("[INFO] No physical mounted filesystems detected.")
+        rows.append(_("[INFO] No physical mounted filesystems detected."))
     rows += ["", _("Summary: %d filesystem(s), %d warning(s).") % (seen, warnings),
              _("Storage Health is read-only and does not run destructive filesystem tests.")]
     return "\n".join(rows)
@@ -1685,7 +1685,7 @@ def capability_information():
         ("ss/netstat", bool(shutil.which("ss") or shutil.which("netstat"))),
         ("pgrep", bool(shutil.which("pgrep"))),
     ]
-    rows = ["Detected runtime capabilities", ""]
+    rows = [_("Detected runtime capabilities"), ""]
     rows.extend("%-20s %s" % (name + ":", "YES" if present else "no") for name, present in probes)
     return "\n".join(rows)
 
