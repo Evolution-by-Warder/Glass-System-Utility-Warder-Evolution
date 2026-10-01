@@ -365,3 +365,10 @@ These remain development features for the next coherent release. Existing detail
 - Applied the anti-bloat rule to the main menu: high-value operational tools are first; raw/duplicate diagnostic pages such as Hardware Identity, Filesystem Health, Block Devices, Listening Ports, CAM Inventory, Package information, Image & Runtime, Diagnostic Summary and Detected Capabilities are no longer top-level entries.
 - Their underlying diagnostic functions remain in source and support-bundle coverage; no capability was deleted merely to simplify navigation.
 - Main menu is deliberately bounded to 20 operational entries for this development checkpoint.
+
+
+### 13.32-w13 operational candidate
+- Rolls the complete post-w12 read-only diagnostics batch into one receiver-test candidate: Service Dashboard, Network Health, Network Mount Doctor, Storage Health and Enigma2 Runtime Health.
+- Applies the anti-bloat main-menu checkpoint: operational first-line tools remain visible while lower-level duplicate/raw pages stay available internally and in support diagnostics rather than crowding top-level navigation.
+- No new state-changing administration is introduced in w13.
+- Release gate: exact version identity, regression suite, deterministic package build, immutable release verification, then one in-plugin Update and receiver smoke pass.
