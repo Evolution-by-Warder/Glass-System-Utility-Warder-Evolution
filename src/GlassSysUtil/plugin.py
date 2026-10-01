@@ -2007,6 +2007,466 @@ class GSUUpdater(object):
                 pass
 
 
+
+class GSUInfo(Screen):
+    skin = """
+    <screen name="GSUInfo" position="center,center" size="1160,680" title="Glass System Utility">
+        <widget name="text" position="30,30" size="1100,620" font="Regular;25" scrollbarMode="showOnDemand" />
+    </screen>
+    """
+    def __init__(self, session, title, text):
+        Screen.__init__(self, session)
+        self.setTitle(title)
+        self["text"] = ScrollLabel(text) if ScrollLabel is not None else Label(text)
+        actions = {"ok": self.close, "cancel": self.close}
+        if ScrollLabel is not None:
+            actions.update({
+                "up": self["text"].pageUp, "down": self["text"].pageDown,
+                "left": self["text"].pageUp, "right": self["text"].pageDown,
+            })
+        self["actions"] = ActionMap(["OkCancelActions", "DirectionActions"], actions, -1)
+
+
+
+class GSUActiveCAM(Screen):
+    """Visual OSCam/CAM monitor with a compact live table and safe actions."""
+    skin = """
+    <screen name="GSUActiveCAM" position="center,center" size="1500,760" title="Active CAM / OSCam Monitor">
+        <widget name="summary" position="25,20" size="1450,105" font="Regular;22" />
+        <widget name="live_status" position="25,128" size="1450,32" font="Regular;20" foregroundColor="#33cc33" />
+        <eLabel position="45,170" size="165,34" font="Regular;18" foregroundColor="#e6d500" text="Reader / User" />
+        <eLabel position="225,170" size="190,34" font="Regular;18" foregroundColor="#e6d500" text="Address" />
+        <eLabel position="430,170" size="75,34" font="Regular;18" foregroundColor="#e6d500" text="Port" />
+        <eLabel position="520,170" size="130,34" font="Regular;18" foregroundColor="#e6d500" text="Protocol" />
+        <eLabel position="665,170" size="225,34" font="Regular;18" foregroundColor="#e6d500" text="srvid:caid@provid" />
+        <eLabel position="905,170" size="225,34" font="Regular;18" foregroundColor="#e6d500" text="Channel" />
+        <eLabel position="1145,170" size="95,34" font="Regular;18" foregroundColor="#e6d500" text="ECM" />
+        <eLabel position="1255,170" size="80,34" font="Regular;18" foregroundColor="#e6d500" text="Idle" />
+        <eLabel position="1350,170" size="150,34" font="Regular;18" foregroundColor="#e6d500" text="Status" />
+        <eLabel position="215,168" size="1,485" backgroundColor="#555555" />
+        <eLabel position="420,168" size="1,485" backgroundColor="#555555" />
+        <eLabel position="510,168" size="1,485" backgroundColor="#555555" />
+        <eLabel position="655,168" size="1,485" backgroundColor="#555555" />
+        <eLabel position="895,168" size="1,485" backgroundColor="#555555" />
+        <eLabel position="1135,168" size="1,485" backgroundColor="#555555" />
+        <eLabel position="1245,168" size="1,485" backgroundColor="#555555" />
+        <eLabel position="1340,168" size="1,485" backgroundColor="#555555" />
+        <widget source="table" render="Listbox" position="25,207" size="1450,445" scrollbarMode="showOnDemand">
+            <convert type="TemplatedMultiContent">
+                {"template": [MultiContentEntryText(pos=(20,0),size=(165,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=1),
+                              MultiContentEntryText(pos=(200,0),size=(190,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=2),
+                              MultiContentEntryText(pos=(405,0),size=(75,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=3),
+                              MultiContentEntryText(pos=(495,0),size=(130,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=4),
+                              MultiContentEntryText(pos=(640,0),size=(225,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=5),
+                              MultiContentEntryText(pos=(880,0),size=(225,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=6),
+                              MultiContentEntryText(pos=(1120,0),size=(95,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=7),
+                              MultiContentEntryText(pos=(1230,0),size=(80,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=8),
+                              MultiContentEntryText(pos=(1325,0),size=(150,34),font=0,flags=RT_HALIGN_LEFT|RT_VALIGN_CENTER,text=9)],
+                 "fonts":[gFont("Regular",18)],"itemHeight":34}
+            </convert>
+        </widget>
+        <widget name="key_red" position="35,680" size="230,45" font="Regular;24" foregroundColor="#ff3333" />
+        <widget name="key_green" position="380,680" size="250,45" font="Regular;24" foregroundColor="#33cc33" />
+        <widget name="key_yellow" position="760,680" size="220,45" font="Regular;24" foregroundColor="#e6d500" />
+        <widget name="key_blue" position="1180,680" size="220,45" font="Regular;24" foregroundColor="#3399ff" />
+    </screen>
+    """
+    TABLE_HEADER = "  Reader/User     Address          Port   Protocol   srvid:caid@provid     Channel                  ECM       Idle      Status"
+
+    def __init__(self, session):
+        Screen.__init__(self, session)
+        self["summary"] = Label(active_cam_summary())
+        self["live_status"] = Label("")
+        self._table_uses_list_source = List is not None
+        if self._table_uses_list_source:
+            self["table"] = List([])
+        else:
+            self["table"] = MenuList([])
+        self.setTitle(_("Active CAM / OSCam Monitor"))
+        self["key_red"] = Label(_("Close"))
+        command, detail = _active_cam_restart_command()
+        self.restart_command = command
+        self.restart_detail = detail
+        self["key_green"] = Label(_("Restart CAM") if command else _("Restart unavailable"))
+        self["key_yellow"] = Label(_("Refresh"))
+        self["key_blue"] = Label(_("Details"))
+        self["actions"] = ActionMap(
+            ["OkCancelActions", "ColorActions", "DirectionActions"], {
+                "cancel": self.close,
+                "ok": self.show_selected_row,
+                "red": self.close,
+                "green": self.restart_cam,
+                "yellow": self._refresh,
+                "blue": self.show_details,
+                "up": self["table"].up,
+                "down": self["table"].down,
+                "left": self["table"].pageUp,
+                "right": self["table"].pageDown,
+            }, -1)
+        self._live_rows = []
+        self._refresh_in_progress = False
+        self._live_fetch_running = False
+        self._restart_in_progress = False
+        self._closing_live_monitor = False
+        # w11 fixed-column monitor contract: source, package and receiver UI move together.
+        # Candidate is gated by CI before immutable release publication.
+        # Final w11 release candidate validation marker.
+        # Receiver polish: narrower identity column, wider status, DVBAPI channel fallback.
+        # 13.31-w12 release validation.
+        # post-w12 operational batch validation
+        # 13.32-w13 final candidate
+        self._refresh()
+        self._start_auto_refresh()
+
+    def _set_live_rows(self, rows, reason=""):
+        self._live_rows = list(rows or [])
+        selected = 0
+        try:
+            selected = self["table"].getSelectionIndex()
+        except Exception:
+            pass
+        items = ([_oscam_list_tuple(row) for row in rows] if self._table_uses_list_source
+                 else [_oscam_table_line(row) for row in rows])
+        self["table"].setList(items)
+        if rows:
+            try:
+                self["table"].moveToIndex(min(selected, len(rows) - 1))
+            except Exception:
+                pass
+            self["live_status"].setText(_("Live OSCam: %d active client/reader rows  |  OK = row details") % len(rows))
+        else:
+            self["live_status"].setText(_("Live OSCam: %s") % (reason or _("No active client/reader rows.")))
+
+    def _refresh(self):
+        if getattr(self, "_closing_live_monitor", False):
+            return
+        if getattr(self, "_refresh_in_progress", False):
+            return
+        self._refresh_in_progress = True
+        try:
+            try:
+                self["summary"].setText(active_cam_summary())
+            except Exception:
+                pass
+            active = _active_cam()
+            table_rows, reason = ([], "No supported active OSCam detected.")
+            if active and active.get("family") == "oscam":
+                table_rows, reason = oscam_live_rows()
+            try:
+                self._set_live_rows(table_rows, reason)
+            except Exception:
+                pass
+            command, detail = _active_cam_restart_command()
+            self.restart_command = command
+            self.restart_detail = detail
+            try:
+                self["key_green"].setText(_("Restart CAM") if command else _("Restart unavailable"))
+            except Exception:
+                pass
+        finally:
+            self._refresh_in_progress = False
+
+    def _start_auto_refresh(self):
+        if eTimer is None:
+            return
+        self._live_timer = eTimer()
+        try:
+            self._live_timer.callback.append(self._auto_refresh)
+        except Exception:
+            self._live_timer.timeout.connect(self._auto_refresh)
+        self._live_timer.start(5000, False)
+
+    def _auto_refresh(self):
+        if getattr(self, "_closing_live_monitor", False):
+            return
+        if getattr(self, "_live_fetch_running", False):
+            return
+        self._live_fetch_running = True
+
+        def worker():
+            active = _active_cam()
+            rows, reason = ([], "No supported active OSCam detected.")
+            if active and active.get("family") == "oscam":
+                rows, reason = oscam_live_rows()
+
+            def finish():
+                self._restart_in_progress = False
+                if getattr(self, "_closing_live_monitor", False):
+                    self._live_fetch_running = False
+                    return
+                try:
+                    self._set_live_rows(rows, reason)
+                    try:
+                        self["summary"].setText(active_cam_summary())
+                    except Exception:
+                        pass
+                finally:
+                    self._live_fetch_running = False
+                    timer = getattr(self, "_live_finish_timer", None)
+                    if timer is not None:
+                        try:
+                            timer.stop()
+                        except Exception:
+                            pass
+
+            if eTimer is None:
+                finish()
+            else:
+                timer = eTimer()
+                self._live_finish_timer = timer
+                try:
+                    timer.callback.append(finish)
+                except Exception:
+                    timer.timeout.connect(finish)
+                timer.start(1, True)
+
+        try:
+            threading.Thread(target=worker, name="GSU-OSCam-Live", daemon=True).start()
+        except Exception:
+            self._live_fetch_running = False
+
+    def close(self, *args, **kwargs):
+        self._closing_live_monitor = True
+        self._live_fetch_running = True
+        for timer_name in ("_live_timer", "_live_finish_timer", "_restart_finish_timer"):
+            timer = getattr(self, timer_name, None)
+            if timer is not None:
+                try:
+                    timer.stop()
+                except Exception:
+                    pass
+        return Screen.close(self, *args, **kwargs)
+
+    def show_selected_row(self):
+        try:
+            current = self["table"].getCurrent()
+        except Exception:
+            current = None
+        row = None
+        if self._table_uses_list_source and current:
+            if isinstance(current, dict):
+                row = current
+            elif isinstance(current, (tuple, list)) and current and isinstance(current[0], dict):
+                row = current[0]
+        if row is None:
+            try:
+                index = self["table"].getSelectionIndex()
+                if 0 <= index < len(self._live_rows):
+                    row = self._live_rows[index]
+            except Exception:
+                row = None
+        if not isinstance(row, dict):
+            return
+        values = _oscam_table_values(row)
+        lines = [
+            "Reader / User: %s" % (values["name"] or "N/A"),
+            "Address: %s" % (values["address"] or "N/A"),
+            "Port: %s" % (values["port"] or "N/A"),
+            "Protocol: %s" % (values["protocol"] or "N/A"),
+            "Service: %s" % (values["service"] or "N/A"),
+            "Channel: %s" % (values["channel"] or "N/A"),
+            "ECM: %s" % (values["ecm"] or "N/A"),
+            "Idle: %s" % (values["idle"] or "N/A"),
+            "Status: %s" % (values["status"] or "N/A"),
+        ]
+        self.session.open(MessageBox, "\n".join(lines), MessageBox.TYPE_INFO)
+
+    def show_details(self):
+        active = _active_cam()
+        if not active:
+            self.session.open(MessageBox, _("No supported active CAM detected."), MessageBox.TYPE_INFO, timeout=6)
+            return
+        parts = [active_cam_information()]
+        if active.get("family") == "oscam":
+            parts.extend(["", oscam_live_information(), "", oscam_runtime_information(), "",
+                          oscam_webif_information(), "", oscam_api_schema_information()])
+        self.session.open(GSUInfo, "CAM / OSCam Details", "\n".join(parts))
+
+    def restart_cam(self):
+        if getattr(self, "_restart_in_progress", False):
+            return
+        if not self.restart_command:
+            self.session.open(MessageBox, self.restart_detail, MessageBox.TYPE_INFO, timeout=8)
+            return
+        self.session.openWithCallback(
+            self._restart_confirmed,
+            MessageBox,
+            "%s?\n\nThe currently active CAM will be briefly interrupted." % self.restart_detail,
+            MessageBox.TYPE_YESNO)
+
+    def _restart_confirmed(self, answer):
+        if not answer:
+            return
+        if getattr(self, "_restart_in_progress", False):
+            return
+        self._restart_in_progress = True
+        command = list(self.restart_command)
+        before = _active_cam()
+        before_pid = before["pid"] if before else ""
+
+        def worker():
+            rc, output = _run_status(command, 12)
+            verified = None
+            if rc == 0:
+                for _attempt in range(8):
+                    time.sleep(0.5)
+                    verified = _active_cam()
+                    if verified:
+                        break
+
+            def finish():
+                if getattr(self, "_closing_live_monitor", False):
+                    return
+                self._refresh()
+                if rc != 0:
+                    detail = output[-800:] if output else "restart command returned status %s" % rc
+                    self.session.open(MessageBox, _("Active CAM restart failed.\n\n%s") % detail,
+                                      MessageBox.TYPE_ERROR, timeout=10)
+                elif verified:
+                    changed = " (new PID %s)" % verified["pid"] if verified["pid"] != before_pid else ""
+                    self.session.open(MessageBox, _("Active CAM restart verified%s.") % changed,
+                                      MessageBox.TYPE_INFO, timeout=6)
+                else:
+                    self.session.open(MessageBox,
+                                      _(_("Restart command completed, but no active CAM was detected afterwards.")),
+                                      MessageBox.TYPE_ERROR, timeout=10)
+                timer = getattr(self, "_restart_finish_timer", None)
+                if timer is not None:
+                    try:
+                        timer.stop()
+                    except Exception:
+                        pass
+
+            if eTimer is None:
+                finish()
+            else:
+                timer = eTimer()
+                self._restart_finish_timer = timer
+                try:
+                    timer.callback.append(finish)
+                except Exception:
+                    timer.timeout.connect(finish)
+                timer.start(1, True)
+
+        try:
+            threading.Thread(target=worker, name="GSU-CAM-Restart", daemon=True).start()
+        except Exception:
+            self._restart_in_progress = False
+            self.session.open(MessageBox, _("Unable to start CAM restart worker."), MessageBox.TYPE_ERROR, timeout=8)
+
+class SysUtilMngMain(Screen):
+    skin = """
+    <screen name="SysUtilMngMain" position="center,center" size="980,690" title="Glass System Utility - Warder Evolution">
+        <widget name="menu" position="35,35" size="910,610" font="Regular;28" itemHeight="46" />
+    </screen>
+    """
+    MENU = [
+        (_("Health Check"), "healthcheck"),
+        (_("Service Dashboard"), "servicedashboard"),
+        (_("Active CAM / OSCam Monitor"), "cammonitor"),
+        (_("Network Health"), "nethealth"),
+        (_("Network Mount Doctor"), "mountdoctor"),
+        (_("Storage Health"), "storagehealth"),
+        (_("Enigma2 Runtime Health"), "runtimehealth"),
+        (_("Tuner information"), "tuners"),
+        (_("Temperatures"), "temps"),
+        (_("System & Hardware"), "system"),
+        (_("Network & Interfaces"), "network"),
+        (_("Storage & Filesystems"), "storage"),
+        (_("Memory & Swap"), "memory"),
+        (_("Services & Processes"), "services"),
+        (_("Network Mounts (NFS/CIFS)"), "mounts"),
+        (_("Logs & Diagnostics"), "logs"),
+        (_("Create Diagnostic Bundle"), "diagbundle"),
+        (_("Check for updates"), "update"),
+        (_("Restart Enigma2 GUI"), "restart"),
+        (_("About this build"), "about"),
+    ]
+
+    def __init__(self, session):
+        Screen.__init__(self, session)
+        self["menu"] = MenuList([item[0] for item in self.MENU])
+        self["actions"] = ActionMap(["OkCancelActions"], {"ok": self.ok, "cancel": self.close}, -1)
+        # Check again whenever the user actually opens GSU.  The updater is
+        # asynchronous, so opening the plugin never waits on GitHub/network I/O.
+        self.setTitle(_("Glass System Utility - Warder Evolution"))
+        self.onShown.append(self._check_update_on_open)
+
+    def _check_update_on_open(self):
+        try:
+            self.onShown.remove(self._check_update_on_open)
+        except Exception:
+            pass
+        try:
+            GSUUpdater(self.session).check(silent=True)
+        except Exception:
+            pass
+
+    def _info(self, title, text):
+        self.session.open(GSUInfo, title, text)
+
+    def ok(self):
+        index = self["menu"].getSelectedIndex()
+        action = self.MENU[index][1]
+        actions = {
+            "system": ("System & Hardware", system_information),
+            "hardwareid": ("Hardware Identity", hardware_identity_information),
+            "temps": ("Temperatures", temperature_information),
+            "network": ("Network & Interfaces", network_information),
+            "netdiag": (_("Network Diagnostics"), network_diagnostics),
+            "nethealth": (_("Network Health"), network_health_information),
+            "timehealth": ("Time & Synchronization", time_health_information),
+            "storage": ("Storage & Filesystems", storage_information),
+            "storagehealth": (_("Storage Health"), storage_health_information),
+            "fshealth": ("Filesystem Health", filesystem_health_information),
+            "devices": ("Block Devices", device_information),
+            "memory": ("Memory & Swap", memory_information),
+            "servicedashboard": (_("Service Dashboard"), service_dashboard_information),
+            "services": ("Services & Processes", service_information),
+            "runtimehealth": (_("Enigma2 Runtime Health"), runtime_health_information),
+            "ports": ("Listening Ports", listening_ports_information),
+            "mounts": ("Network Mounts", mount_information),
+            "mountdoctor": (_("Network Mount Doctor"), network_mount_doctor_information),
+            "caminventory": ("CAM Inventory", cam_inventory_information),
+
+            "tuners": ("Tuner information", tuner_information),
+            "logs": (_("Logs & Diagnostics"), log_information),
+            "packages": ("Package information", package_information),
+            "imageinfo": ("Image & Runtime", image_information),
+            "summary": (_("Diagnostic Summary"), diagnostic_summary),
+            "healthcheck": ("Health Check", health_check_information),
+            "capabilities": ("Detected Capabilities", capability_information),
+        }
+        if action in actions:
+            title, fnc = actions[action]
+            self._info(title, fnc())
+        elif action == "cammonitor":
+            self.session.open(GSUActiveCAM)
+        elif action == "diagbundle":
+            try:
+                path = create_diagnostic_bundle()
+                self.session.open(MessageBox, _("Diagnostic bundle created:\n%s") % path,
+                                  MessageBox.TYPE_INFO, timeout=10)
+            except Exception as exc:
+                self.session.open(MessageBox, _("Unable to create diagnostic bundle.\n\n%s") % exc,
+                                  MessageBox.TYPE_ERROR, timeout=10)
+        elif action == "update":
+            GSUUpdater(self.session).check(silent=False)
+        elif action == "restart":
+            try:
+                from Screens.Standby import TryQuitMainloop
+                self.session.open(TryQuitMainloop, 3)
+            except Exception as exc:
+                self.session.open(MessageBox, str(exc), MessageBox.TYPE_ERROR)
+        elif action == "about":
+            self._info(_("About"), (
+                "Glass System Utility - Warder Evolution %s\n\n"
+                "Modern Python 3 source core.\n"
+                "Read-only system, network, storage, service, mount, OSCam, tuner and log diagnostics enabled.\n\n"
+                "State-changing legacy functions remain gated until separately migrated and tested."
+            ) % VERSION)
+
+
 def main(session, **kwargs):
     session.open(SysUtilMngMain)
 
