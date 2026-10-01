@@ -1419,6 +1419,41 @@ def time_health_information():
                 rows.extend(peers.splitlines()[:16])
     return "\n".join(rows)
 
+def runtime_health_information():
+    """Compact Enigma2 runtime health without duplicating process/log screens."""
+    rows = ["GSU Enigma2 Runtime Health", ""]
+    matches = _find_processes("enigma2")
+    if not matches:
+        rows.append("[WARNING] Enigma2 process not detected.")
+        return "\n".join(rows)
+    pid = matches[0][0]
+    rows.append("[PASS] Enigma2 running  PID %s" % pid)
+    status = {}
+    for line in _read_lines("/proc/%s/status" % pid):
+        if ":" in line:
+            key, value = line.split(":", 1)
+            status[key] = value.strip()
+    for key, label in (("VmRSS", "Resident memory"), ("VmSize", "Virtual memory"), ("Threads", "Threads")):
+        if status.get(key):
+            rows.append("[INFO] %s: %s" % (label, status[key]))
+    fd_path = "/proc/%s/fd" % pid
+    try:
+        rows.append("[INFO] Open file descriptors: %d" % len(os.listdir(fd_path)))
+    except Exception:
+        rows.append("[INFO] Open file descriptors: not exposed")
+    crash_logs = []
+    for path in ("/home/root/logs/enigma2_crash.log", "/media/hdd/enigma2_crash.log", "/tmp/enigma2_crash.log"):
+        if os.path.isfile(path):
+            try:
+                crash_logs.append("%s (%.1f KiB)" % (path, os.stat(path).st_size / 1024.0))
+            except Exception:
+                crash_logs.append(path)
+    rows.append("[%s] Known crash logs: %d" % ("INFO" if crash_logs else "PASS", len(crash_logs)))
+    rows.extend("       %s" % item for item in crash_logs[:3])
+    rows += ["", "Runtime Health is read-only; it does not restart Enigma2 or delete logs."]
+    return "\n".join(rows)
+
+
 def device_information():
     rows = []
     block_root = "/sys/class/block"
@@ -2293,6 +2328,7 @@ class SysUtilMngMain(Screen):
         ("Memory & Swap", "memory"),
         ("Service Dashboard", "servicedashboard"),
         ("Services & Processes", "services"),
+        ("Enigma2 Runtime Health", "runtimehealth"),
         ("Listening Ports", "ports"),
         ("Network Mounts (NFS/CIFS)", "mounts"),
         ("Network Mount Doctor", "mountdoctor"),
@@ -2337,6 +2373,7 @@ class SysUtilMngMain(Screen):
             "memory": ("Memory & Swap", memory_information),
             "servicedashboard": ("Service Dashboard", service_dashboard_information),
             "services": ("Services & Processes", service_information),
+            "runtimehealth": ("Enigma2 Runtime Health", runtime_health_information),
             "ports": ("Listening Ports", listening_ports_information),
             "mounts": ("Network Mounts", mount_information),
             "mountdoctor": ("Network Mount Doctor", network_mount_doctor_information),
