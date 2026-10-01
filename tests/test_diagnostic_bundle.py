@@ -324,7 +324,7 @@ class UpdateDiscoveryUXTests(unittest.TestCase):
             data = open(path, encoding="utf-8").read()
             self.assertIn(msgid, data)
             block = data[data.index(msgid):].split("\n\n", 1)[0]
-            self.assertEqual(block.count("%d"), 2, (lang, block))
+            self.assertEqual(block.count("%d"), 1, (lang, block))
             self.assertNotIn("%s", block)
 
     def test_background_check_only_prompts_for_newer_release(self):
