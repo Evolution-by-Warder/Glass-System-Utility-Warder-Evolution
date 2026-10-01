@@ -1806,6 +1806,8 @@ class GSUActiveCAM(Screen):
         self._live_timer.start(5000, False)
 
     def _auto_refresh(self):
+        if getattr(self, "_closing_live_monitor", False):
+            return
         if getattr(self, "_live_fetch_running", False):
             return
         self._live_fetch_running = True
@@ -1854,7 +1856,10 @@ class GSUActiveCAM(Screen):
                     timer.timeout.connect(finish)
                 timer.start(1, True)
 
-        threading.Thread(target=worker, name="GSU-OSCam-Live", daemon=True).start()
+        try:
+            threading.Thread(target=worker, name="GSU-OSCam-Live", daemon=True).start()
+        except Exception:
+            self._live_fetch_running = False
 
     def close(self, *args, **kwargs):
         self._closing_live_monitor = True
