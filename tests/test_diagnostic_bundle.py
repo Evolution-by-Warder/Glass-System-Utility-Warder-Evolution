@@ -338,6 +338,27 @@ class ChannelTechnicalDataTests(unittest.TestCase):
             self.assertNotIn(forbidden, body)
 
 
+class MainMenuConsolidationTests(unittest.TestCase):
+    def test_main_menu_has_no_duplicate_maintenance_entries(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        start = source.index("class SysUtilMngMain")
+        end = source.index("    HELP = {", start)
+        menu = source[start:end]
+        for action in ("channelsettings", "cronmanager", "texteditor", "rootpassword", "legacycams"):
+            self.assertNotIn('"' + action + '"', menu)
+        self.assertIn('(_("Legacy & Maintenance"), "legacymaintenance")', menu)
+
+    def test_primary_workflows_have_unique_action_ids(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        start = source.index("class SysUtilMngMain")
+        end = source.index("    HELP = {", start)
+        menu = source[start:end]
+        for action in ("originalsystem", "originalchannel", "oscaminfo", "cammanager",
+                       "ecminfo", "devicemanager", "swapmanager", "packagetools",
+                       "legacymaintenance", "tools", "update", "restart", "about"):
+            self.assertEqual(menu.count('"' + action + '"'), 1, action)
+
+
 class WorkflowSeparationTests(unittest.TestCase):
     def test_oscam_cam_manager_and_ecm_are_distinct_routes(self):
         source = open(PLUGIN, encoding="utf-8").read()
