@@ -3281,17 +3281,17 @@ class SysUtilMngMain(Screen):
     """GSU 13.20 top-level presentation backed by the modern Warder runtime."""
     skin = """
     <screen name="GlassSysUtil" position="center,center" size="930,790" title="Glass System Utility" backgroundColor="#31000000">
-        <widget name="list" position="30,0" size="412,600" font="Regular;25" itemHeight="38" zPosition="2" scrollbarMode="showOnDemand" backgroundColor="#31000000" />\n        <ePixmap position="495,55" zPosition="1" size="340,480" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/SysMgt.png" transparent="1" alphatest="on"/>
+        <widget name="list" position="30,0" size="412,600"  zPosition="2" scrollbarMode="showOnDemand" backgroundColor="#31000000" />\n        <ePixmap position="495,55" zPosition="1" size="340,480" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/fhd/sys_util.png" transparent="1"  alphatest="off"/>
         <eLabel position="0,607" size="930,2" backgroundColor="#888888" zPosition="5" transparent="0" />
-        <widget name="info" position="30,610" size="870,120" font="Regular;23" zPosition="4" valign="center" halign="center" foregroundColor="#888888" transparent="1" />
+        <widget name="info" position="30,610" size="870,120" font="priveG;25" zPosition="4" valign="center" halign="center" foregroundColor="#666666" transparent="1" />
         <eLabel position="0,733" size="232,2" backgroundColor="red" zPosition="5" transparent="0" />
         <eLabel position="232,733" size="233,2" backgroundColor="green" zPosition="5" transparent="0" />
         <eLabel position="465,733" size="232,2" backgroundColor="yellow" zPosition="5" transparent="0" />
         <eLabel position="697,733" size="233,2" backgroundColor="blue" zPosition="5" transparent="0" />
-        <widget name="red" position="0,743" size="232,37" font="Regular;27" valign="center" halign="center" foregroundColor="red" transparent="1"/>
-        <widget name="green" position="232,743" size="233,37" font="Regular;27" valign="center" halign="center" foregroundColor="green" transparent="1"/>
-        <widget name="yellow" position="465,743" size="232,37" font="Regular;27" valign="center" halign="center" foregroundColor="yellow" transparent="1"/>
-        <widget name="blue" position="697,743" size="233,37" font="Regular;27" valign="center" halign="center" foregroundColor="blue" transparent="1"/>
+        <widget name="red" position="0,743" size="232,37" font="priveG;30" valign="center" halign="center" foregroundColor="red" transparent="1"/>
+        <widget name="green" position="232,743" size="233,37" font="priveG;30" valign="center" halign="center" foregroundColor="green" transparent="1"/>
+        <widget name="yellow" position="465,743" size="232,37" font="priveG;30" valign="center" halign="center" foregroundColor="yellow" transparent="1"/>
+        <widget name="blue" position="697,743" size="233,37" font="priveG;30" valign="center" halign="center" foregroundColor="blue" transparent="1"/>
     </screen>
     """
     MENU = [
