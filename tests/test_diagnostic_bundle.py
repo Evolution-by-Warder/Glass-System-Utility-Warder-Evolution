@@ -265,6 +265,24 @@ class NetworkHealthTests(unittest.TestCase):
         self.assertEqual(source.count('"nethealth": (_("Network Health"), network_health_information)'), 1)
 
 
+class OriginalGSURestorationTests(unittest.TestCase):
+    def test_original_dashboards_and_cam_manager_exist(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        for cls in ("GSUSystemDashboard", "GSUChannelDashboard", "GSUActiveCAM", "GSUWarderTools"):
+            self.assertIn("class %s" % cls, source)
+        self.assertIn('self.setTitle(_("CAM/SRV Manager"))', source)
+        self.assertIn('"service_context"', source)
+        self.assertIn('"ecm_context"', source)
+
+    def test_original_top_level_routes_to_rich_dashboards(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        self.assertIn('self.session.open(GSUSystemDashboard)', source)
+        self.assertIn('self.session.open(GSUChannelDashboard)', source)
+        self.assertIn('self.session.open(GSUActiveCAM)', source)
+        self.assertIn('self.session.open(GSUWarderTools)', source)
+
+
+
 class MainMenuFocusTests(unittest.TestCase):
     def test_main_menu_stays_bounded_and_operational(self):
         source = open(PLUGIN, encoding="utf-8").read()
