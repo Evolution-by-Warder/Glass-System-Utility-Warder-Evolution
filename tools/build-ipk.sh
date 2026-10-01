@@ -12,6 +12,12 @@ test -n "$VERSION"
 grep -Fqx "Version: $VERSION" "$ROOT/packaging/CONTROL/control"
 python3 -m py_compile "$ROOT/src/GlassSysUtil/plugin.py"
 test -s "$ROOT/src/GlassSysUtil/SysMgt.png"
+if [ -d "$ROOT/src/GlassSysUtil/fhd" ]; then
+    test -s "$ROOT/src/GlassSysUtil/fhd/sys_util.png"
+fi
+if [ -d "$ROOT/src/GlassSysUtil/font" ]; then
+    test -s "$ROOT/src/GlassSysUtil/font/priveG.ttf"
+fi
 
 ROOTFS="$WORK/root"
 CONTROL="$WORK/control"
@@ -19,6 +25,8 @@ PLUGIN="$ROOTFS/usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil"
 mkdir -p "$PLUGIN" "$CONTROL" "$OUT"
 cp "$ROOT/src/GlassSysUtil/plugin.py" "$ROOT/src/GlassSysUtil/__init__.py" \
    "$ROOT/src/GlassSysUtil/version" "$ROOT/src/GlassSysUtil/SysMgt.png" "$PLUGIN/"
+[ ! -d "$ROOT/src/GlassSysUtil/fhd" ] || cp -R "$ROOT/src/GlassSysUtil/fhd" "$PLUGIN/"
+[ ! -d "$ROOT/src/GlassSysUtil/font" ] || cp -R "$ROOT/src/GlassSysUtil/font" "$PLUGIN/"
 if [ -d "$ROOT/src/GlassSysUtil/locale" ]; then
     cp -R "$ROOT/src/GlassSysUtil/locale" "$PLUGIN/"
     for po in "$PLUGIN"/locale/*/LC_MESSAGES/GlassSysUtil.po; do
