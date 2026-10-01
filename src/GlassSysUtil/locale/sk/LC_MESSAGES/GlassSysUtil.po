@@ -401,3 +401,39 @@ msgstr "[INFO   ] Sieťové pripojenia: %d aktívnych"
 
 msgid "[INFO   ] Listeners  %d detected"
 msgstr "[INFO   ] Listenery: zistených %d"
+
+msgid "[%s] Memory: %.0f%% available"
+msgstr "[%s] Pamäť: %.0f%% dostupných"
+
+msgid "[PASS] Network link: %s"
+msgstr "[PASS] Sieťové spojenie: %s"
+
+msgid "[%s] Default gateway: %s"
+msgstr "[%s] Predvolená brána: %s"
+
+msgid "[%s] DNS configuration: %s"
+msgstr "[%s] Konfigurácia DNS: %s"
+
+msgid "[%s] Enigma2 process: %s"
+msgstr "[%s] Proces Enigma2: %s"
+
+msgid "running"
+msgstr "beží"
+
+msgid "[%s] Temperature: hottest detected %.1f C"
+msgstr "[%s] Teplota: najvyššia zistená %.1f C"
+
+msgid "[INFO] Network mounts: %d active"
+msgstr "[INFO] Sieťové pripojenia: %d aktívnych"
+
+msgid "[INFO] CAM: %s"
+msgstr "[INFO] CAM: %s"
+
+msgid "no known CAM process detected"
+msgstr "nebol zistený známy CAM proces"
+
+msgid "[INFO] %s -> %s [%s] mounted; usage unavailable"
+msgstr "[INFO] %s -> %s [%s] pripojené; využitie nie je dostupné"
+
+msgid "[PASS] Enigma2 running  PID %s"
+msgstr "[PASS] Enigma2 beží  PID %s"
