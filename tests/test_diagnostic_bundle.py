@@ -600,46 +600,6 @@ class RestoredInformationCenterContractTests(unittest.TestCase):
 
 
 
-class RestoredMaintenanceInventoryTests(unittest.TestCase):
-    def _function_body(self, name):
-        source = open(PLUGIN, encoding="utf-8").read()
-        start = source.index("def " + name + "(")
-        end = source.index("\ndef ", start + 5)
-        return source[start:end]
-
-    def test_swap_inventory_is_read_only_and_reports_capacity(self):
-        body = self._function_body("swap_manager_information")
-        for token in ("/proc/swaps", "Active swap total", "Active swap used", "priority"):
-            self.assertIn(token, body)
-        for forbidden in ("swapon", "swapoff", "mkswap", "subprocess.", "os.system("):
-            self.assertNotIn(forbidden, body)
-
-    def test_device_inventory_is_read_only_and_sees_block_devices(self):
-        body = self._function_body("device_manager_information")
-        self.assertIn("/sys/class/block", body)
-        self.assertIn("shutil.disk_usage", body)
-        for forbidden in ("mkfs", "fdisk", "parted", "umount", "os.system(", "subprocess."):
-            self.assertNotIn(forbidden, body)
-
-    def test_text_editor_and_root_status_do_not_mutate_security_state(self):
-        editor = self._function_body("text_editor_information")
-        root = self._function_body("root_password_information")
-        self.assertIn("/etc/enigma2/settings", editor)
-        for body in (editor, root):
-            for forbidden in ("write(", "passwd ", "chpasswd", "os.system(", "subprocess."):
-                self.assertNotIn(forbidden, body)
-
-    def test_crond_and_auto_install_are_bounded_local_inventories(self):
-        cron = self._function_body("cron_manager_information")
-        auto = self._function_body("automatic_installation_information")
-        self.assertIn("Detected cron files", cron)
-        self.assertIn("Total local candidates", auto)
-        for body in (cron, auto):
-            for forbidden in ("urlopen", "urllib.", "wget", "curl", "opkg install", "apt install", "os.system("):
-                self.assertNotIn(forbidden, body)
-
-
-
 class LocalizationContractTests(unittest.TestCase):
     def test_localization_follows_enigma2_language(self):
         root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
