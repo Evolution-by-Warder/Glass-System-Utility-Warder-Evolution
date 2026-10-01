@@ -72,3 +72,10 @@ Recovered top-level implementation inventory includes the original `SysUtilMngMa
 W18 remains the modern Python/runtime/backend base, but its custom dashboard presentation is not the target UI. From this checkpoint forward, the outward contract is the original GSU 13.20 hierarchy and visual language: original top-level function order, contextual help strip, four colored key areas, original System/Channel/CAM-SRV information grouping, and original screen purpose. Warder diagnostics remain an implementation/backend extension and are reached contextually rather than replacing the historical top-level GSU structure.
 
 The first restoration commit is `86ef6db1b7bbc1b965fbdd7167a8ad61ae4f2c82`: it restores the 13.20 top-level menu order and 930x790 original-style main-screen geometry while retaining the proven w18 Python 3.14 updater/runtime backends. Functions not yet safely ported remain visible in their historical location but gated rather than silently removed.
+
+
+## Exact FHD skin authority
+
+The supplied 13.20 package exposes its visual definitions as plain source in `GSU_skins_FHD.py`; this is now the primary FHD visual reference rather than screenshots. Confirmed original contracts include: main `GlassSysUtil` at 930x790 with widgets `list/info/red/green/yellow/blue`, `GlassSysInfo` fullscreen 1920x1080, `Channel Info Center` fullscreen 1920x1080, `Glass Cams Manager` 1530x895, `GlassIpkScriptCenter` 750x530, and the original OSCam/ECM/swap/device/auto-install/settings/cron/text-editor screen families. The production port should converge screen-by-screen on these contracts while retaining the w18 Python 3.14-safe backends.
+
+Restoration commits: `21a3f0530c184eb3624f06b3232a2f0505f20892` (main widget contract), `a99885607be52cd94a226ef1bc42a294cffbe984` (IPK/script center), `34e4df28c53631c1cf4b813c58216886d2facb24` (fullscreen System/Channel language). These are continuation work after w18 and are not yet a published receiver release.
