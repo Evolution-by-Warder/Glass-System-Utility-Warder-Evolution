@@ -43,12 +43,6 @@ jobs:
         run: |
           set -eu
           VERSION="$(tr -d '\r\n' < src/GlassSysUtil/version)"
-          WORK="$PWD/.build"
-          ROOT="$WORK/root"
-          CONTROL="$WORK/control"
-          PLUGIN="$ROOT/usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil"
-          IPK="$GITHUB_WORKSPACE/enigma2-plugin-glasssysutil_${VERSION}_all.ipk"
-          mkdir -p "$PLUGIN" "$CONTROL"
           rm -rf dist
           ./tools/build-ipk.sh
           IPK="$GITHUB_WORKSPACE/dist/enigma2-plugin-glasssysutil_${VERSION}_all.ipk"
@@ -68,6 +62,6 @@ jobs:
         with:
           name: glasssysutil-test-${{ github.sha }}
           path: |
-            enigma2-plugin-glasssysutil_*.ipk
-            enigma2-plugin-glasssysutil_*.ipk.sha256
+            dist/enigma2-plugin-glasssysutil_*.ipk
+            dist/enigma2-plugin-glasssysutil_*.ipk.sha256
           if-no-files-found: error
