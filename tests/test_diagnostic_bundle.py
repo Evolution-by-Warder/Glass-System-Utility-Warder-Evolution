@@ -529,7 +529,13 @@ class OriginalMaintenanceWorkflowTests(unittest.TestCase):
                     "GSUTextEditorCenter", "GSUChannelSettingsCenter", "GSURootPasswordCenter"):
             self.assertIn("class " + cls, source)
             self.assertIn("self.session.open(" + cls + ")", source)
-        self.assertIn('name="GlassStatusCenter"', source)
+        start = source.index("class GSUOriginalStatusCenter")
+        end = source.index("class GSUPackageCenter", start)
+        maintenance = source[start:end]
+        self.assertIn('name="GlassOriginalMaintenanceCenter"', maintenance)
+        self.assertIn('size="930,790"', maintenance)
+        for widget in ('name="red"', 'name="green"', 'name="yellow"', 'name="blue"'):
+            self.assertIn(widget, maintenance)
 
     def test_maintenance_centers_keep_mutations_gated(self):
         source = open(PLUGIN, encoding="utf-8").read()
