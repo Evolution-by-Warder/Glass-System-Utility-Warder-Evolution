@@ -373,17 +373,29 @@ def automatic_installation_information():
     return "\n".join(rows)
 
 def osd_ecm_information():
-    """Compatibility view for the original OSD ECM area using the modern ECM backend."""
+    """Original OSD ECM compatibility view backed by live modern CAM/service data."""
     active = _active_cam()
     service = current_service_technical_information()
     caids = service.get("caids") or []
-    return "\n".join((
-        _("Current service: %s") % (_current_service_name() or _("not exposed")),
+    rows = [
+        _("Current service: %s") % (service.get("name") or _("not exposed")),
+        _("Provider: %s") % (service.get("provider") or _("not exposed")),
         active_cam_summary() if active else _("No supported active CAM detected."),
         _("Available CAIDs: %s") % (", ".join("%04X" % value for value in caids) if caids else _("not exposed")),
-        "",
-        _("OSD ECM display settings remain gated until receiver validation."),
-    ))
+    ]
+    if active and active.get("family") == "oscam":
+        live, reason = oscam_live_rows()
+        if live:
+            values = _oscam_table_values(live[0])
+            rows += ["", _("Reader / User: %s") % (values["name"] or "N/A"),
+                     _("Protocol: %s") % (values["protocol"] or "N/A"),
+                     _("Channel: %s") % (values["channel"] or service.get("name") or "N/A"),
+                     _("ECM: %s") % (values["ecm"] or "N/A"),
+                     _("Status: %s") % (values["status"] or "N/A")]
+        elif reason:
+            rows += ["", reason]
+    rows += ["", _("OSD ECM display settings remain gated until receiver validation.")]
+    return "\n".join(rows)
 
 def conditional_legacy_cam_information():
     """Report legacy CAM families only when they really exist on this receiver."""
@@ -458,18 +470,31 @@ def channel_settings_information():
         rows.append(_("not detected"))
         return "\n".join(rows)
     try:
-        names = os.listdir(root)
+        names = sorted(os.listdir(root))
     except Exception:
         names = []
     bouquets = [name for name in names if name.startswith(("bouquets.", "userbouquet."))]
     lamedb = [name for name in names if name.startswith("lamedb")]
-    rows += [
-        _("Settings root: %s") % root,
-        _("Bouquet files: %d") % len(bouquets),
-        _("Service database files: %d") % len(lamedb),
-    ]
+    satellites = [name for name in names if name in ("satellites.xml", "terrestrial.xml", "cables.xml")]
+    rows += [_("Settings root: %s") % root, _("Bouquet files: %d") % len(bouquets),
+             _("Service database files: %d") % len(lamedb),
+             _("Tuning definition files: %d") % len(satellites)]
+    if lamedb:
+        rows += ["", _("Service databases")]
+        for name in lamedb[:6]:
+            path = os.path.join(root, name)
+            try:
+                rows.append("  %s  (%s)" % (name, _human_bytes(os.path.getsize(path))))
+            except Exception:
+                rows.append("  %s" % name)
     if bouquets:
-        rows += ["", _("Detected bouquets"), "\n".join(sorted(bouquets)[:12])]
+        rows += ["", _("Detected bouquets")]
+        for name in bouquets[:12]:
+            path = os.path.join(root, name)
+            try:
+                rows.append("  %s  (%s)" % (name, _human_bytes(os.path.getsize(path))))
+            except Exception:
+                rows.append("  %s" % name)
         if len(bouquets) > 12:
             rows.append(_("... and %d more") % (len(bouquets) - 12))
     rows += ["", _("Bouquet/channel modification remains disabled until receiver validation.")]
