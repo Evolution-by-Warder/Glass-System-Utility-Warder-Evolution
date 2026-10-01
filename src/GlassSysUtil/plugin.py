@@ -2931,17 +2931,17 @@ class SysUtilMngMain(Screen):
     """GSU 13.20 top-level presentation backed by the modern Warder runtime."""
     skin = """
     <screen name="GlassSysUtil" position="center,center" size="930,790" title="Glass System Utility" backgroundColor="#31000000">
-        <widget name="menu" position="30,0" size="870,600" font="Regular;25" itemHeight="38" scrollbarMode="showOnDemand" backgroundColor="#31000000" />
+        <widget name="list" position="30,0" size="412,600" font="Regular;25" itemHeight="38" zPosition="2" scrollbarMode="showOnDemand" backgroundColor="#31000000" />\n        <ePixmap position="495,55" zPosition="1" size="340,480" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/SysMgt.png" transparent="1" alphatest="on"/>
         <eLabel position="0,607" size="930,2" backgroundColor="#888888" zPosition="5" transparent="0" />
-        <widget name="context" position="30,610" size="870,120" font="Regular;23" zPosition="4" valign="center" halign="center" foregroundColor="#888888" transparent="1" />
+        <widget name="info" position="30,610" size="870,120" font="Regular;23" zPosition="4" valign="center" halign="center" foregroundColor="#888888" transparent="1" />
         <eLabel position="0,733" size="232,2" backgroundColor="red" zPosition="5" transparent="0" />
         <eLabel position="232,733" size="233,2" backgroundColor="green" zPosition="5" transparent="0" />
         <eLabel position="465,733" size="232,2" backgroundColor="yellow" zPosition="5" transparent="0" />
         <eLabel position="697,733" size="233,2" backgroundColor="blue" zPosition="5" transparent="0" />
-        <widget name="key_red" position="0,743" size="232,37" font="Regular;27" valign="center" halign="center" foregroundColor="red" transparent="1"/>
-        <widget name="key_green" position="232,743" size="233,37" font="Regular;27" valign="center" halign="center" foregroundColor="green" transparent="1"/>
-        <widget name="key_yellow" position="465,743" size="232,37" font="Regular;27" valign="center" halign="center" foregroundColor="yellow" transparent="1"/>
-        <widget name="key_blue" position="697,743" size="233,37" font="Regular;27" valign="center" halign="center" foregroundColor="blue" transparent="1"/>
+        <widget name="red" position="0,743" size="232,37" font="Regular;27" valign="center" halign="center" foregroundColor="red" transparent="1"/>
+        <widget name="green" position="232,743" size="233,37" font="Regular;27" valign="center" halign="center" foregroundColor="green" transparent="1"/>
+        <widget name="yellow" position="465,743" size="232,37" font="Regular;27" valign="center" halign="center" foregroundColor="yellow" transparent="1"/>
+        <widget name="blue" position="697,743" size="233,37" font="Regular;27" valign="center" halign="center" foregroundColor="blue" transparent="1"/>
     </screen>
     """
     MENU = [
@@ -2983,12 +2983,12 @@ class SysUtilMngMain(Screen):
 
     def __init__(self, session):
         Screen.__init__(self, session)
-        self["menu"] = MenuList([item[0] for item in self.MENU])
-        self["context"] = Label("")
-        self["key_red"] = Label(_("Exit"))
-        self["key_green"] = Label(_("OK"))
-        self["key_yellow"] = Label(_("Refresh"))
-        self["key_blue"] = Label(_("Warder tools"))
+        self["list"] = MenuList([item[0] for item in self.MENU])
+        self["info"] = Label("")
+        self["red"] = Label(_("Exit"))
+        self["green"] = Label(_("OK"))
+        self["yellow"] = Label(_("Refresh"))
+        self["blue"] = Label(_("Warder tools"))
         self["actions"] = ActionMap(["OkCancelActions", "ColorActions", "DirectionActions"], {
             "ok": self.ok, "cancel": self.close, "red": self.close, "green": self.ok,
             "yellow": self._refresh_context, "blue": self.open_tools,
@@ -3000,19 +3000,19 @@ class SysUtilMngMain(Screen):
 
     def _selected_action(self):
         try:
-            return self.MENU[self["menu"].getSelectedIndex()][1]
+            return self.MENU[self["list"].getSelectedIndex()][1]
         except Exception:
             return ""
 
     def _refresh_context(self):
-        self["context"].setText(self.HELP.get(self._selected_action(), ""))
+        self["info"].setText(self.HELP.get(self._selected_action(), ""))
 
     def _up(self):
-        self["menu"].up()
+        self["list"].up()
         self._refresh_context()
 
     def _down(self):
-        self["menu"].down()
+        self["list"].down()
         self._refresh_context()
 
     def _check_update_on_open(self):
@@ -3050,7 +3050,7 @@ class SysUtilMngMain(Screen):
         elif action == "packagetools":
             self._info(_("IPK/DEB and user scripts"), package_tools_information())
         elif action in ("cccaminfo", "mboxinfo"):
-            self._info(self.MENU[self["menu"].getSelectedIndex()][0], conditional_legacy_cam_information())
+            self._info(self.MENU[self["list"].getSelectedIndex()][0], conditional_legacy_cam_information())
         elif action == "channelsettings":
             self._info(_("Channel settings"), channel_settings_information())
         elif action == "crond":
@@ -3060,7 +3060,7 @@ class SysUtilMngMain(Screen):
         elif action == "rootpassword":
             self._info(_("Reset root user password"), root_password_information())
         elif action in ("osdecm", "autoinstall"):
-            self._info(self.MENU[self["menu"].getSelectedIndex()][0],
+            self._info(self.MENU[self["list"].getSelectedIndex()][0],
                        _("This original GSU function is retained in the migration map and remains gated until its Python 3.14 implementation is receiver-validated."))
 
 
