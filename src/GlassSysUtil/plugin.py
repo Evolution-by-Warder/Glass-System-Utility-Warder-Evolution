@@ -1907,6 +1907,7 @@ class GSUActiveCAM(Screen):
         self._closing_live_monitor = False
         # w11 fixed-column monitor contract: source, package and receiver UI move together.
         # Candidate is gated by CI before immutable release publication.
+        # Final w11 release candidate validation marker.
         self._refresh()
         self._start_auto_refresh()
 
