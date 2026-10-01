@@ -78,33 +78,25 @@ jobs:
         run: |
           set -euo pipefail
           VERSION="${{ steps.meta.outputs.version }}"
-          WORK="$PWD/.release-build"
-          ROOT="$WORK/root"
-          CONTROL="$WORK/control"
-          PLUGIN="$ROOT/usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil"
+          rm -rf dist
+          ./tools/build-ipk.sh
           IPK="$GITHUB_WORKSPACE/dist/enigma2-plugin-glasssysutil_${VERSION}_all.ipk"
-          mkdir -p "$PLUGIN" "$CONTROL"
-          cp src/GlassSysUtil/plugin.py src/GlassSysUtil/__init__.py src/GlassSysUtil/version src/GlassSysUtil/SysMgt.png "$PLUGIN/"
-          if [ -d src/GlassSysUtil/locale ]; then
-            cp -R src/GlassSysUtil/locale "$PLUGIN/"
-            for po in "$PLUGIN"/locale/*/LC_MESSAGES/GlassSysUtil.po; do msgfmt "$po" -o "${po%.po}.mo"; done
-          fi
-          cp packaging/CONTROL/control packaging/CONTROL/postinst "$CONTROL/"
-          chmod 755 "$CONTROL/postinst"
-          printf '2.0\n' > "$WORK/debian-binary"
-          tar --sort=name --mtime='@0' --owner=0 --group=0 --numeric-owner -cf - -C "$CONTROL" . | gzip -n > "$WORK/control.tar.gz"
-          tar --sort=name --mtime='@0' --owner=0 --group=0 --numeric-owner -cf - -C "$ROOT" usr | gzip -n > "$WORK/data.tar.gz"
-          (cd "$WORK" && ar rcD "$IPK" debian-binary control.tar.gz data.tar.gz)
+          test -s "$IPK"
+          test -s "$IPK.sha256"
           test "$(ar t "$IPK" | tr '\n' ' ')" = "debian-binary control.tar.gz data.tar.gz "
           test "$(ar p "$IPK" debian-binary)" = "2.0"
           ar p "$IPK" control.tar.gz | tar -xzOf - ./control | grep -Fqx "Package: enigma2-plugin-glasssysutil"
           ar p "$IPK" control.tar.gz | tar -xzOf - ./control | grep -Fqx "Version: $VERSION"
-          ar p "$IPK" data.tar.gz > "$WORK/data-check.tar.gz"
-          tar -tzf "$WORK/data-check.tar.gz" > "$WORK/data-files.txt"
-          grep -Fqx 'usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/plugin.py' "$WORK/data-files.txt"
-          grep -Fqx 'usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/SysMgt.png' "$WORK/data-files.txt"
+          FILES="$(mktemp)"
+          ar p "$IPK" data.tar.gz | tar -tzf - > "$FILES"
+          grep -Fq 'usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/plugin.py' "$FILES"
+          grep -Fq 'usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/SysMgt.png' "$FILES"
+          for lang in sk cs de pl it es fr; do
+            grep -Fq "usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil/locale/$lang/LC_MESSAGES/GlassSysUtil.mo" "$FILES"
+          done
+          ! grep -Fq '.po' "$FILES"
           SHA256="$(sha256sum "$IPK" | awk '{print $1}')"
-          printf '%s  %s\n' "$SHA256" "$(basename "$IPK")" | tee "$IPK.sha256"
+          sha256sum -c "$IPK.sha256"
           echo "ipk=$IPK" >> "$GITHUB_OUTPUT"
           echo "sha256=$SHA256" >> "$GITHUB_OUTPUT"
 
@@ -118,7 +110,7 @@ jobs:
           IPK="${{ steps.build.outputs.ipk }}"
           DIGEST="${{ steps.build.outputs.sha256 }}"
           cat > release-notes.md <<EOF
-          Glass System Utility Warder Evolution $VERSION
+          Glass System Utility - Warder Evolution $VERSION
 
           Production source commit:
           $SHA
@@ -132,7 +124,7 @@ jobs:
           gh release create "$TAG" "$IPK" "$IPK.sha256" \
             --repo "$GITHUB_REPOSITORY" \
             --target "$SHA" \
-            --title "Glass System Utility Warder Evolution $VERSION" \
+            --title "Glass System Utility - Warder Evolution $VERSION" \
             --notes-file release-notes.md
         env:
           GH_TOKEN: ${{ github.token }}
