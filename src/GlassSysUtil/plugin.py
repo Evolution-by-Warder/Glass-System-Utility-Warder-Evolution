@@ -2524,17 +2524,22 @@ class GSUECMInformation(Screen):
 class GSUCamSrvManager(Screen):
     """Original CAM/SRV landing screen wrapping the proven OSCam monitor backend."""
     skin = """
-    <screen name="GSUCamSrvManager" position="center,center" size="1180,700" title="CAM/SRV Manager">
-        <eLabel position="30,22" size="520,38" text="CAM / SRV" font="Regular;26" foregroundColor="#3399ff" />
-        <widget name="cam" position="30,70" size="520,245" font="Regular;22" />
-        <eLabel position="610,22" size="540,38" text="Current service / CA" font="Regular;26" foregroundColor="#3399ff" />
-        <widget name="service" position="610,70" size="540,245" font="Regular;22" />
-        <eLabel position="30,340" size="1120,38" text="Safety / capability status" font="Regular;24" foregroundColor="#e6d500" />
-        <widget name="status" position="30,388" size="1120,190" font="Regular;21" />
-        <widget name="key_red" position="35,625" size="230,45" font="Regular;24" foregroundColor="#ff3333" />
-        <widget name="key_green" position="330,625" size="260,45" font="Regular;24" foregroundColor="#33cc33" />
-        <widget name="key_yellow" position="650,625" size="230,45" font="Regular;24" foregroundColor="#e6d500" />
-        <widget name="key_blue" position="930,625" size="220,45" font="Regular;24" foregroundColor="#3399ff" />
+    <screen name="Glass Cams Manager" position="center,center" size="1530,895" title="UCM" backgroundColor="#31000000">
+        <eLabel position="30,20" size="700,40" text="CAM-y / SRV-e" font="Regular;28" foregroundColor="#666666" transparent="1"/>
+        <widget name="cam" position="30,75" size="700,300" font="Regular;24" transparent="1"/>
+        <eLabel position="800,20" size="700,40" text="Aktívny CAM / Aktívny SRV" font="Regular;28" foregroundColor="#666666" transparent="1"/>
+        <widget name="service" position="800,75" size="700,300" font="Regular;24" transparent="1"/>
+        <eLabel position="30,405" size="1470,2" backgroundColor="#888888"/>
+        <eLabel position="30,430" size="1470,40" text="ECM / CAID / Process status" font="Regular;27" foregroundColor="#666666" transparent="1"/>
+        <widget name="status" position="30,485" size="1470,275" font="Regular;23" transparent="1"/>
+        <eLabel position="0,790" size="382,2" backgroundColor="red"/>
+        <eLabel position="382,790" size="383,2" backgroundColor="green"/>
+        <eLabel position="765,790" size="382,2" backgroundColor="yellow"/>
+        <eLabel position="1147,790" size="383,2" backgroundColor="blue"/>
+        <widget name="key_red" position="0,810" size="382,45" font="Regular;27" foregroundColor="red" halign="center" transparent="1"/>
+        <widget name="key_green" position="382,810" size="383,45" font="Regular;27" foregroundColor="green" halign="center" transparent="1"/>
+        <widget name="key_yellow" position="765,810" size="382,45" font="Regular;27" foregroundColor="yellow" halign="center" transparent="1"/>
+        <widget name="key_blue" position="1147,810" size="383,45" font="Regular;27" foregroundColor="blue" halign="center" transparent="1"/>
     </screen>
     """
     def __init__(self, session):
