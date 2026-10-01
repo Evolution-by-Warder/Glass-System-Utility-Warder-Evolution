@@ -179,7 +179,7 @@ class ServiceDashboardTests(unittest.TestCase):
 
     def test_dashboard_is_wired_once_in_main_menu(self):
         source = open(PLUGIN, encoding="utf-8").read()
-        self.assertEqual(source.count('("Service Dashboard", "servicedashboard")'), 1)
+        self.assertEqual(source.count('(_("Service Dashboard"), "servicedashboard")'), 1)
         self.assertEqual(source.count('"servicedashboard": ("Service Dashboard", service_dashboard_information)'), 1)
 
     def test_dashboard_accepts_capability_cam_record(self):
@@ -218,7 +218,7 @@ class StorageHealthTests(unittest.TestCase):
 
     def test_storage_health_menu_wiring(self):
         source = open(PLUGIN, encoding="utf-8").read()
-        self.assertEqual(source.count('("Storage Health", "storagehealth")'), 1)
+        self.assertEqual(source.count('(_("Storage Health"), "storagehealth")'), 1)
         self.assertEqual(source.count('"storagehealth": ("Storage Health", storage_health_information)'), 1)
 
 
@@ -246,8 +246,8 @@ class OperationalDoctorsTests(unittest.TestCase):
 
     def test_operational_doctors_are_wired_once(self):
         source = open(PLUGIN, encoding="utf-8").read()
-        self.assertEqual(source.count('("Network Mount Doctor", "mountdoctor")'), 1)
-        self.assertEqual(source.count('("Enigma2 Runtime Health", "runtimehealth")'), 1)
+        self.assertEqual(source.count('(_("Network Mount Doctor"), "mountdoctor")'), 1)
+        self.assertEqual(source.count('(_("Enigma2 Runtime Health"), "runtimehealth")'), 1)
 
 
 class NetworkHealthTests(unittest.TestCase):
@@ -265,7 +265,7 @@ class NetworkHealthTests(unittest.TestCase):
 
     def test_network_health_menu_wiring(self):
         source = open(PLUGIN, encoding="utf-8").read()
-        self.assertEqual(source.count('("Network Health", "nethealth")'), 1)
+        self.assertEqual(source.count('(_("Network Health"), "nethealth")'), 1)
         self.assertEqual(source.count('"nethealth": ("Network Health", network_health_information)'), 1)
 
 
