@@ -273,9 +273,10 @@ class MainMenuFocusTests(unittest.TestCase):
         menu = source[start:end]
         entries = re.findall(r'^\s*\(".*?",\s*".*?"\),\s*$', menu, re.M)
         self.assertLessEqual(len(entries), 20)
-        for label in ("Health Check", "Service Dashboard", "Active CAM / OSCam Monitor",
-                      "Network Health", "Network Mount Doctor", "Storage Health",
-                      "Enigma2 Runtime Health", "Create Diagnostic Bundle", "Check for updates"):
+        for label in ("System Information", "Channel Information", "CAM/SRV Manager",
+                      "Health Check", "Service Dashboard", "Network Health",
+                      "Network Mount Doctor", "Storage Health", "Enigma2 Runtime Health",
+                      "Create Diagnostic Bundle", "Check for updates"):
             self.assertIn(label, menu)
 
     def test_low_value_raw_duplicates_are_not_top_level(self):
