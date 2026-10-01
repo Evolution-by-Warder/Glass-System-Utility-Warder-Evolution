@@ -721,8 +721,6 @@ def _oscam_table_values(row):
             name = "Client"
         elif role == "S":
             name = "Server"
-    if role.strip() and name:
-        name = "%s  %s" % (role, name)
     return {
         "name": name,
         "address": _oscam_display(row.get("address")),
