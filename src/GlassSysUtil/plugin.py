@@ -297,7 +297,16 @@ def device_manager_information():
             size = _human_bytes(int(sectors) * 512)
         except Exception:
             size = _("N/A")
-        rows.append("%s  %s  %s" % (name, size, _("mounted") if name in mounted else _("not mounted directly")))
+        base = "/sys/class/block/%s" % name
+        model = _read_text(os.path.join(base, "device/model"), "").strip()
+        vendor = _read_text(os.path.join(base, "device/vendor"), "").strip()
+        removable = _read_text(os.path.join(base, "removable"), "").strip()
+        kind = _("removable") if removable == "1" else _("fixed")
+        description = " ".join(value for value in (vendor, model) if value).strip()
+        rows.append("%s  %s  %s  %s" % (
+            name, size, kind, _("mounted") if name in mounted else _("not mounted directly")))
+        if description:
+            rows.append("  %s" % description)
     rows += ["", _("Safety: format, partition, mount and unmount actions are disabled until receiver validation.")]
     return "\n".join(rows)
 
