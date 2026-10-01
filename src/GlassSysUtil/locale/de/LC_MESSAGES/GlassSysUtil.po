@@ -131,3 +131,51 @@ msgstr "Diagnosepaket konnte nicht erstellt werden.\\n\\n%s"
 msgid "About"
 msgstr "Über"
 
+
+msgid "GSU Service Dashboard"
+msgstr "GSU Dienstübersicht"
+
+msgid "Dashboard is read-only. Use dedicated screens for full diagnostics."
+msgstr "Die Übersicht ist schreibgeschützt. Verwenden Sie die jeweiligen Ansichten für die vollständige Diagnose."
+
+msgid "GSU Network Health"
+msgstr "GSU Netzwerkstatus"
+
+msgid "Network Health is read-only; ping failure alone is reported as a warning, not proof of link failure."
+msgstr "Network Health is read-only; ping failure alone is reported as a warning, not proof of link failure."
+
+msgid "GSU Network Mount Doctor"
+msgstr "GSU Netzwerkfreigaben-Diagnose"
+
+msgid "GSU Enigma2 Runtime Health"
+msgstr "GSU Enigma2-Laufzeitstatus"
+
+msgid "Runtime Health is read-only; it does not restart Enigma2 or delete logs."
+msgstr "Runtime Health is read-only; it does not restart Enigma2 or delete logs."
+
+msgid "GSU Storage Health"
+msgstr "GSU Speicherstatus"
+
+msgid "Storage Health is read-only and does not run destructive filesystem tests."
+msgstr "Storage Health is read-only and does not run destructive filesystem tests."
+
+msgid "Active CAM: %s"
+msgstr "Aktives CAM: %s"
+
+msgid "Family: %s"
+msgstr "Familie: %s"
+
+msgid "Resident memory: %s"
+msgstr "Residenter Speicher: %s"
+
+msgid "Live OSCam: %s"
+msgstr "Live OSCam: %s"
+
+msgid "No active client/reader rows."
+msgstr "Keine aktiven Client-/Reader-Zeilen."
+
+msgid "Network Diagnostics"
+msgstr "Netzwerkdiagnose"
+
+msgid "Diagnostic Summary"
+msgstr "Diagnoseübersicht"
