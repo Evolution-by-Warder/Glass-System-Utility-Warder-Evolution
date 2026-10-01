@@ -554,7 +554,7 @@ def _oscam_service_parts(flat):
         _oscam_find_scalar(flat, "srvid", "serviceid", "service_id", "sid"),
         _oscam_find_scalar(flat, "caid"),
         _oscam_find_scalar(flat, "provid", "providerid", "provider_id", "prid"),
-        _oscam_find_scalar(flat, "lastchannel", "channel", "srvname", "servicename", "service"),
+        _oscam_find_scalar(flat, "lastchannel", "channel", "channelname", "srvname", "servicename", "service_name", "service"),
     )
 
 
@@ -619,28 +619,38 @@ def oscam_live_rows():
         row = {
             "name": _oscam_find_scalar(flat, "name", "user", "label", "reader", "username"),
             "type": row_type,
-            "address": _oscam_find_scalar(flat, "ip", "address", "host", "hostname"),
-            "port": _oscam_find_scalar(flat, "port", "remoteport"),
-            "protocol": _oscam_find_scalar(flat, "protocol", "proto"),
+            "address": _oscam_find_scalar(flat, "ip", "address", "host", "hostname", "remoteip", "remote_ip"),
+            "port": _oscam_find_scalar(flat, "port", "remoteport", "remote_port"),
+            "protocol": _oscam_find_scalar(flat, "protocol", "proto", "connectiontype", "connection_type"),
             "srvid": srvid,
             "caid": caid,
             "provid": provid,
             "channel": channel,
-            "status": _oscam_find_scalar(flat, "status", "connection", "state"),
-            "ecm": _oscam_normalize_ecm(_oscam_find_scalar(flat, "ecmtime", "ecm_time", "lastresponsetime", "lastresponse")),
-            "idle": _oscam_normalize_idle(_oscam_find_scalar(flat, "idle", "idletime")),
+            "status": _oscam_find_scalar(flat, "status", "connection", "state", "connectionstatus", "connection_status"),
+            "ecm": _oscam_normalize_ecm(_oscam_find_scalar(flat, "ecmtime", "ecm_time", "lastresponsetime", "lastresponse", "last_response")),
+            "idle": _oscam_normalize_idle(_oscam_find_scalar(flat, "idle", "idletime", "idle_time")),
         }
         if not _oscam_row_is_noise(row):
-            rows.append(row)
+            signature = tuple(_oscam_display(row.get(key)) for key in
+                              ("name", "type", "address", "port", "protocol", "srvid", "caid",
+                               "provid", "channel", "ecm", "idle", "status"))
+            if signature not in {tuple(_oscam_display(existing.get(key)) for key in
+                                      ("name", "type", "address", "port", "protocol", "srvid", "caid",
+                                       "provid", "channel", "ecm", "idle", "status"))
+                                 for existing in rows}:
+                rows.append(row)
     return rows, "" if rows else "API reachable, no useful client/reader rows recognized."
 
 
 def _oscam_display(value):
-    return "" if value in (None, "", "-") else str(value)
+    if value is None:
+        return ""
+    text = str(value).strip()
+    return "" if text.lower() in ("", "-", "n/a", "none", "null") else text
 
 
 def _oscam_service_display(row):
-    srvid, caid, provid = (_oscam_display(row[key]) for key in ("srvid", "caid", "provid"))
+    srvid, caid, provid = (_oscam_display(row.get(key)) for key in ("srvid", "caid", "provid"))
     if not any((srvid, caid, provid)):
         return ""
     return "%s:%s@%s" % (srvid or "----", caid or "----", provid or "------")
