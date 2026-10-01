@@ -2733,27 +2733,25 @@ class GSUChannelDashboard(Screen):
         <widget name="signal" font="priveG;25" position="777,775" size="390,70" transparent="1"/>
         <widget name="ids" position="715,855" size="500,105" font="priveG;22" transparent="1"/>
         <widget name="ecm" position="0,0" size="1,1" font="priveG;1" transparent="1"/>
-        <widget name="technical" position="0,0" size="1,1" font="priveG;1" transparent="1"/>
+        <widget name="technical" position="0,0" size="1,1" font="priveG;1" transparent="1"/>\n        <widget name="tuner" position="0,0" size="1,1" font="priveG;1" transparent="1"/>
         <eLabel position="810,975" size="300,2" backgroundColor="red"/>
         <widget name="red" font="priveG;30" position="0,985" size="1920,40" halign="center" foregroundColor="red" transparent="1"/>
     </screen>
     """
     def __init__(self, session):
         Screen.__init__(self, session)
-        self["channel"] = Label("")
-        self["ecm"] = Label("")
-        self["ids"] = Label("")
-        self["tuner"] = Label("")
-        self["key_red"] = Label(_("Close"))
-        self["key_green"] = Label(_("CAM/SRV Manager"))
-        self["key_yellow"] = Label(_("Refresh"))
+        for key in ("channel","provider","ecm","ids","technical","tuner","ecmlabels","ecmValues","bit_labels","bit_min","bit_max","bit_avg","bit_act","stream_btr",
+                    "tp_lab_sat","tp_sat","tp_lab_ref","tp_ref","tp_lab","tp_values","signal"):
+            self[key] = Label("")
+        self["red"] = Label(_("Exit"))
         self["actions"] = ActionMap(["OkCancelActions", "ColorActions"], {
-            "cancel": self.close, "red": self.close,
-            "green": lambda: self.session.open(GSUCamSrvManager),
-            "yellow": self.refresh,
+            "cancel": self.close, "red": self.close, "green": self.open_cam_manager, "yellow": self.refresh,
         }, -1)
         self.setTitle(_("Channel Information"))
         self.onShown.append(self.refresh)
+
+    def open_cam_manager(self):
+        self.session.open(GSUCamSrvManager)
 
     def refresh(self):
         data = current_service_technical_information()
