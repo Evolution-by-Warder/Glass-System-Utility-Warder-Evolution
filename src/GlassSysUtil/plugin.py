@@ -1705,6 +1705,85 @@ def original_system_overview_information():
     return "\n".join(rows)
 
 
+
+def current_service_technical_information():
+    """Best-effort live service/transponder data through current Enigma2 APIs."""
+    data = {"name": _current_service_name(), "provider": "", "reference": "", "frontend": {},
+            "pids": {}, "caids": []}
+    try:
+        from NavigationInstance import instance as navigation
+        service = navigation and navigation.getCurrentService()
+        info = service and service.info()
+        if info:
+            try:
+                from enigma import iServiceInformation
+                def info_string(attr):
+                    try:
+                        return info.getInfoString(attr) or ""
+                    except Exception:
+                        return ""
+                data["provider"] = info_string(iServiceInformation.sProvider)
+                data["reference"] = info_string(iServiceInformation.sServiceref)
+                for key, attr in (("video", "sVideoPID"), ("audio", "sAudioPID"),
+                                  ("pcr", "sPCRPID"), ("pmt", "sPMTPID"),
+                                  ("txt", "sTXTPID"), ("tsid", "sTSID"),
+                                  ("onid", "sONID"), ("sid", "sSID")):
+                    value_attr = getattr(iServiceInformation, attr, None)
+                    if value_attr is not None:
+                        try:
+                            value = info.getInfo(value_attr)
+                            if value is not None and value >= 0:
+                                data["pids"][key] = value
+                        except Exception:
+                            pass
+                ca_attr = getattr(iServiceInformation, "sCAIDs", None)
+                if ca_attr is not None:
+                    try:
+                        caids = info.getInfoObject(ca_attr) or []
+                        data["caids"] = [int(x) for x in caids if isinstance(x, int)]
+                    except Exception:
+                        pass
+        frontend = service and service.frontendInfo()
+        if frontend:
+            try:
+                data["frontend"] = frontend.getAll(True) or {}
+            except Exception:
+                try:
+                    data["frontend"] = frontend.getAll(False) or {}
+                except Exception:
+                    pass
+    except Exception:
+        pass
+    return data
+
+
+def channel_technical_summary():
+    data = current_service_technical_information()
+    rows = []
+    if data["provider"]:
+        rows.append(_("Provider: %s") % data["provider"])
+    if data["reference"]:
+        rows.append(_("Service reference: %s") % data["reference"])
+    fe = data["frontend"]
+    labels = (("tuner_type", _("System")), ("orbital_position", _("Orbital position")),
+              ("frequency", _("Frequency")), ("polarization_abbreviation", _("Polarization")),
+              ("symbol_rate", _("Symbol rate")), ("fec_inner", _("FEC")),
+              ("modulation", _("Modulation")), ("snr", _("SNR")),
+              ("agc", _("AGC")), ("ber", _("BER")))
+    for key, label in labels:
+        value = fe.get(key)
+        if value not in (None, ""):
+            rows.append("%s: %s" % (label, value))
+    if data["pids"]:
+        rows += ["", _("Service IDs / PIDs")]
+        for key in ("video", "audio", "pcr", "pmt", "txt", "tsid", "onid", "sid"):
+            if key in data["pids"]:
+                rows.append("%s: %s (0x%X)" % (key.upper(), data["pids"][key], data["pids"][key]))
+    if data["caids"]:
+        rows += ["", _("CAIDs: %s") % ", ".join("%04X" % value for value in data["caids"])]
+    return "\n".join(rows) if rows else _("Current service technical data not exposed.")
+
+
 def original_channel_overview_information():
     """GSU-style channel overview using only capabilities exposed by Enigma2/runtime."""
     rows = [_("GSU Channel Information"), "=" * 54, ""]
@@ -2158,7 +2237,8 @@ class GSUChannelDashboard(Screen):
             elif reason:
                 rows += ["", reason]
         self["ecm"].setText("\n".join(rows))
-        self["tuner"].setText(tuner_information())
+        technical = channel_technical_summary()
+        self["tuner"].setText(technical + "\n\n" + tuner_information())
 
 
 class GSUActiveCAM(Screen):
