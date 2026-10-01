@@ -941,6 +941,9 @@ def create_diagnostic_bundle():
             "packages.txt": package_information(),
             "oscam-status.txt": oscam_information(),
         }
+        active = _active_cam()
+        if active and active.get("family") == "oscam":
+            reports["oscam-api-schema.txt"] = oscam_api_schema_information()
         for name, report in reports.items():
             with open(os.path.join(workspace, name), "w") as handle:
                 handle.write(_redact_diagnostic_text(report) + "\n")
