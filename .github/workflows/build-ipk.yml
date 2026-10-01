@@ -46,9 +46,9 @@ jobs:
           for lang in ("sk", "cs", "de", "pl", "it", "es", "fr"):
               data = Path(f"src/GlassSysUtil/locale/{lang}/LC_MESSAGES/GlassSysUtil.po").read_text(encoding="utf-8")
               assert msgid in data, lang
-              block = data[data.index(msgid):].split("\n\n", 1)[0]
-              msgstr = next(line for line in block.splitlines() if line.startswith("msgstr "))
-              assert msgstr.count("%d") == 1 and "%s" not in msgstr, (lang, block)
+              tail = data[data.index(msgid) + len(msgid):]
+              msgstr = next(line for line in tail.splitlines() if line.startswith("msgstr "))
+              assert msgstr.count("%d") == 1 and "%s" not in msgstr, (lang, msgstr)
           PY
       - name: Build and validate deterministic IPK
         run: |
