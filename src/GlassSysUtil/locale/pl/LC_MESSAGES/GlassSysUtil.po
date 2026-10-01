@@ -457,14 +457,19 @@ msgid "Unable to create diagnostic bundle.\n\n%s"
 msgstr "Unable to create diagnostic bundle.\n\n%s"
 
 msgid "OSCam Information"
-msgstr "Informacje OSCam"\n
+msgstr "Informacje OSCam"
+
 msgid "CAM/SRV Manager"
-msgstr "Menedżer CAM/SRV"\n
+msgstr "Menedżer CAM/SRV"
+
 msgid "ECM Information"
-msgstr "Informacje ECM"\n
+msgstr "Informacje ECM"
+
 msgid "Swap Manager"
-msgstr "Menedżer swap"\n
+msgstr "Menedżer swap"
+
 msgid "IPK/DEB and user scripts"
-msgstr "IPK/DEB i skrypty użytkownika"\n
+msgstr "IPK/DEB i skrypty użytkownika"
+
 msgid "Legacy & Maintenance"
-msgstr "Funkcje starsze i konserwacja"\n
+msgstr "Funkcje starsze i konserwacja"
