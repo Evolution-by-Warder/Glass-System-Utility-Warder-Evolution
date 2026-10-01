@@ -3055,7 +3055,7 @@ class SysUtilMngMain(Screen):
         elif action == "swapmanager":
             self._info(_("Swap Manager"), swap_manager_information())
         elif action == "packagetools":
-            self._info(_("IPK/DEB and user scripts"), package_tools_information())
+            self.session.open(GSUPackageCenter)
         elif action in ("cccaminfo", "mboxinfo"):
             self._info(self.MENU[self["list"].getSelectedIndex()][0], conditional_legacy_cam_information())
         elif action == "channelsettings":
