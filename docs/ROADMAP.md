@@ -372,3 +372,19 @@ These remain development features for the next coherent release. Existing detail
 - Applies the anti-bloat main-menu checkpoint: operational first-line tools remain visible while lower-level duplicate/raw pages stay available internally and in support diagnostics rather than crowding top-level navigation.
 - No new state-changing administration is introduced in w13.
 - Release gate: exact version identity, regression suite, deterministic package build, immutable release verification, then one in-plugin Update and receiver smoke pass.
+
+
+## Receiver validation — 13.33-w14
+
+Real receiver: GigaBlue Quad 4K Pro / OpenATV 8.x.
+
+- Service Dashboard: PASS after CAM capability-record hotfix; active oscam-uni and PIDs rendered without Enigma2 crash.
+- Network Health: PASS; active Ethernet, IPv4, gateway and DNS diagnostics rendered correctly.
+- Network Mount Doctor: PASS; no active NFS/CIFS mounts, client capabilities and persistent-config presence reported read-only.
+- Storage Health: PASS; three mounted filesystems reported, zero warnings.
+- Enigma2 Runtime Health: PASS; process/runtime metrics rendered without crash.
+- Active CAM / OSCam Monitor regression: PASS; live 4-row OSCam table, DVBAPI channel, ECM/idle/status and controls rendered correctly without freeze/crash.
+
+13.33-w14 is the current REAL RECEIVER PASS recovery/reference checkpoint. Published release v13.33-w14 remains immutable.
+
+Post-checkpoint development: automatic update discovery on GSU open is implemented asynchronously on warder-master-production and covered by regression tests; it is not part of immutable v13.33-w14.
