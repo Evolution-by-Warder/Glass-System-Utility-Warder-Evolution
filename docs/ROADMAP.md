@@ -315,3 +315,11 @@ This supersedes the previous receiver candidate source while keeping version `13
 - Missing reader/user names use neutral role labels (Reader, Client, EMU, DVBAPI); real API names always win.
 - Refresh preserves selection, is centralized, remains non-blocking for periodic live updates, and screen close stops owned timers.
 - Release remains HOLD until this presentation batch passes CI and one real-receiver Update smoke test.
+
+
+### 13.30-w11 receiver update candidate
+- 13.29-w10 remains the development checkpoint that established the live OSCam monitor.
+- The polished fixed-column receiver UI is promoted to 13.30-w11 so an already-installed w10 development package can exercise the real in-plugin Update path.
+- Includes fixed Enigma2 column layout, static skin binding cleanup, useful-row filtering, normalized OSCam aliases, duplicate suppression, row details, non-blocking refresh, selection preservation and guarded CAM restart lifecycle.
+- Publication remains gated by exact-version source/control/postinst agreement, full tests, deterministic build and immutable release verification.
+- Receiver acceptance: update discovery/install/restart plus one OSCam monitor visual/function smoke test.
