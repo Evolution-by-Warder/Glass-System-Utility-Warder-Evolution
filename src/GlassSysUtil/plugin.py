@@ -1453,6 +1453,34 @@ def original_protocol_indicators():
                     for label, needles in mapping)
 
 
+
+def _format_orbital_position(value):
+    try:
+        value = int(value)
+        if value > 1800:
+            return "%.1fW" % ((3600 - value) / 10.0)
+        return "%.1fE" % (value / 10.0)
+    except Exception:
+        return str(value) if value not in (None, "") else _("not exposed")
+
+
+def _format_frontend_frequency(value):
+    try:
+        value = int(value)
+        # Enigma2 DVB frontend data normally exposes kHz; keep unusual values explicit.
+        return "%.3f MHz" % (value / 1000.0) if value >= 100000 else str(value)
+    except Exception:
+        return str(value) if value not in (None, "") else _("not exposed")
+
+
+def _format_symbol_rate(value):
+    try:
+        value = int(value)
+        return "%d kSym/s" % (value // 1000) if value >= 100000 else str(value)
+    except Exception:
+        return str(value) if value not in (None, "") else _("not exposed")
+
+
 def cam_srv_context_information():
     """Original GSU CAM/SRV context assembled without exposing secrets."""
     cam = _active_cam()
@@ -1465,7 +1493,7 @@ def cam_srv_context_information():
     fe = service.get("frontend") or {}
     orbital = fe.get("orbital_position")
     if orbital not in (None, ""):
-        rows.append(_("Orbital position: %s") % orbital)
+        rows.append(_("Orbital position: %s") % _format_orbital_position(orbital))
     caids = service.get("caids") or []
     rows.append(_("Available CAIDs: %s") % (
         ", ".join("%04X" % value for value in caids) if caids else _("not exposed")))
@@ -1974,7 +2002,7 @@ def channel_technical_summary():
     for key, label in labels:
         value = fe.get(key)
         if value not in (None, ""):
-            rows.append("%s: %s" % (label, value))
+            rows.append("%s: %s" % (label, _format_orbital_position(value) if key == "orbital_position" else (_format_frontend_frequency(value) if key == "frequency" else (_format_symbol_rate(value) if key == "symbol_rate" else value))))
     if data["pids"]:
         rows += ["", _("Service IDs / PIDs")]
         for key in ("video", "audio", "pcr", "pmt", "txt", "tsid", "onid", "sid"):
@@ -2531,7 +2559,7 @@ class GSUCamSrvManager(Screen):
         rows = [_("Channel: %s") % (technical.get("name") or _("not exposed")),
                 _("Provider: %s") % (technical.get("provider") or _("not exposed"))]
         if fe.get("orbital_position") not in (None, ""):
-            rows.append(_("Orbital position: %s") % fe.get("orbital_position"))
+            rows.append(_("Orbital position: %s") % _format_orbital_position(fe.get("orbital_position")))
         caids = technical.get("caids") or []
         rows.append(_("Available CAIDs: %s") % (
             ", ".join("%04X" % value for value in caids) if caids else _("not exposed")))
