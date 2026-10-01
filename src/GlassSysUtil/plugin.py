@@ -329,19 +329,6 @@ def swap_manager_information():
                     pass
                 rows.append("%s" % fields[0])
                 rows.append("  %s | %s KiB / %s KiB | priority %s" % (fields[1], fields[3], fields[2], fields[4]))
-    candidates = []
-    for root in ("/media/hdd", "/media/usb", "/"):
-        path = os.path.join(root, "swapfile")
-        if os.path.isfile(path):
-            try:
-                candidates.append("%s (%s)" % (path, _human_bytes(os.path.getsize(path))))
-            except Exception:
-                candidates.append(path)
-    rows += ["", _("Detected swap files: %s") % (", ".join(candidates) if candidates else _("none")),
-             _("Swap command capabilities: enable=%s | disable=%s | create=%s") % (
-                 _("yes") if shutil.which("swapon") else _("no"),
-                 _("yes") if shutil.which("swapoff") else _("no"),
-                 _("yes") if shutil.which("mkswap") else _("no"))]
     rows += ["", _("Active swap total: %.1f MiB") % (total_kib / 1024.0),
              _("Active swap used: %.1f MiB") % (used_kib / 1024.0), "", memory_information(), "",
              _("Safety: swap enable/disable/create actions remain gated until real-receiver validation.")]
