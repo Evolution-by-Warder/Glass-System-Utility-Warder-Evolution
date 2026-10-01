@@ -1743,6 +1743,8 @@ def current_service_technical_information():
                         data["caids"] = [int(x) for x in caids if isinstance(x, int)]
                     except Exception:
                         pass
+            except Exception:
+                pass
         frontend = service and service.frontendInfo()
         if frontend:
             try:
