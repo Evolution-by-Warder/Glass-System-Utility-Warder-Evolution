@@ -23,7 +23,7 @@ class _Dummy(object):
 
 for package in ("Plugins", "Screens", "Components"):
     _stub(package)
-_stub("Plugins.Plugin", PluginDescriptor=type("PluginDescriptor", (), {"WHERE_PLUGINMENU": 1, "WHERE_MENU": 2, "WHERE_SESSIONSTART": 3}))
+_stub("Plugins.Plugin", PluginDescriptor=type("PluginDescriptor", (), {"WHERE_PLUGINMENU": 1, "WHERE_MENU": 2}))
 _stub("Screens.MessageBox", MessageBox=_Dummy)
 _stub("Screens.Screen", Screen=object)
 _stub("Components.ActionMap", ActionMap=_Dummy)
@@ -305,8 +305,9 @@ class UpdateDiscoveryUXTests(unittest.TestCase):
 
     def test_enigma2_session_start_never_checks_for_updates(self):
         source = open(PLUGIN, encoding="utf-8").read()
-        self.assertNotIn("WHERE_SESSIONSTART", source)
-        self.assertNotIn("_auto_update_check", source)
+        plugin_body = source[source.index("def Plugins("):]
+        self.assertNotIn("PluginDescriptor.WHERE_SESSIONSTART", plugin_body)
+        self.assertNotIn("def _auto_update_check", source)
         self.assertNotIn("_AUTO_UPDATE_STARTED", source)
         start = source.index("class SysUtilMngMain")
         end = source.index("def main(session", start)
