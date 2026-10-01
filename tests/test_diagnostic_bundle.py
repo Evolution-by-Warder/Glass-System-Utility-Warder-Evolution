@@ -540,6 +540,25 @@ class OriginalMaintenanceWorkflowTests(unittest.TestCase):
             self.assertNotIn(forbidden, body)
 
 
+class OriginalRemainingWorkflowTests(unittest.TestCase):
+    def test_osd_ecm_and_auto_install_are_real_workflows(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        for token in ("def osd_ecm_information", "def automatic_installation_information",
+                      "class GSUOSDECMCenter", "class GSUAutoInstallCenter",
+                      "self.session.open(GSUOSDECMCenter)",
+                      "self.session.open(GSUAutoInstallCenter)"):
+            self.assertIn(token, source)
+        self.assertNotIn('elif action in ("osdecm", "autoinstall")', source)
+
+    def test_auto_install_does_not_revive_remote_installers(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        start = source.index("def automatic_installation_information")
+        end = source.index("def osd_ecm_information", start)
+        body = source[start:end]
+        for forbidden in ("urlopen", "urllib.", "wget", "curl", "subprocess.", "os.system(", "write("):
+            self.assertNotIn(forbidden, body)
+
+
 class LocalizationContractTests(unittest.TestCase):
     def test_localization_follows_enigma2_language(self):
         root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
