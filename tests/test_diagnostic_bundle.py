@@ -144,3 +144,21 @@ class OSCamW11ReleaseContractTests(unittest.TestCase):
         self.assertEqual(version, "13.30-w11")
         self.assertIn("Version: " + version, control)
         self.assertIn(version, postinst)
+
+
+class OSCamReceiverPolishTests(unittest.TestCase):
+    def test_current_service_fallback_is_dvbapi_scoped(self):
+        old = gsu._current_service_name
+        try:
+            gsu._current_service_name = lambda: "DOMA"
+            self.assertEqual(gsu._oscam_row_channel({"protocol": "dvbapi (client)", "type": "client"}), "DOMA")
+            self.assertEqual(gsu._oscam_row_channel({"protocol": "cs378x", "type": "reader"}), "")
+            self.assertEqual(gsu._oscam_row_channel({"protocol": "dvbapi", "channel": "API Name"}), "API Name")
+        finally:
+            gsu._current_service_name = old
+
+    def test_status_column_has_more_room_than_reader_column(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        self.assertIn('("name", 20, 165)', source)
+        self.assertIn('("status", 1325, 175)', source)
+        self.assertIn('position="1350,170" size="150,34"', source)
