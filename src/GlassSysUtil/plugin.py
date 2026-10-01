@@ -2388,7 +2388,8 @@ class GSUSystemDashboard(Screen):
         <eLabel position="25,18" size="680,38" text="System / Hardware" font="Regular;25" foregroundColor="#e6d500" />
         <eLabel position="745,18" size="680,38" text="Memory / Storage / Temperature" font="Regular;25" foregroundColor="#e6d500" />
         <widget name="system" position="25,65" size="680,265" font="Regular;21" />
-        <widget name="resources" position="745,65" size="680,215" font="Regular;21" />\n        <widget name="protocols" position="745,286" size="680,44" font="Regular;20" foregroundColor="#33cc33" />
+        <widget name="resources" position="745,65" size="680,215" font="Regular;21" />
+        <widget name="protocols" position="745,286" size="680,44" font="Regular;20" foregroundColor="#33cc33" />
         <eLabel position="25,350" size="680,38" text="Services / Processes" font="Regular;25" foregroundColor="#3399ff" />
         <eLabel position="745,350" size="680,38" text="Health / Mounts" font="Regular;25" foregroundColor="#3399ff" />
         <widget name="services" position="25,397" size="680,280" font="Regular;20" />
@@ -2576,7 +2577,8 @@ class GSUActiveCAM(Screen):
     """Visual OSCam/CAM monitor with a compact live table and safe actions."""
     skin = """
     <screen name="GSUActiveCAM" position="center,center" size="1500,820" title="OSCam Information">
-        <eLabel position="25,12" size="710,32" text="CAM / SRV status" font="Regular;21" foregroundColor="#3399ff" />\n        <widget name="summary" position="25,48" size="710,95" font="Regular;21" />
+        <eLabel position="25,12" size="710,32" text="CAM / SRV status" font="Regular;21" foregroundColor="#3399ff" />
+        <widget name="summary" position="25,48" size="710,95" font="Regular;21" />
         <widget name="service_context" position="760,20" size="715,52" font="Regular;21" foregroundColor="#e6d500" />
         <widget name="ecm_context" position="760,73" size="715,52" font="Regular;20" foregroundColor="#33cc33" />
         <widget name="live_status" position="25,148" size="1450,32" font="Regular;20" foregroundColor="#33cc33" />
