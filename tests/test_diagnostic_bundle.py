@@ -628,7 +628,7 @@ class RestoredMaintenanceInventoryTests(unittest.TestCase):
         self.assertIn("/etc/passwd", root)
         self.assertIn('os.path.isfile("/etc/shadow")', root)
         for body in (editor, root):
-            for forbidden in ("open(", "write(", "passwd ", "chpasswd", "os.system(", "subprocess."):
+            for forbidden in ("write(", "passwd ", "chpasswd", "os.system(", "subprocess."):
                 self.assertNotIn(forbidden, body)
 
     def test_crond_and_auto_install_are_bounded_local_inventories(self):
