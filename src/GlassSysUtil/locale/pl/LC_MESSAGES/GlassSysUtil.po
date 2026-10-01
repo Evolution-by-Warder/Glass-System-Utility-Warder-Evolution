@@ -179,3 +179,279 @@ msgstr "Diagnostyka sieci"
 
 msgid "Diagnostic Summary"
 msgstr "Podsumowanie diagnostyki"
+
+msgid "CPU: %s"
+msgstr "CPU: %s"
+
+msgid "N/A"
+msgstr "N/A"
+
+msgid "Hardware serial interface: %s"
+msgstr "Hardware serial interface: %s"
+
+msgid "available (hidden)"
+msgstr "available (hidden)"
+
+msgid "not exposed"
+msgstr "not exposed"
+
+msgid "CPU cores: %s"
+msgstr "CPU cores: %s"
+
+msgid "CPU frequency: %.0f-%.0f MHz"
+msgstr "CPU frequency: %.0f-%.0f MHz"
+
+msgid "Default gateway: %s"
+msgstr "Default gateway: %s"
+
+msgid "DNS: %s"
+msgstr "DNS: %s"
+
+msgid "Process: %s"
+msgstr "Process: %s"
+
+msgid "RUNNING"
+msgstr "RUNNING"
+
+msgid "not detected"
+msgstr "not detected"
+
+msgid "Process IDs: %s"
+msgstr "Process IDs: %s"
+
+msgid "PID file: %s"
+msgstr "PID file: %s"
+
+msgid "Config: %s"
+msgstr "Config: %s"
+
+msgid "not found"
+msgstr "not found"
+
+msgid "Config dir: %s"
+msgstr "Config dir: %s"
+
+msgid "Enigma2 tuner sockets"
+msgstr "Enigma2 tuner sockets"
+
+msgid "Enigma2 tuner socket table: not exposed"
+msgstr "Enigma2 tuner socket table: not exposed"
+
+msgid "DVB device adapters: %s"
+msgstr "DVB device adapters: %s"
+
+msgid "Kernel log: %s"
+msgstr "Kernel log: %s"
+
+msgid "available"
+msgstr "available"
+
+msgid "not available"
+msgstr "not available"
+
+msgid "GSU Health Check"
+msgstr "GSU Health Check"
+
+msgid "[%s] Memory: %.0f%% available"
+msgstr "[%s] Memory: %.0f%% available"
+
+msgid "[INFO] Memory: data not exposed"
+msgstr "[INFO] Memory: data not exposed"
+
+msgid "[INFO] Storage: no physical filesystem mounts detected"
+msgstr "[INFO] Storage: no physical filesystem mounts detected"
+
+msgid "[PASS] Network link: %s"
+msgstr "[PASS] Network link: %s"
+
+msgid "[WARNING] Network link: no detected interface is up"
+msgstr "[WARNING] Network link: no detected interface is up"
+
+msgid "[INFO] Network link: interfaces not exposed"
+msgstr "[INFO] Network link: interfaces not exposed"
+
+msgid "[%s] Default gateway: %s"
+msgstr "[%s] Default gateway: %s"
+
+msgid "[%s] DNS configuration: %s"
+msgstr "[%s] DNS configuration: %s"
+
+msgid "[%s] Enigma2 process: %s"
+msgstr "[%s] Enigma2 process: %s"
+
+msgid "running"
+msgstr "running"
+
+msgid "[%s] Temperature: hottest detected %.1f C"
+msgstr "[%s] Temperature: hottest detected %.1f C"
+
+msgid "[INFO] Temperature: measurement not exposed"
+msgstr "[INFO] Temperature: measurement not exposed"
+
+msgid "[INFO] Network mounts: %d active"
+msgstr "[INFO] Network mounts: %d active"
+
+msgid "[INFO] CAM: %s"
+msgstr "[INFO] CAM: %s"
+
+msgid "no known CAM process detected"
+msgstr "no known CAM process detected"
+
+msgid "[PASS] Tuner interfaces: detected"
+msgstr "[PASS] Tuner interfaces: detected"
+
+msgid "[INFO] Tuner interfaces: not exposed through detected system interfaces"
+msgstr "[INFO] Tuner interfaces: not exposed through detected system interfaces"
+
+msgid "Health Check is read-only. INFO means a capability is absent, optional, or not enough evidence exists to call it a fault."
+msgstr "Health Check is read-only. INFO means a capability is absent, optional, or not enough evidence exists to call it a fault."
+
+msgid "Virtual memory: %s"
+msgstr "Virtual memory: %s"
+
+msgid "Process runtime: %dd %02d:%02d:%02d"
+msgstr "Process runtime: %dd %02d:%02d:%02d"
+
+msgid "Runtime version file: %s"
+msgstr "Runtime version file: %s"
+
+msgid "OSCam runtime version file: not found"
+msgstr "OSCam runtime version file: not found"
+
+msgid "Readers configured: %d"
+msgstr "Readers configured: %d"
+
+msgid "Accounts configured: %d"
+msgstr "Accounts configured: %d"
+
+msgid "Version: %s"
+msgstr "Version: %s"
+
+msgid "Status: %s"
+msgstr "Status: %s"
+
+msgid "Available upgrades: not checked here (repository queries may block this screen)."
+msgstr "Available upgrades: not checked here (repository queries may block this screen)."
+
+msgid "[INFO] Network interfaces not exposed."
+msgstr "[INFO] Network interfaces not exposed."
+
+msgid "[WARNING] Default gateway not detected."
+msgstr "[WARNING] Default gateway not detected."
+
+msgid "Summary: %d interface(s) up, %d with IPv4."
+msgstr "Summary: %d interface(s) up, %d with IPv4."
+
+msgid "Gateway reachability: %s"
+msgstr "Gateway reachability: %s"
+
+msgid "no reply"
+msgstr "no reply"
+
+msgid "DNS servers: %s"
+msgstr "DNS servers: %s"
+
+msgid "Routes:"
+msgstr "Routes:"
+
+msgid "[INFO] %s -> %s [%s] mounted; usage unavailable"
+msgstr "[INFO] %s -> %s [%s] mounted; usage unavailable"
+
+msgid "[INFO] No active NFS/CIFS mounts."
+msgstr "[INFO] No active NFS/CIFS mounts."
+
+msgid "Client capabilities:"
+msgstr "Client capabilities:"
+
+msgid "NFS client: %s"
+msgstr "NFS client: %s"
+
+msgid "CIFS client: %s"
+msgstr "CIFS client: %s"
+
+msgid "Persistent mount configuration: %s"
+msgstr "Persistent mount configuration: %s"
+
+msgid "Doctor is read-only; credentials and mount configuration values are not displayed."
+msgstr "Doctor is read-only; credentials and mount configuration values are not displayed."
+
+msgid "Local time: %s"
+msgstr "Local time: %s"
+
+msgid "UTC time: %s"
+msgstr "UTC time: %s"
+
+msgid "Time sync: %s"
+msgstr "Time sync: %s"
+
+msgid "no known time-sync facility detected"
+msgstr "no known time-sync facility detected"
+
+msgid "chrony tracking:"
+msgstr "chrony tracking:"
+
+msgid "NTP peers:"
+msgstr "NTP peers:"
+
+msgid "[WARNING] Enigma2 process not detected."
+msgstr "[WARNING] Enigma2 process not detected."
+
+msgid "[PASS] Enigma2 running  PID %s"
+msgstr "[PASS] Enigma2 running  PID %s"
+
+msgid "[INFO] Open file descriptors: %d"
+msgstr "[INFO] Open file descriptors: %d"
+
+msgid "[INFO] Open file descriptors: not exposed"
+msgstr "[INFO] Open file descriptors: not exposed"
+
+msgid "[%s] Known crash logs: %d"
+msgstr "[%s] Known crash logs: %d"
+
+msgid "Enigma2 binary: %s"
+msgstr "Enigma2 binary: %s"
+
+msgid "Python: %s"
+msgstr "Python: %s"
+
+msgid "Init scripts:"
+msgstr "Init scripts:"
+
+msgid "Detected CAM binaries:"
+msgstr "Detected CAM binaries:"
+
+msgid "[INFO   ] CAM       no known CAM process detected"
+msgstr "[INFO   ] CAM       no known CAM process detected"
+
+msgid "[INFO   ] Net mounts %d active"
+msgstr "[INFO   ] Net mounts %d active"
+
+msgid "[INFO   ] Listeners  %d detected"
+msgstr "[INFO   ] Listeners  %d detected"
+
+msgid "[INFO] No physical mounted filesystems detected."
+msgstr "[INFO] No physical mounted filesystems detected."
+
+msgid "Summary: %d filesystem(s), %d warning(s)."
+msgstr "Summary: %d filesystem(s), %d warning(s)."
+
+msgid "Detected runtime capabilities"
+msgstr "Detected runtime capabilities"
+
+msgid "Unable to check for updates.\n\n%s"
+msgstr "Unable to check for updates.\n\n%s"
+
+msgid "Update installation failed.\n\n%s"
+msgstr "Update installation failed.\n\n%s"
+
+msgid "Live OSCam: %d active client/reader row%s  |  OK = row details"
+msgstr "Live OSCam: %d active client/reader row%s  |  OK = row details"
+
+msgid "Active CAM restart failed.\n\n%s"
+msgstr "Active CAM restart failed.\n\n%s"
+
+msgid "Diagnostic bundle created:\n%s"
+msgstr "Diagnostic bundle created:\n%s"
+
+msgid "Unable to create diagnostic bundle.\n\n%s"
+msgstr "Unable to create diagnostic bundle.\n\n%s"
