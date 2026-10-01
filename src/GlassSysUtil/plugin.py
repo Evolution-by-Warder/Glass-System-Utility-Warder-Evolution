@@ -609,6 +609,7 @@ def oscam_live_rows():
     if payload is None:
         return [], reason
     rows = []
+    seen = set()
     for item in _oscam_status_rows(payload):
         flat = _oscam_flatten_scalars(item)
         raw_type = _oscam_find_scalar(flat, "type", "typ")
@@ -634,11 +635,11 @@ def oscam_live_rows():
             signature = tuple(_oscam_display(row.get(key)) for key in
                               ("name", "type", "address", "port", "protocol", "srvid", "caid",
                                "provid", "channel", "ecm", "idle", "status"))
-            if signature not in {tuple(_oscam_display(existing.get(key)) for key in
-                                      ("name", "type", "address", "port", "protocol", "srvid", "caid",
-                                       "provid", "channel", "ecm", "idle", "status"))
-                                 for existing in rows}:
+            if signature not in seen:
+                seen.add(signature)
                 rows.append(row)
+                if len(rows) >= 32:
+                    break
     return rows, "" if rows else "API reachable, no useful client/reader rows recognized."
 
 
@@ -1889,6 +1890,7 @@ class GSUActiveCAM(Screen):
         self["actions"] = ActionMap(
             ["OkCancelActions", "ColorActions", "DirectionActions"], {
                 "cancel": self.close,
+                "ok": self.show_selected_row,
                 "red": self.close,
                 "green": self.restart_cam,
                 "yellow": self._refresh,
@@ -2015,6 +2017,33 @@ class GSUActiveCAM(Screen):
                 except Exception:
                     pass
         return Screen.close(self, *args, **kwargs)
+
+    def show_selected_row(self):
+        try:
+            current = self["table"].getCurrent()
+        except Exception:
+            current = None
+        row = None
+        if self._table_uses_list_source and current:
+            row = current[0] if isinstance(current, (tuple, list)) else None
+        elif current:
+            # Text fallback cannot safely reconstruct the original row.
+            row = None
+        if not isinstance(row, dict):
+            return
+        values = _oscam_table_values(row)
+        lines = [
+            "Reader / User: %s" % (values["name"] or "N/A"),
+            "Address: %s" % (values["address"] or "N/A"),
+            "Port: %s" % (values["port"] or "N/A"),
+            "Protocol: %s" % (values["protocol"] or "N/A"),
+            "Service: %s" % (values["service"] or "N/A"),
+            "Channel: %s" % (values["channel"] or "N/A"),
+            "ECM: %s" % (values["ecm"] or "N/A"),
+            "Idle: %s" % (values["idle"] or "N/A"),
+            "Status: %s" % (values["status"] or "N/A"),
+        ]
+        self.session.open(MessageBox, "\n".join(lines), MessageBox.TYPE_INFO)
 
     def show_details(self):
         active = _active_cam()
