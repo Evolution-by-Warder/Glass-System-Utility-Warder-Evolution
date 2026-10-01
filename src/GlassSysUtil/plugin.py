@@ -2812,7 +2812,7 @@ class SysUtilMngMain(Screen):
         (_("Crond Manager"), "cronmanager"),
         (_("Text editor"), "texteditor"),
         (_("Reset root password"), "rootpassword"),
-        (_("Legacy CAM status"), "legacycams"),
+        (_("Legacy & Maintenance"), "legacymaintenance"),
         (_("Warder Diagnostics & Tools"), "tools"),
         (_("Check for updates"), "update"),
         (_("Restart Enigma2 GUI"), "restart"),
@@ -2825,11 +2825,7 @@ class SysUtilMngMain(Screen):
         "devicemanager": _("Detected devices and filesystems. Destructive legacy actions remain disabled."),
         "swapmanager": _("Current swap state. Creation and enable/disable actions remain safety-gated."),
         "packagetools": _("Local package/script capabilities. Obsolete remote installers are not restored."),
-        "channelsettings": _("Channel-setting capability status; bouquets remain untouched."),
-        "cronmanager": _("Crond capability and storage status; job editing remains gated."),
-        "texteditor": _("Text-editor migration status; arbitrary system-file writes remain gated."),
-        "rootpassword": _("Security-reviewed root account status; password reset remains gated."),
-        "legacycams": _("Conditional CCcam/Mbox/MGcamd/NCam detection; absent families stay unavailable."),
+        "legacymaintenance": _("Conditional legacy CAM, channel, cron, editor and root-account migration status."),
         "tools": _("Modern Warder health checks, network, mounts, runtime diagnostics, logs and support bundle."),
         "update": _("Check the immutable Warder Evolution release channel for an update."),
         "restart": _("Restart only the Enigma2 graphical interface after confirmation."),
@@ -2897,11 +2893,6 @@ class SysUtilMngMain(Screen):
             "devicemanager": (_("Device Manager"), device_manager_information),
             "swapmanager": (_("Swap Manager"), swap_manager_information),
             "packagetools": (_("IPK/DEB and user scripts"), package_tools_information),
-            "channelsettings": (_("Channel settings"), channel_settings_information),
-            "cronmanager": (_("Crond Manager"), cron_manager_information),
-            "texteditor": (_("Text editor"), text_editor_information),
-            "rootpassword": (_("Reset root password"), root_password_information),
-            "legacycams": (_("Legacy CAM status"), conditional_legacy_cam_information),
         }
         if action in actions:
             title, fnc = actions[action]
@@ -2912,6 +2903,8 @@ class SysUtilMngMain(Screen):
             self.session.open(GSUChannelDashboard)
         elif action == "cammonitor":
             self.session.open(GSUActiveCAM)
+        elif action == "legacymaintenance":
+            self._info(_("Legacy & Maintenance"), "\\n\\n".join((conditional_legacy_cam_information(), channel_settings_information(), cron_manager_information(), text_editor_information(), root_password_information())))
         elif action == "tools":
             self.open_tools()
         elif action == "update":
