@@ -2112,6 +2112,7 @@ class GSUActiveCAM(Screen):
         # Receiver polish: narrower identity column, wider status, DVBAPI channel fallback.
         # 13.31-w12 release validation.
         # post-w12 operational batch validation
+        # 13.32-w13 final candidate
         self._refresh()
         self._start_auto_refresh()
 
