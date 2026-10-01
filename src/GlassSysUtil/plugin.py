@@ -397,14 +397,37 @@ def osd_ecm_information():
     rows += ["", _("OSD ECM display settings remain gated until receiver validation.")]
     return "\n".join(rows)
 
-def conditional_legacy_cam_information():
-    """Report legacy CAM families only when they really exist on this receiver."""
-    families = (("CCcam", "cccam"), ("Mbox", "mbox"), ("MGcamd", "mgcamd"), ("NCam", "ncam"))
-    rows = []
-    for label, needle in families:
-        matches = _find_processes(needle)
-        rows.append("%s: %s" % (label, _("RUNNING") if matches else _("not detected")))
+def legacy_cam_information(family):
+    """Read-only original-style runtime view for legacy CAM families."""
+    definitions = {
+        "cccam": ("CCcam", "cccam", ("/etc/CCcam.cfg", "/etc/CCcam/CCcam.cfg", "/usr/keys/CCcam.cfg", "/var/keys/CCcam.cfg")),
+        "mbox": ("Mbox", "mbox", ("/var/keys/mbox.cfg", "/usr/keys/mbox.cfg", "/etc/mbox.cfg", "/etc/tuxbox/config/mbox.cfg")),
+    }
+    label, needle, configs = definitions.get(family, (family, family, ()))
+    matches = _find_processes(needle)
+    rows = [_("%s runtime") % label, _("Process: %s") % (_("RUNNING") if matches else _("not detected"))]
+    if matches:
+        rows.append(_("Process IDs: %s") % ", ".join(pid for pid, argv in matches[:8]))
+        for pid, argv in matches[:3]:
+            if argv:
+                rows.append(_("Executable: %s") % os.path.basename(argv[0]))
+    found = [path for path in configs if os.path.isfile(path)]
+    rows += ["", _("Configuration: %s") % (found[0] if found else _("not detected"))]
+    if found:
+        try:
+            rows.append(_("Configuration size: %s") % _human_bytes(os.path.getsize(found[0])))
+        except Exception:
+            pass
+    rows += ["", _("Configuration contents and credentials are never displayed."),
+             _("Legacy CAM state changes remain disabled until receiver validation.")]
     return "\n".join(rows)
+
+
+def conditional_legacy_cam_information():
+    """Compact legacy CAM capability overview used by diagnostics."""
+    families = (("CCcam", "cccam"), ("Mbox", "mbox"), ("MGcamd", "mgcamd"), ("NCam", "ncam"))
+    return "\n".join("%s: %s" % (label, _("RUNNING") if _find_processes(needle) else _("not detected"))
+                     for label, needle in families)
 
 
 def cron_manager_information():
@@ -3247,6 +3270,17 @@ class SysUtilMngMain(Screen):
             self.session.open(GSUOSDECMCenter)
         elif action == "autoinstall":
             self.session.open(GSUAutoInstallCenter)
+
+
+
+class GSULegacyCAMCenter(GSUOriginalStatusCenter):
+    def __init__(self, session, family):
+        self._family = family
+        title = "CCcam Information" if family == "cccam" else "Mbox Information"
+        GSUOriginalStatusCenter.__init__(
+            self, session, _(title), lambda: legacy_cam_information(self._family),
+            _("Legacy CAM runtime and configuration location are inspected read-only; credentials are never displayed."))
+
 
 
 
