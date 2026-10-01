@@ -433,3 +433,14 @@ Confirmed:
 Status: **REAL RECEIVER PASS / recovery-reference checkpoint**.
 
 Known non-blocking follow-up: localization is not yet complete inside every diagnostic content screen (for example Service Dashboard title/body remains English). Handle as a later localization batch without changing the approved OSCam table layout.
+
+
+## 13.35-w16 localization candidate — 2026-10-01
+
+- Based on the 13.34-w15 REAL RECEIVER PASS recovery/reference checkpoint.
+- Expands gettext coverage across Health Check, Service Dashboard, Network Health, Network Mount Doctor, Storage Health, Enigma2 Runtime Health, Active CAM / OSCam status text and common system/runtime diagnostics.
+- Slovak runtime diagnostics are translated; supported CS/DE/PL/IT/ES/FR catalogs retain complete gettext-key coverage with English fallback where a reviewed translation is not yet available.
+- Technical diagnostic values, OSCam table layout/data extraction, updater transport/install behavior and state-changing controls are intentionally unchanged.
+- Build remains centralized through tools/build-ipk.sh; packaged locales are compiled .mo files and source .po files are excluded from the IPK.
+- STATIC/CI: candidate validation required after synchronized 13.35-w16 release identity update.
+- REAL RECEIVER: REVIEW REQUIRED before this version becomes a new recovery/reference checkpoint.
