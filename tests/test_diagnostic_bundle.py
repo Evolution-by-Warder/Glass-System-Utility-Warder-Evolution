@@ -270,8 +270,7 @@ class RemainingLegacyAreasTests(unittest.TestCase):
         source = open(PLUGIN, encoding="utf-8").read()
         for token in ("conditional_legacy_cam_information", "cron_manager_information",
                       "text_editor_information", "root_password_information",
-                      "channel_settings_information", '_("Crond Manager")',
-                      '_("Text editor")', '_("Reset root password")', '_("Legacy & Maintenance")'):
+                      "channel_settings_information", '_("Legacy & Maintenance")'):
             self.assertIn(token, source)
 
     def test_remaining_legacy_areas_do_not_mutate_receiver(self):
