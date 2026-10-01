@@ -1273,6 +1273,26 @@ def active_cam_information():
     return "\n".join(rows)
 
 
+
+def cam_srv_context_information():
+    """Original GSU CAM/SRV context assembled without exposing secrets."""
+    cam = _active_cam()
+    service = current_service_technical_information()
+    rows = []
+    rows.append(_("Active CAM: %s") % (cam["name"] if cam else _("None")))
+    rows.append(_("CAM family: %s") % (cam["family"] if cam else _("N/A")))
+    rows.append(_("Service: %s") % (service.get("name") or _("not exposed")))
+    rows.append(_("Provider: %s") % (service.get("provider") or _("not exposed")))
+    fe = service.get("frontend") or {}
+    orbital = fe.get("orbital_position")
+    if orbital not in (None, ""):
+        rows.append(_("Orbital position: %s") % orbital)
+    caids = service.get("caids") or []
+    rows.append(_("Available CAIDs: %s") % (
+        ", ".join("%04X" % value for value in caids) if caids else _("not exposed")))
+    return "\n".join(rows)
+
+
 def _active_cam_restart_command():
     """Discover an image-provided restart path; never fall back to killall."""
     cam = _active_cam()
@@ -2292,7 +2312,7 @@ class GSUActiveCAM(Screen):
 
     def __init__(self, session):
         Screen.__init__(self, session)
-        self["summary"] = Label(active_cam_summary())
+        self["summary"] = Label(cam_srv_context_information())
         self["live_status"] = Label("")
         self["service_context"] = Label("")
         self["ecm_context"] = Label("")
@@ -2364,7 +2384,7 @@ class GSUActiveCAM(Screen):
         self._refresh_in_progress = True
         try:
             try:
-                self["summary"].setText(active_cam_summary())
+                self["summary"].setText(cam_srv_context_information())
                 self["service_context"].setText(_("Channel: %s") % (_current_service_name() or _("not exposed")))
             except Exception:
                 pass
