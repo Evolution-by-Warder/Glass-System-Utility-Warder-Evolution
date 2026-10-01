@@ -324,8 +324,9 @@ class UpdateDiscoveryUXTests(unittest.TestCase):
             data = open(path, encoding="utf-8").read()
             self.assertIn(msgid, data)
             block = data[data.index(msgid):].split("\n\n", 1)[0]
-            self.assertEqual(block.count("%d"), 1, (lang, block))
-            self.assertNotIn("%s", block)
+            msgstr = [line for line in block.splitlines() if line.startswith("msgstr ")][0]
+            self.assertEqual(msgstr.count("%d"), 1, (lang, block))
+            self.assertNotIn("%s", msgstr)
 
     def test_background_check_only_prompts_for_newer_release(self):
         source = open(PLUGIN, encoding="utf-8").read()
