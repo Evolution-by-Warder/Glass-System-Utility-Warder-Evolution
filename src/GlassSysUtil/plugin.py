@@ -1933,6 +1933,7 @@ class GSUActiveCAM(Screen):
         # w11 fixed-column monitor contract: source, package and receiver UI move together.
         # Candidate is gated by CI before immutable release publication.
         # Final w11 release candidate validation marker.
+        # Receiver polish: narrower identity column, wider status, DVBAPI channel fallback.
         self._refresh()
         self._start_auto_refresh()
 
