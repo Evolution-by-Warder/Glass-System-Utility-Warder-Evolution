@@ -180,3 +180,21 @@ class ServiceDashboardTests(unittest.TestCase):
         source = open(PLUGIN, encoding="utf-8").read()
         self.assertEqual(source.count('("Service Dashboard", "servicedashboard")'), 1)
         self.assertEqual(source.count('"servicedashboard": ("Service Dashboard", service_dashboard_information)'), 1)
+
+
+class StorageHealthTests(unittest.TestCase):
+    def test_storage_health_is_read_only_and_actionable(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        start = source.index("def storage_health_information")
+        end = source.index("def filesystem_health_information", start)
+        body = source[start:end]
+        self.assertIn("shutil.disk_usage", body)
+        self.assertIn("free_pct < 5", body)
+        self.assertIn("read-only", body)
+        self.assertNotIn("mkfs", body)
+        self.assertNotIn("fsck", body)
+
+    def test_storage_health_menu_wiring(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        self.assertEqual(source.count('("Storage Health", "storagehealth")'), 1)
+        self.assertEqual(source.count('"storagehealth": ("Storage Health", storage_health_information)'), 1)
