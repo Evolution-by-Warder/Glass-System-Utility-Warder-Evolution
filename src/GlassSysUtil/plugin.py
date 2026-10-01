@@ -2077,7 +2077,9 @@ class GSUActiveCAM(Screen):
     """Visual OSCam/CAM monitor with a compact live table and safe actions."""
     skin = """
     <screen name="GSUActiveCAM" position="center,center" size="1500,760" title="Active CAM / OSCam Monitor">
-        <widget name="summary" position="25,20" size="1450,105" font="Regular;22" />
+        <widget name="summary" position="25,20" size="710,105" font="Regular;22" />
+        <widget name="service_context" position="760,20" size="715,52" font="Regular;21" foregroundColor="#e6d500" />
+        <widget name="ecm_context" position="760,73" size="715,52" font="Regular;20" foregroundColor="#33cc33" />
         <widget name="live_status" position="25,128" size="1450,32" font="Regular;20" foregroundColor="#33cc33" />
         <eLabel position="45,170" size="165,34" font="Regular;18" foregroundColor="#e6d500" text="Reader / User" />
         <eLabel position="225,170" size="190,34" font="Regular;18" foregroundColor="#e6d500" text="Address" />
@@ -2122,12 +2124,14 @@ class GSUActiveCAM(Screen):
         Screen.__init__(self, session)
         self["summary"] = Label(active_cam_summary())
         self["live_status"] = Label("")
+        self["service_context"] = Label("")
+        self["ecm_context"] = Label("")
         self._table_uses_list_source = List is not None
         if self._table_uses_list_source:
             self["table"] = List([])
         else:
             self["table"] = MenuList([])
-        self.setTitle(_("Active CAM / OSCam Monitor"))
+        self.setTitle(_("CAM/SRV Manager"))
         self["key_red"] = Label(_("Close"))
         command, detail = _active_cam_restart_command()
         self.restart_command = command
@@ -2191,6 +2195,7 @@ class GSUActiveCAM(Screen):
         try:
             try:
                 self["summary"].setText(active_cam_summary())
+                self["service_context"].setText(_("Channel: %s") % (_current_service_name() or _("not exposed")))
             except Exception:
                 pass
             active = _active_cam()
@@ -2199,6 +2204,11 @@ class GSUActiveCAM(Screen):
                 table_rows, reason = oscam_live_rows()
             try:
                 self._set_live_rows(table_rows, reason)
+                if table_rows:
+                    values = _oscam_table_values(table_rows[0])
+                    self["ecm_context"].setText(_("ECM: %s   CA: %s   Status: %s") % (values["ecm"] or "N/A", values["service"] or "N/A", values["status"] or "N/A"))
+                else:
+                    self["ecm_context"].setText(_("ECM: no live data"))
             except Exception:
                 pass
             command, detail = _active_cam_restart_command()
@@ -2243,6 +2253,12 @@ class GSUActiveCAM(Screen):
                     self._set_live_rows(rows, reason)
                     try:
                         self["summary"].setText(active_cam_summary())
+                        self["service_context"].setText(_("Channel: %s") % (_current_service_name() or _("not exposed")))
+                        if rows:
+                            values = _oscam_table_values(rows[0])
+                            self["ecm_context"].setText(_("ECM: %s   CA: %s   Status: %s") % (values["ecm"] or "N/A", values["service"] or "N/A", values["status"] or "N/A"))
+                        else:
+                            self["ecm_context"].setText(_("ECM: no live data"))
                     except Exception:
                         pass
                 finally:
