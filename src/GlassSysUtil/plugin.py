@@ -2406,9 +2406,11 @@ class SysUtilMngMain(Screen):
     </screen>
     """
     MENU = [
+        (_("System Information"), "originalsystem"),
+        (_("Channel Information"), "originalchannel"),
+        (_("CAM/SRV Manager"), "cammonitor"),
         (_("Health Check"), "healthcheck"),
         (_("Service Dashboard"), "servicedashboard"),
-        (_("Active CAM / OSCam Monitor"), "cammonitor"),
         (_("Network Health"), "nethealth"),
         (_("Network Mount Doctor"), "mountdoctor"),
         (_("Storage Health"), "storagehealth"),
@@ -2454,6 +2456,8 @@ class SysUtilMngMain(Screen):
         index = self["menu"].getSelectedIndex()
         action = self.MENU[index][1]
         actions = {
+            "originalsystem": (_("System Information"), original_system_overview_information),
+            "originalchannel": (_("Channel Information"), original_channel_overview_information),
             "system": ("System & Hardware", system_information),
             "hardwareid": ("Hardware Identity", hardware_identity_information),
             "temps": ("Temperatures", temperature_information),
