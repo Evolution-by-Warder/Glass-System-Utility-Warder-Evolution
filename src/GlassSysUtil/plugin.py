@@ -972,7 +972,7 @@ def _safe_diagnostic_file(path, limit=131072):
 
 def health_check_information():
     """Build a conservative, read-only health overview from exposed capabilities."""
-    rows = ["GSU Health Check", ""]
+    rows = [_("GSU Health Check"), ""]
 
     # Memory pressure: MemAvailable is more useful than MemFree on Linux.
     mem = {}
@@ -1066,7 +1066,7 @@ def health_check_information():
     else:
         rows.append("[INFO] Tuner interfaces: not exposed through detected system interfaces")
 
-    rows += ["", "Health Check is read-only. INFO means a capability is absent, optional, or not enough evidence exists to call it a fault."]
+    rows += ["", _("Health Check is read-only. INFO means a capability is absent, optional, or not enough evidence exists to call it a fault.")]
     return "\n".join(rows)
 
 def create_diagnostic_bundle():
@@ -1375,7 +1375,7 @@ def network_health_information():
     rows.append("[%s] DNS resolver configuration: %s" % (
         "PASS" if resolvers else "WARNING",
         ", ".join(resolvers) if resolvers else "none detected"))
-    rows += ["", "Summary: %d interface(s) up, %d with IPv4." % (len(up), len(addressed)),
+    rows += ["", _("Summary: %d interface(s) up, %d with IPv4.") % (len(up), len(addressed)),
              _("Network Health is read-only; ping failure alone is reported as a warning, not proof of link failure.")]
     return "\n".join(rows)
 
@@ -1432,7 +1432,7 @@ def network_mount_doctor_information():
     files = [path for path in ("/etc/fstab", "/etc/enigma2/automounts.xml", "/etc/auto.network")
              if os.path.isfile(path)]
     rows.append("  Persistent mount configuration: %s" % (", ".join(files) if files else "not detected"))
-    rows += ["", "Doctor is read-only; credentials and mount configuration values are not displayed."]
+    rows += ["", _("Doctor is read-only; credentials and mount configuration values are not displayed.")]
     return "\n".join(rows)
 
 
@@ -1645,7 +1645,7 @@ def storage_health_information():
             ("  " + ", ".join(notes)) if notes else ""))
     if not seen:
         rows.append("[INFO] No physical mounted filesystems detected.")
-    rows += ["", "Summary: %d filesystem(s), %d warning(s)." % (seen, warnings),
+    rows += ["", _("Summary: %d filesystem(s), %d warning(s).") % (seen, warnings),
              _("Storage Health is read-only and does not run destructive filesystem tests.")]
     return "\n".join(rows)
 
@@ -2172,7 +2172,7 @@ class GSUActiveCAM(Screen):
             self.restart_command = command
             self.restart_detail = detail
             try:
-                self["key_green"].setText("Restart CAM" if command else "Restart unavailable")
+                self["key_green"].setText(_("Restart CAM") if command else _("Restart unavailable"))
             except Exception:
                 pass
         finally:
