@@ -265,6 +265,25 @@ class NetworkHealthTests(unittest.TestCase):
         self.assertEqual(source.count('"nethealth": (_("Network Health"), network_health_information)'), 1)
 
 
+class RemainingLegacyAreasTests(unittest.TestCase):
+    def test_remaining_original_areas_are_explicit(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        for token in ("conditional_legacy_cam_information", "cron_manager_information",
+                      "text_editor_information", "root_password_information",
+                      "channel_settings_information", '_("Crond Manager")',
+                      '_("Text editor")', '_("Reset root password")'):
+            self.assertIn(token, source)
+
+    def test_remaining_legacy_areas_do_not_mutate_receiver(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        start = source.index("def conditional_legacy_cam_information")
+        end = source.index("def service_information", start)
+        body = source[start:end]
+        for forbidden in ("subprocess.", "os.system(", "write(", "open(", "passwd ",
+                          "chpasswd", "crontab ", "rm ", "unlink(", "rename(", "killall"):
+            self.assertNotIn(forbidden, body)
+
+
 class LegacyFunctionMigrationSafetyTests(unittest.TestCase):
     def test_device_swap_and_package_areas_are_restored(self):
         source = open(PLUGIN, encoding="utf-8").read()
