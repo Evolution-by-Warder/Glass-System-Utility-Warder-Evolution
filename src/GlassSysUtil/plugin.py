@@ -2400,15 +2400,137 @@ class GSUActiveCAM(Screen):
             self.session.open(MessageBox, _("Unable to start CAM restart worker."), MessageBox.TYPE_ERROR, timeout=8)
 
 class SysUtilMngMain(Screen):
+    """Original GSU hierarchy with Warder backends folded into a compact tools group."""
     skin = """
-    <screen name="SysUtilMngMain" position="center,center" size="980,690" title="Glass System Utility - Warder Evolution">
-        <widget name="menu" position="35,35" size="910,610" font="Regular;28" itemHeight="46" />
+    <screen name="SysUtilMngMain" position="center,center" size="1180,720" title="Glass System Utility - Warder Evolution">
+        <eLabel position="25,18" size="1130,48" text="Glass System Utility - Warder Evolution" font="Regular;30" foregroundColor="#e6d500" />
+        <widget name="menu" position="35,82" size="760,520" font="Regular;27" itemHeight="42" />
+        <eLabel position="820,82" size="320,38" text="Warder Evolution" font="Regular;24" foregroundColor="#3399ff" />
+        <widget name="context" position="820,132" size="320,300" font="Regular;21" />
+        <widget name="availability" position="820,455" size="320,90" font="Regular;20" />
+        <widget name="key_red" position="35,648" size="250,45" font="Regular;24" foregroundColor="#ff3333" />
+        <widget name="key_green" position="330,648" size="250,45" font="Regular;24" foregroundColor="#33cc33" />
+        <widget name="key_yellow" position="625,648" size="250,45" font="Regular;24" foregroundColor="#e6d500" />
+        <widget name="key_blue" position="920,648" size="220,45" font="Regular;24" foregroundColor="#3399ff" />
     </screen>
     """
     MENU = [
         (_("System Information"), "originalsystem"),
         (_("Channel Information"), "originalchannel"),
+        (_("OSCam Information"), "cammonitor"),
         (_("CAM/SRV Manager"), "cammonitor"),
+        (_("ECM Information"), "cammonitor"),
+        (_("Device Manager"), "storage"),
+        (_("Warder Diagnostics & Tools"), "tools"),
+        (_("Check for updates"), "update"),
+        (_("Restart Enigma2 GUI"), "restart"),
+        (_("About this build"), "about"),
+    ]
+    HELP = {
+        "originalsystem": _("System, memory, swap, storage, temperature, process and service overview."),
+        "originalchannel": _("Current service, tuner/frontend and CAM/ECM information in one dashboard."),
+        "cammonitor": _("Detected CAM/SRV state, live ECM/OSCam information and safe receiver actions."),
+        "storage": _("Detected storage and filesystem information. Destructive legacy actions remain disabled."),
+        "tools": _("Modern Warder health checks, network, mounts, runtime diagnostics, logs and support bundle."),
+        "update": _("Check the immutable Warder Evolution release channel for an update."),
+        "restart": _("Restart only the Enigma2 graphical interface after confirmation."),
+        "about": _("Build and migration status for Glass System Utility - Warder Evolution."),
+    }
+
+    def __init__(self, session):
+        Screen.__init__(self, session)
+        self["menu"] = MenuList([item[0] for item in self.MENU])
+        self["context"] = Label("")
+        self["availability"] = Label("")
+        self["key_red"] = Label(_("Close"))
+        self["key_green"] = Label(_("Open"))
+        self["key_yellow"] = Label(_("Refresh"))
+        self["key_blue"] = Label(_("Tools"))
+        self["actions"] = ActionMap(["OkCancelActions", "ColorActions", "DirectionActions"], {
+            "ok": self.ok, "cancel": self.close, "red": self.close, "green": self.ok,
+            "yellow": self._refresh_context, "blue": self.open_tools,
+            "up": self._up, "down": self._down,
+        }, -1)
+        self.setTitle(_("Glass System Utility - Warder Evolution"))
+        self.onShown.append(self._check_update_on_open)
+        self.onShown.append(self._refresh_context)
+
+    def _selected_action(self):
+        try:
+            return self.MENU[self["menu"].getSelectedIndex()][1]
+        except Exception:
+            return ""
+
+    def _refresh_context(self):
+        action = self._selected_action()
+        self["context"].setText(self.HELP.get(action, ""))
+        active = _active_cam()
+        cam = active_cam_summary() if active else _("CAM: not detected")
+        self["availability"].setText(_("Availability") + "\n" + cam)
+
+    def _up(self):
+        self["menu"].up()
+        self._refresh_context()
+
+    def _down(self):
+        self["menu"].down()
+        self._refresh_context()
+
+    def _check_update_on_open(self):
+        try:
+            self.onShown.remove(self._check_update_on_open)
+        except Exception:
+            pass
+        try:
+            GSUUpdater(self.session).check(silent=True)
+        except Exception:
+            pass
+
+    def _info(self, title, text):
+        self.session.open(GSUInfo, title, text)
+
+    def open_tools(self):
+        self.session.open(GSUWarderTools)
+
+    def ok(self):
+        action = self._selected_action()
+        actions = {
+            "originalsystem": (_("System Information"), original_system_overview_information),
+            "originalchannel": (_("Channel Information"), original_channel_overview_information),
+            "storage": (_("Device Manager"), storage_information),
+        }
+        if action in actions:
+            title, fnc = actions[action]
+            self._info(title, fnc())
+        elif action == "cammonitor":
+            self.session.open(GSUActiveCAM)
+        elif action == "tools":
+            self.open_tools()
+        elif action == "update":
+            GSUUpdater(self.session).check(silent=False)
+        elif action == "restart":
+            try:
+                from Screens.Standby import TryQuitMainloop
+                self.session.open(TryQuitMainloop, 3)
+            except Exception as exc:
+                self.session.open(MessageBox, str(exc), MessageBox.TYPE_ERROR)
+        elif action == "about":
+            self._info(_("About"), (
+                "Glass System Utility - Warder Evolution %s\n\n"
+                "GSU 13.20 content/visual structure is the migration baseline.\n"
+                "Legacy state-changing functions are restored only after modern safety review."
+            ) % VERSION)
+
+
+class GSUWarderTools(Screen):
+    """Modern diagnostics grouped behind the original GSU-style top level."""
+    skin = """
+    <screen name="GSUWarderTools" position="center,center" size="1050,690" title="Warder Diagnostics & Tools">
+        <widget name="menu" position="35,35" size="980,570" font="Regular;27" itemHeight="42" />
+        <widget name="key_red" position="35,625" size="250,45" font="Regular;24" foregroundColor="#ff3333" />
+    </screen>
+    """
+    MENU = [
         (_("Health Check"), "healthcheck"),
         (_("Service Dashboard"), "servicedashboard"),
         (_("Network Health"), "nethealth"),
@@ -2425,72 +2547,39 @@ class SysUtilMngMain(Screen):
         (_("Network Mounts (NFS/CIFS)"), "mounts"),
         (_("Logs & Diagnostics"), "logs"),
         (_("Create Diagnostic Bundle"), "diagbundle"),
-        (_("Check for updates"), "update"),
-        (_("Restart Enigma2 GUI"), "restart"),
-        (_("About this build"), "about"),
     ]
 
     def __init__(self, session):
         Screen.__init__(self, session)
         self["menu"] = MenuList([item[0] for item in self.MENU])
-        self["actions"] = ActionMap(["OkCancelActions"], {"ok": self.ok, "cancel": self.close}, -1)
-        # Check again whenever the user actually opens GSU.  The updater is
-        # asynchronous, so opening the plugin never waits on GitHub/network I/O.
-        self.setTitle(_("Glass System Utility - Warder Evolution"))
-        self.onShown.append(self._check_update_on_open)
-
-    def _check_update_on_open(self):
-        try:
-            self.onShown.remove(self._check_update_on_open)
-        except Exception:
-            pass
-        try:
-            GSUUpdater(self.session).check(silent=True)
-        except Exception:
-            pass
-
-    def _info(self, title, text):
-        self.session.open(GSUInfo, title, text)
+        self["key_red"] = Label(_("Close"))
+        self["actions"] = ActionMap(["OkCancelActions", "ColorActions"], {
+            "ok": self.ok, "cancel": self.close, "red": self.close,
+        }, -1)
+        self.setTitle(_("Warder Diagnostics & Tools"))
 
     def ok(self):
-        index = self["menu"].getSelectedIndex()
-        action = self.MENU[index][1]
+        action = self.MENU[self["menu"].getSelectedIndex()][1]
         actions = {
-            "originalsystem": (_("System Information"), original_system_overview_information),
-            "originalchannel": (_("Channel Information"), original_channel_overview_information),
-            "system": ("System & Hardware", system_information),
-            "hardwareid": ("Hardware Identity", hardware_identity_information),
-            "temps": ("Temperatures", temperature_information),
-            "network": ("Network & Interfaces", network_information),
-            "netdiag": (_("Network Diagnostics"), network_diagnostics),
+            "system": (_("System & Hardware"), system_information),
+            "temps": (_("Temperatures"), temperature_information),
+            "network": (_("Network & Interfaces"), network_information),
             "nethealth": (_("Network Health"), network_health_information),
-            "timehealth": ("Time & Synchronization", time_health_information),
-            "storage": ("Storage & Filesystems", storage_information),
+            "storage": (_("Storage & Filesystems"), storage_information),
             "storagehealth": (_("Storage Health"), storage_health_information),
-            "fshealth": ("Filesystem Health", filesystem_health_information),
-            "devices": ("Block Devices", device_information),
-            "memory": ("Memory & Swap", memory_information),
+            "memory": (_("Memory & Swap"), memory_information),
             "servicedashboard": (_("Service Dashboard"), service_dashboard_information),
-            "services": ("Services & Processes", service_information),
+            "services": (_("Services & Processes"), service_information),
             "runtimehealth": (_("Enigma2 Runtime Health"), runtime_health_information),
-            "ports": ("Listening Ports", listening_ports_information),
-            "mounts": ("Network Mounts", mount_information),
+            "mounts": (_("Network Mounts"), mount_information),
             "mountdoctor": (_("Network Mount Doctor"), network_mount_doctor_information),
-            "caminventory": ("CAM Inventory", cam_inventory_information),
-
-            "tuners": ("Tuner information", tuner_information),
+            "tuners": (_("Tuner information"), tuner_information),
             "logs": (_("Logs & Diagnostics"), log_information),
-            "packages": ("Package information", package_information),
-            "imageinfo": ("Image & Runtime", image_information),
-            "summary": (_("Diagnostic Summary"), diagnostic_summary),
-            "healthcheck": ("Health Check", health_check_information),
-            "capabilities": ("Detected Capabilities", capability_information),
+            "healthcheck": (_("Health Check"), health_check_information),
         }
         if action in actions:
             title, fnc = actions[action]
-            self._info(title, fnc())
-        elif action == "cammonitor":
-            self.session.open(GSUActiveCAM)
+            self.session.open(GSUInfo, title, fnc())
         elif action == "diagbundle":
             try:
                 path = create_diagnostic_bundle()
@@ -2499,21 +2588,6 @@ class SysUtilMngMain(Screen):
             except Exception as exc:
                 self.session.open(MessageBox, _("Unable to create diagnostic bundle.\n\n%s") % exc,
                                   MessageBox.TYPE_ERROR, timeout=10)
-        elif action == "update":
-            GSUUpdater(self.session).check(silent=False)
-        elif action == "restart":
-            try:
-                from Screens.Standby import TryQuitMainloop
-                self.session.open(TryQuitMainloop, 3)
-            except Exception as exc:
-                self.session.open(MessageBox, str(exc), MessageBox.TYPE_ERROR)
-        elif action == "about":
-            self._info(_("About"), (
-                "Glass System Utility - Warder Evolution %s\n\n"
-                "Modern Python 3 source core.\n"
-                "Read-only system, network, storage, service, mount, OSCam, tuner and log diagnostics enabled.\n\n"
-                "State-changing legacy functions remain gated until separately migrated and tested."
-            ) % VERSION)
 
 
 def main(session, **kwargs):
