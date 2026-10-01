@@ -444,3 +444,15 @@ Known non-blocking follow-up: localization is not yet complete inside every diag
 - Build remains centralized through tools/build-ipk.sh; packaged locales are compiled .mo files and source .po files are excluded from the IPK.
 - STATIC/CI: candidate validation required after synchronized 13.35-w16 release identity update.
 - REAL RECEIVER: REVIEW REQUIRED before this version becomes a new recovery/reference checkpoint.
+
+
+## 13.35-w16 published localization checkpoint — 2026-10-01
+
+- Official release: v13.35-w16.
+- Release target: `66d5e0e8f85882acc10f0859e29740979fd4d5b8`.
+- Publish workflow: 36843660473 — SUCCESS.
+- IPK: `enigma2-plugin-glasssysutil_13.35-w16_all.ipk` (41,798 bytes).
+- SHA-256: `4c44fab051a781e15e0f75d2fae7756559d23eaed8c07f785f842ddc3f889228`.
+- Release is immutable by project policy; do not edit, replace or delete published assets.
+- STATIC/CI/PUBLISH: PASS.
+- REAL RECEIVER: REVIEW REQUIRED. Do not promote w16 to recovery/reference checkpoint until GigaBlue Quad 4K Pro validation passes.
