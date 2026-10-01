@@ -3527,13 +3527,14 @@ class GSUOSDECMCenter(GSUOriginalStatusCenter):
 class GSUPackageCenter(Screen):
     """Original GSU IPK/DEB/user-script center; mutation stays capability-gated."""
     skin = """
-    <screen name="GlassIpkScriptCenter" position="center,center" size="750,530" title="Ipk and Script Manager" backgroundColor="#31000000">
-        <widget name="list" position="30,20" size="690,340" font="Regular;27" itemHeight="45" scrollbarMode="showOnDemand" backgroundColor="#31000000" />
-        <eLabel position="0,375" size="750,2" backgroundColor="#888888" />
-        <widget name="info" position="30,385" size="690,85" font="Regular;21" valign="center" halign="center" foregroundColor="#888888" transparent="1" />
-        <widget name="red" position="0,485" size="250,35" font="Regular;25" halign="center" foregroundColor="red" transparent="1" />
-        <widget name="green" position="250,485" size="250,35" font="Regular;25" halign="center" foregroundColor="green" transparent="1" />
-        <widget name="yellow" position="500,485" size="250,35" font="Regular;25" halign="center" foregroundColor="yellow" transparent="1" />
+    <screen name="GlassIpkScriptCenter" position="center,center" size="750,530" title="Ipk and Script Manager" backgroundColor="#31000000" >
+        <widget name="list" position="30,30" size="690,294" scrollbarMode="showOnDemand" backgroundColor="#31000000" />
+        <eLabel position="0,339" size="750,2" backgroundColor="#888888" zPosition="5" transparent="0" />
+        <widget name="info" position="30,342" size="690,117" font="priveG;25" valign="center" halign="center" foregroundColor="#666666" transparent="1" />
+        <eLabel position="0,470" size="375,2" backgroundColor="red" zPosition="5" transparent="0" />
+        <eLabel position="375,470" size="375,2" backgroundColor="green" zPosition="5" transparent="0" />
+        <widget name="red" font="priveG;30" position="0,480" size="375,40" zPosition="1" halign="center" valign="top" backgroundColor="#31000000" foregroundColor="red" transparent="1"/>
+        <widget name="green" font="priveG;30" position="375,480" size="375,40" zPosition="1" halign="center" valign="top" backgroundColor="#31000000" foregroundColor="green" transparent="1"/>
     </screen>
     """
     MENU = [
@@ -3553,7 +3554,7 @@ class GSUPackageCenter(Screen):
         self["yellow"] = Label(_("Refresh"))
         self["actions"] = ActionMap(["OkCancelActions", "ColorActions", "DirectionActions"], {
             "cancel": self.close, "red": self.close, "ok": self.open_selected,
-            "green": self.open_selected, "yellow": self.refresh,
+            "green": self.open_selected,
             "up": self.up, "down": self.down,
         }, -1)
         self.setTitle(_("IPK/DEB and user scripts"))
