@@ -182,6 +182,27 @@ class ServiceDashboardTests(unittest.TestCase):
         self.assertEqual(source.count('("Service Dashboard", "servicedashboard")'), 1)
         self.assertEqual(source.count('"servicedashboard": ("Service Dashboard", service_dashboard_information)'), 1)
 
+    def test_dashboard_accepts_capability_cam_record(self):
+        old_cam = gsu._active_cam
+        old_find = gsu._find_processes
+        old_lines = gsu._read_lines
+        old_run = gsu._run
+        try:
+            gsu._active_cam = lambda: {
+                "family": "oscam", "name": "oscam", "pid": 4321,
+                "matches": [(4321, ["/usr/bin/oscam"])]
+            }
+            gsu._find_processes = lambda needle: [(111, ["/usr/bin/enigma2"])] if needle == "enigma2" else []
+            gsu._read_lines = lambda path: []
+            gsu._run = lambda argv, timeout=3: ""
+            text = gsu.service_dashboard_information()
+            self.assertIn("[RUNNING] CAM       oscam  PID 4321", text)
+        finally:
+            gsu._active_cam = old_cam
+            gsu._find_processes = old_find
+            gsu._read_lines = old_lines
+            gsu._run = old_run
+
 
 class StorageHealthTests(unittest.TestCase):
     def test_storage_health_is_read_only_and_actionable(self):
@@ -270,3 +291,22 @@ class MainMenuFocusTests(unittest.TestCase):
                       "Listening Ports", "CAM Inventory", "Package information",
                       "Image & Runtime", "Diagnostic Summary", "Detected Capabilities"):
             self.assertNotIn('("' + label + '",', menu)
+
+
+class UpdateDiscoveryUXTests(unittest.TestCase):
+    def test_opening_gsu_starts_nonblocking_silent_update_check(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        start = source.index("class SysUtilMngMain")
+        end = source.index("def main(session", start)
+        body = source[start:end]
+        self.assertIn("self.onShown.append(self._check_update_on_open)", body)
+        self.assertIn("GSUUpdater(self.session).check(silent=True)", body)
+        self.assertIn("self.onShown.remove(self._check_update_on_open)", body)
+
+    def test_background_check_only_prompts_for_newer_release(self):
+        source = open(PLUGIN, encoding="utf-8").read()
+        start = source.index("class GSUUpdater")
+        end = source.index("class GSUInfo", start)
+        body = source[start:end]
+        self.assertIn("_version_key(release[\"version\"]) <= _version_key(VERSION)", body)
+        self.assertIn("Install the update now?", body)
