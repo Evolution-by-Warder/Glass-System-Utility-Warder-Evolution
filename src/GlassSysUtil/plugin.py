@@ -3256,8 +3256,10 @@ class SysUtilMngMain(Screen):
             self.session.open(GSUSwapManager)
         elif action == "packagetools":
             self.session.open(GSUPackageCenter)
-        elif action in ("cccaminfo", "mboxinfo"):
-            self._info(self.MENU[self["list"].getSelectedIndex()][0], conditional_legacy_cam_information())
+        elif action == "cccaminfo":
+            self.session.open(GSULegacyCAMCenter, "cccam")
+        elif action == "mboxinfo":
+            self.session.open(GSULegacyCAMCenter, "mbox")
         elif action == "channelsettings":
             self.session.open(GSUChannelSettingsCenter)
         elif action == "crond":
@@ -3270,17 +3272,6 @@ class SysUtilMngMain(Screen):
             self.session.open(GSUOSDECMCenter)
         elif action == "autoinstall":
             self.session.open(GSUAutoInstallCenter)
-
-
-
-class GSULegacyCAMCenter(GSUOriginalStatusCenter):
-    def __init__(self, session, family):
-        self._family = family
-        title = "CCcam Information" if family == "cccam" else "Mbox Information"
-        GSUOriginalStatusCenter.__init__(
-            self, session, _(title), lambda: legacy_cam_information(self._family),
-            _("Legacy CAM runtime and configuration location are inspected read-only; credentials are never displayed."))
-
 
 
 
@@ -3329,6 +3320,15 @@ class GSUOriginalStatusCenter(Screen):
 
     def show_help(self):
         self.session.open(GSUInfo, self.getTitle(), self["info"].getText())
+
+
+class GSULegacyCAMCenter(GSUOriginalStatusCenter):
+    def __init__(self, session, family):
+        self._family = family
+        title = "CCcam Information" if family == "cccam" else "Mbox Information"
+        GSUOriginalStatusCenter.__init__(
+            self, session, _(title), lambda: legacy_cam_information(self._family),
+            _("Legacy CAM runtime and configuration location are inspected read-only; credentials are never displayed."))
 
 
 class GSUSwapManager(GSUOriginalStatusCenter):
