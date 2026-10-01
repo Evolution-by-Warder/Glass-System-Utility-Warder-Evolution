@@ -3575,7 +3575,7 @@ class GSUPackageCenter(Screen):
     <screen name="GlassIpkScriptCenter" position="center,center" size="750,530" title="Ipk and Script Manager" backgroundColor="#31000000" >
         <widget name="list" position="30,30" size="690,294" scrollbarMode="showOnDemand" backgroundColor="#31000000" />
         <eLabel position="0,339" size="750,2" backgroundColor="#888888" zPosition="5" transparent="0" />
-        <widget name="info" position="30,342" size="690,117" font="priveG;25" valign="center" halign="center" foregroundColor="#666666" transparent="1" />
+        <widget name="descriptions" position="30,342" size="690,117" font="priveG;25" valign="center" halign="center" foregroundColor="#666666" transparent="1" />
         <eLabel position="0,470" size="375,2" backgroundColor="red" zPosition="5" transparent="0" />
         <eLabel position="375,470" size="375,2" backgroundColor="green" zPosition="5" transparent="0" />
         <widget name="red" font="priveG;30" position="0,480" size="375,40" zPosition="1" halign="center" valign="top" backgroundColor="#31000000" foregroundColor="red" transparent="1"/>
@@ -3593,7 +3593,7 @@ class GSUPackageCenter(Screen):
     def __init__(self, session):
         Screen.__init__(self, session)
         self["list"] = MenuList([x[0] for x in self.MENU])
-        self["info"] = Label("")
+        self["descriptions"] = Label("")
         self["red"] = Label(_("Exit"))
         self["green"] = Label(_("OK"))
         self["yellow"] = Label(_("Refresh"))
@@ -3608,9 +3608,9 @@ class GSUPackageCenter(Screen):
     def refresh(self):
         try:
             idx = self["list"].getSelectedIndex()
-            self["info"].setText(self.MENU[idx][1])
+            self["descriptions"].setText(self.MENU[idx][1])
         except Exception:
-            self["info"].setText("")
+            self["descriptions"].setText("")
     def up(self):
         self["list"].up(); self.refresh()
     def down(self):
