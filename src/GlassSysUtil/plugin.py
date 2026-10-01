@@ -1934,6 +1934,7 @@ class GSUActiveCAM(Screen):
         # Candidate is gated by CI before immutable release publication.
         # Final w11 release candidate validation marker.
         # Receiver polish: narrower identity column, wider status, DVBAPI channel fallback.
+        # 13.31-w12 release validation.
         self._refresh()
         self._start_auto_refresh()
 
