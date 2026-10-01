@@ -74,9 +74,14 @@ jobs:
           source = open('src/GlassSysUtil/plugin.py', 'r', encoding='utf-8').read()
           tree = ast.parse(source)
           main_cls = next(n for n in tree.body if isinstance(n, ast.ClassDef) and n.name == 'SysUtilMngMain')
-          init = next(n for n in main_cls.body if isinstance(n, ast.FunctionDef) and n.name == '__init__')
-          calls = [n for n in ast.walk(init) if isinstance(n, ast.Call)]
-          assert any(isinstance(c.func, ast.Attribute) and c.func.attr == 'check' and any(k.arg == 'silent' and isinstance(k.value, ast.Constant) and k.value.value is True for k in c.keywords) for c in calls), 'plugin-open silent updater check missing'
+          methods = [n for n in main_cls.body if isinstance(n, ast.FunctionDef)]
+          init = next(n for n in methods if n.name == '__init__')
+          check_method = next((n for n in methods if n.name == '_check_update_on_open'), None)
+          assert check_method is not None, 'plugin-open updater callback missing'
+          init_calls = [n for n in ast.walk(init) if isinstance(n, ast.Call)]
+          assert any(isinstance(c.func, ast.Attribute) and c.func.attr == 'append' and c.args and isinstance(c.args[0], ast.Attribute) and c.args[0].attr == '_check_update_on_open' for c in init_calls), 'plugin-open updater callback not registered'
+          calls = [n for n in ast.walk(check_method) if isinstance(n, ast.Call)]
+          assert any(isinstance(c.func, ast.Attribute) and c.func.attr == 'check' and any(k.arg == 'silent' and isinstance(k.value, ast.Constant) and k.value.value is True for k in c.keywords) for c in calls), 'silent updater check missing from plugin-open callback'
           PY
           grep -q 'ScrollLabel' src/GlassSysUtil/plugin.py
           python3 -m unittest discover -s tests -p 'test_*.py'
