@@ -2810,8 +2810,10 @@ class GSUECMInformation(Screen):
 
     def __init__(self, session):
         Screen.__init__(self, session)
-        self["ecmlabels"] = Label("")\n        self["ecmValues"] = Label("")
-        self["piccode"] = Label("")\n        self["service"] = Label("")
+        self["ecmlabels"] = Label("")
+        self["ecmValues"] = Label("")
+        self["piccode"] = Label("")
+        self["service"] = Label("")
         self["service_context"] = Label("")
         self["ca_context"] = Label("")
         self["ecm_context"] = Label("")
