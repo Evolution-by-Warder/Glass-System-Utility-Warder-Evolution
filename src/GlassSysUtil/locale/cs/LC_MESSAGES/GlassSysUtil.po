@@ -95,3 +95,39 @@ msgstr "Stahuji, ověřuji a instaluji aktualizaci..."
 msgid "Update installed successfully.\\nEnigma2 GUI will restart in 3 seconds."
 msgstr "Aktualizace byla úspěšně nainstalována.\\nEnigma2 GUI se restartuje za 3 sekundy."
 
+msgid "Glass System Utility %s is up to date."
+msgstr "Glass System Utility %s je aktuální."
+
+msgid "Unable to check for updates.\\n\\n%s"
+msgstr "Aktualizace se nepodařilo zkontrolovat.\\n\\n%s"
+
+msgid "Update installation is unavailable on this Enigma2 image."
+msgstr "Instalace aktualizace není na tomto Enigma2 image dostupná."
+
+msgid "Update installation failed.\\n\\n%s"
+msgstr "Instalace aktualizace selhala.\\n\\n%s"
+
+msgid "No supported active CAM detected."
+msgstr "Nebyl zjištěn žádný podporovaný aktivní CAM."
+
+msgid "Active CAM restart failed.\\n\\n%s"
+msgstr "Restart CAM selhal.\\n\\n%s"
+
+msgid "Active CAM restart verified%s."
+msgstr "Restart CAM byl ověřen%s."
+
+msgid "Restart command completed, but no active CAM was detected afterwards."
+msgstr "Příkaz k restartu skončil, ale poté nebyl zjištěn žádný aktivní CAM."
+
+msgid "Unable to start CAM restart worker."
+msgstr "Nepodařilo se spustit proces restartu CAM."
+
+msgid "Diagnostic bundle created:\\n%s"
+msgstr "Diagnostický balíček byl vytvořen:\\n%s"
+
+msgid "Unable to create diagnostic bundle.\\n\\n%s"
+msgstr "Diagnostický balíček se nepodařilo vytvořit.\\n\\n%s"
+
+msgid "About"
+msgstr "O pluginu"
+
