@@ -21,6 +21,9 @@ cp "$ROOT/src/GlassSysUtil/plugin.py" "$ROOT/src/GlassSysUtil/__init__.py" \
    "$ROOT/src/GlassSysUtil/version" "$ROOT/src/GlassSysUtil/SysMgt.png" "$PLUGIN/"
 if [ -d "$ROOT/src/GlassSysUtil/locale" ]; then
     cp -R "$ROOT/src/GlassSysUtil/locale" "$PLUGIN/"
+    for po in "$PLUGIN"/locale/*/LC_MESSAGES/GlassSysUtil.po; do
+        msgfmt "$po" -o "${po%.po}.mo"
+    done
 fi
 cp "$ROOT/packaging/CONTROL/control" "$ROOT/packaging/CONTROL/postinst" "$CONTROL/"
 chmod 755 "$CONTROL/postinst"
