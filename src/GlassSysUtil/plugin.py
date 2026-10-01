@@ -1331,6 +1331,49 @@ def package_information():
     return "\n".join(rows)
 
 
+def network_health_information():
+    """Fast read-only network health focused on link, addressing, gateway and DNS."""
+    rows = ["GSU Network Health", ""]
+    try:
+        names = sorted(name for name in os.listdir("/sys/class/net") if name != "lo")
+    except Exception:
+        names = []
+    up = []
+    addressed = []
+    for name in names:
+        state = _read_text("/sys/class/net/%s/operstate" % name, "unknown")
+        ipv4 = _ipv4_for_interface(name)
+        if state == "up":
+            up.append(name)
+        if ipv4 != "N/A":
+            addressed.append("%s=%s" % (name, ipv4))
+        rows.append("[%s] %-10s link=%s  IPv4=%s" % (
+            "PASS" if state == "up" else "INFO", name, state, ipv4))
+    if not names:
+        rows.append("[INFO] Network interfaces not exposed.")
+
+    gateway = _default_gateway()
+    if gateway != "N/A":
+        rc, output = _run_status(["ping", "-c", "1", "-W", "2", gateway], 4)
+        rows.append("[%s] Gateway %s  %s" % (
+            "PASS" if rc == 0 else "WARNING", gateway,
+            "reachable" if rc == 0 else "no ping reply"))
+    else:
+        rows.append("[WARNING] Default gateway not detected.")
+
+    resolvers = []
+    for line in _read_lines("/etc/resolv.conf"):
+        fields = line.split()
+        if len(fields) >= 2 and fields[0] == "nameserver":
+            resolvers.append(fields[1])
+    rows.append("[%s] DNS resolver configuration: %s" % (
+        "PASS" if resolvers else "WARNING",
+        ", ".join(resolvers) if resolvers else "none detected"))
+    rows += ["", "Summary: %d interface(s) up, %d with IPv4." % (len(up), len(addressed)),
+             "Network Health is read-only; ping failure alone is reported as a warning, not proof of link failure."]
+    return "\n".join(rows)
+
+
 def network_diagnostics():
     rows = []
     gateway = _default_gateway()
@@ -2320,6 +2363,7 @@ class SysUtilMngMain(Screen):
         ("Temperatures", "temps"),
         ("Network & Interfaces", "network"),
         ("Network Diagnostics", "netdiag"),
+        ("Network Health", "nethealth"),
         ("Time & Synchronization", "timehealth"),
         ("Storage & Filesystems", "storage"),
         ("Storage Health", "storagehealth"),
@@ -2365,6 +2409,7 @@ class SysUtilMngMain(Screen):
             "temps": ("Temperatures", temperature_information),
             "network": ("Network & Interfaces", network_information),
             "netdiag": ("Network Diagnostics", network_diagnostics),
+            "nethealth": ("Network Health", network_health_information),
             "timehealth": ("Time & Synchronization", time_health_information),
             "storage": ("Storage & Filesystems", storage_information),
             "storagehealth": ("Storage Health", storage_health_information),
