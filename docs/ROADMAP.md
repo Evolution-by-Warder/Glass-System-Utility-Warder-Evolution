@@ -465,3 +465,13 @@ Known non-blocking follow-up: localization is not yet complete inside every diag
 - CI enforces the updater lifecycle policy and validates the OSCam translation placeholder contract against production files.
 - 13.35-w16 remains immutable and is not REAL RECEIVER PASS. 13.33-w14 and 13.34-w15 remain receiver-validated recovery/reference checkpoints until w17 is tested on hardware.
 - STATIC/CI: pending final green build. REAL RECEIVER: REVIEW REQUIRED.
+
+
+## 13.36-w17 CI recovery checkpoint — 2026-10-01
+
+- Recovered the complete w16 UI after detecting that the first session-start updater removal accidentally deleted 481 lines, including GSUInfo, GSUActiveCAM and SysUtilMngMain.
+- Re-applied the w17 changes narrowly: automatic update discovery runs only from the plugin-open onShown callback; no WHERE_SESSIONSTART hook or session-global updater flag remains.
+- Fixed the localized OSCam live-row status to use one language-neutral integer placeholder, preventing the OpenATV crash caused by a translated string with fewer formatting arguments.
+- CI now validates the deferred plugin-open updater contract structurally with Python AST rather than brittle source-text matching.
+- GitHub Actions build run 36855162998: PASS at commit de17393b3d0eeea51b28b99c2f2fcf783d2f1d31.
+- REAL RECEIVER: REVIEW REQUIRED. Do not mark w17 REAL PASS until installed and exercised on the GigaBlue Quad 4K Pro.
