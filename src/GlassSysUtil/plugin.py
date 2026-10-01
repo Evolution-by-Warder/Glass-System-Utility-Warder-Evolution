@@ -22,7 +22,12 @@ import urllib.error
 from urllib.parse import urlsplit
 
 from Plugins.Plugin import PluginDescriptor
-from . import _
+try:
+    from . import _
+except (ImportError, ValueError):
+    # Standalone import is used by the regression harness; Enigma2 loads the
+    # package normally and therefore uses the gettext implementation above.
+    _ = lambda text: text
 from Screens.MessageBox import MessageBox
 from Screens.Screen import Screen
 from Components.ActionMap import ActionMap
