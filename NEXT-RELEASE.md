@@ -1,3 +1,11 @@
+# Current repair status — 31 October 2026
+
+The four-entry localized History view and verified 13.20 installation repair are included in the new 13.40-r95 repair package. The release workflow and 393 tests passed; the original missing-file errors reproduce before the fix and disappear after it in real isolated opkg. Physical receiver retest of r95 remains pending. Existing r93 bridge and stable update feeds remain unchanged.
+
+The following request is retained as a historical requirement, now implemented by this repair.
+
+---
+
 # Next release — History presentation
 
 Status: required with the next functional fix or enhancement; no standalone IPK for this task.

@@ -1,0 +1,81 @@
+{
+  "version": "13.40-r94",
+  "notes": {
+    "sk": "Jednoduchšie vyhľadanie pluginu medzi rozšíreniami.",
+    "cs": "Snazší nalezení pluginu mezi rozšířeními.",
+    "en": "Easier to find the plugin among extensions.",
+    "de": "Das Plugin ist unter Erweiterungen leichter zu finden.",
+    "pl": "Łatwiejsze wyszukiwanie wtyczki w rozszerzeniach.",
+    "hu": "A bővítmény könnyebben megtalálható.",
+    "ru": "Плагин проще найти среди расширений.",
+    "fr": "Le plugin est plus facile à trouver parmi les extensions.",
+    "it": "Il plugin è più facile da trovare tra le estensioni.",
+    "es": "El complemento es más fácil de encontrar entre las extensiones."
+  },
+  "entries": [
+    {
+      "version": "13.40-r94",
+      "date": "30.10.2026",
+      "notes": {
+        "sk": "Jednoduchšie vyhľadanie pluginu medzi rozšíreniami.",
+        "cs": "Snazší nalezení pluginu mezi rozšířeními.",
+        "en": "Easier to find the plugin among extensions.",
+        "de": "Das Plugin ist unter Erweiterungen leichter zu finden.",
+        "pl": "Łatwiejsze wyszukiwanie wtyczki w rozszerzeniach.",
+        "hu": "A bővítmény könnyebben megtalálható.",
+        "ru": "Плагин проще найти среди расширений.",
+        "fr": "Le plugin est plus facile à trouver parmi les extensions.",
+        "it": "Il plugin è più facile da trovare tra le estensioni.",
+        "es": "El complemento es más fácil de encontrar entre las extensiones."
+      }
+    },
+    {
+      "version": "13.40-r93",
+      "date": "30.10.2026",
+      "notes": {
+        "sk": "Spoľahlivejšia aktualizácia so zachovaním nastavení.",
+        "cs": "Spolehlivější aktualizace se zachováním nastavení.",
+        "en": "More reliable updates that preserve settings.",
+        "de": "Zuverlässigere Updates mit Erhalt der Einstellungen.",
+        "pl": "Pewniejsze aktualizacje z zachowaniem ustawień.",
+        "hu": "Megbízhatóbb frissítés a beállítások megőrzésével.",
+        "ru": "Надёжнее обновления с сохранением настроек.",
+        "fr": "Mises à jour plus fiables avec conservation des réglages.",
+        "it": "Aggiornamenti più affidabili che conservano le impostazioni.",
+        "es": "Actualizaciones más fiables que conservan los ajustes."
+      }
+    },
+    {
+      "version": "13.40-r92",
+      "date": "29.10.2026",
+      "notes": {
+        "sk": "Stabilnejšia prevádzka a upratovanie dočasných údajov.",
+        "cs": "Stabilnější provoz a úklid dočasných dat.",
+        "en": "More stable operation and temporary data cleanup.",
+        "de": "Stabilerer Betrieb und Bereinigung temporärer Daten.",
+        "pl": "Stabilniejsza praca i porządkowanie danych tymczasowych.",
+        "hu": "Stabilabb működés és az ideiglenes adatok tisztítása.",
+        "ru": "Более стабильная работа и очистка временных данных.",
+        "fr": "Fonctionnement plus stable et nettoyage des données temporaires.",
+        "it": "Funzionamento più stabile e pulizia dei dati temporanei.",
+        "es": "Funcionamiento más estable y limpieza de datos temporales."
+      }
+    },
+    {
+      "version": "13.40-r91",
+      "date": "29.10.2026",
+      "notes": {
+        "sk": "Vylepšená stabilita a odozva pluginu.",
+        "cs": "Vylepšená stabilita a odezva pluginu.",
+        "en": "Improved plugin stability and responsiveness.",
+        "de": "Verbesserte Stabilität und Reaktionsfähigkeit.",
+        "pl": "Poprawiona stabilność i szybkość działania wtyczki.",
+        "hu": "Jobb stabilitás és gyorsabb reakció.",
+        "ru": "Повышена стабильность и отзывчивость плагина.",
+        "fr": "Stabilité et réactivité améliorées.",
+        "it": "Stabilità e reattività migliorate.",
+        "es": "Mayor estabilidad y capacidad de respuesta."
+      }
+    }
+  ]
+}

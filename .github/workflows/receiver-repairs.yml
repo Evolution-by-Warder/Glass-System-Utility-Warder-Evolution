@@ -1,0 +1,46 @@
+name: GSU receiver repair package
+on:
+  push:
+    branches: [fix/receiver-repairs-20261031]
+    paths: [plugin/**, docs/**, reports/**, .github/workflows/receiver-repairs.yml]
+permissions:
+  contents: write
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - run: python -m unittest discover -s plugin/tests -q
+      - name: Prepare and verify new immutable IPK
+        run: |
+          set -euo pipefail
+          python plugin/tools/prepare_receiver_repair.py
+          python plugin/tools/build_ipk.py --output plugin/build
+          cp plugin/build/enigma2-plugin-extensions-gsu_13.40-r95_all.ipk /tmp/first.ipk
+          python plugin/tools/build_ipk.py --output plugin/build
+          cmp /tmp/first.ipk plugin/build/enigma2-plugin-extensions-gsu_13.40-r95_all.ipk
+          python plugin/tools/verify_receiver_repair.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GSU-13.40-r95
+          path: plugin/build/*
+      - name: Publish repair package without changing update feeds
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          PACKAGE=plugin/build/enigma2-plugin-extensions-gsu_13.40-r95_all.ipk
+          TAG=v13.40-r95
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            mkdir -p /tmp/immutable
+            gh release download "$TAG" --pattern "$(basename "$PACKAGE")" --dir /tmp/immutable
+            cmp "$PACKAGE" "/tmp/immutable/$(basename "$PACKAGE")"
+          else
+            gh release create "$TAG" "$PACKAGE" "$PACKAGE.sha256" --target "$GITHUB_SHA" --prerelease --latest=false --title "GSU 13.40-r95" --notes-file plugin/update/RELEASE-NOTES.md
+          fi

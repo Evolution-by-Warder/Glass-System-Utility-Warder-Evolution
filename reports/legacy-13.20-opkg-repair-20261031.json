@@ -1,0 +1,21 @@
+{
+  "original_ipk_sha256": "81aea6eb25b5ed519e904af87a3d7bece5d32ae6886a1690dac8ab47306fe3f7",
+  "opkg_version": "opkg version 0.10.0 (libsolv 0.7.40)",
+  "before": {
+    "preparation_enabled": false,
+    "opkg_exit": 0,
+    "obsolete_file_errors": 12,
+    "final_package_installed": true,
+    "all_new_payload_bytes_match": true,
+    "settings_preserved": true
+  },
+  "fixed": {
+    "preparation_enabled": true,
+    "opkg_exit": 0,
+    "obsolete_file_errors": 0,
+    "final_package_installed": true,
+    "all_new_payload_bytes_match": true,
+    "settings_preserved": true
+  },
+  "limits": "Isolated host test: original legacy hook/inventory with minimal old file contents, complete new payload; not a receiver test."
+}

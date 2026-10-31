@@ -187,7 +187,17 @@ def validate_ipk(path, release):
         raise UpdateError("IPK package identity, version or architecture mismatch")
 
 
-def install_release(release, opener=_open, runner=subprocess.run):
+def verify_installation(expected_version, package_id=PACKAGE_ID, runner=subprocess.run):
+    # Use the newly installed helper, even while the old GUI remains in memory.
+    helper = pathlib.Path(__file__).parent / 'install_health.py'
+    result = runner(['/usr/bin/python3', str(helper), '--expected-version',
+                     expected_version, '--package', package_id], stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT, text=True, timeout=30)
+    if result.returncode != 0:
+        raise UpdateError('GSU installation verification failed: ' + result.stdout[-2000:])
+
+
+def install_release(release, opener=_open, runner=subprocess.run, verifier=None):
     """Stage and validate both packages before a guarded identity replacement."""
     with tempfile.TemporaryDirectory(prefix="gsu-plugin-update-") as temporary:
         work = pathlib.Path(temporary)
@@ -227,6 +237,7 @@ def install_release(release, opener=_open, runner=subprocess.run):
                                 stderr=subprocess.STDOUT, text=True, timeout=300)
                 if result.returncode != 0:
                     raise UpdateError("opkg failed (%s): %s" % (result.returncode, result.stdout[-2000:]))
+                (verifier or verify_installation)(release.version, package_id=release.package_id, runner=runner)
             except Exception as failure:
                 if rollback_path is not None:
                     try:

@@ -1,0 +1,48 @@
+#!/bin/sh
+set -e
+[ -z "${D:-}" ] || exit 0
+
+# The verified 13.20 postinst deletes payload files still owned by opkg.
+# Prepare only missing, still-owned entries for native obsolete-file pruning.
+case "${1:-}" in install|upgrade) ;; *) exit 0 ;; esac
+legacy_expected=0
+[ "${2:-}" != 13.20 ] || legacy_expected=1
+for info in /var/lib/opkg/info /usr/lib/opkg/info; do
+    old="$info/enigma2-plugin-glasssysutil"
+    [ -f "$old.postinst" ] && [ ! -L "$old.postinst" ] || continue
+    digest=$(sha256sum "$old.postinst" | awk '{print $1}')
+    if [ "$digest" != f0f5ccd235d1e951976edff15eed02eac09f720724e0d4d06ece09dbbc5566d2 ]; then
+        continue
+    fi
+    # Some package managers call a renamed replacement 'install'. The pinned
+    # hook identifies 13.20 without a nested query to the active opkg process.
+    legacy_expected=1
+    [ -f "$old.list" ] && [ ! -L "$old.list" ] || exit 1
+    for hook in preinst prerm postrm; do
+        if [ -e "$old.$hook" ] || [ -L "$old.$hook" ]; then
+            echo "GSU: unexpected legacy hook; upgrade aborted."
+            exit 1
+        fi
+    done
+    p=/usr/lib/enigma2/python/Plugins/Extensions/GlassSysUtil
+    for path in /usr/share/misc/hddtemp-def.db /etc/nfs_cifs-def.cfg \
+        /etc/piconPaths-def.conf /etc/remote_servers-def.cfg /usr/bin/ftplib.py \
+        "$p/plugin.py32o" "$p/plugin.py38o" "$p/plugin.py39o" \
+        "$p/plugin.py310o" "$p/plugin.py311o" "$p/plugin.py312o" \
+        "$p/plugin.pyc" "$p/plugin.pyo"; do
+        if awk -v path="$path" '$1 == path { found = 1 } END { exit !found }' "$old.list" &&
+           [ ! -e "$path" ] && [ ! -L "$path" ]; then
+            (set -C; umask 077; : > "$path") || {
+                echo "GSU: could not prepare tracked legacy file; upgrade aborted."
+                exit 1
+            }
+        fi
+    done
+    echo "GSU: verified 13.20 upgrade preparation completed."
+    exit 0
+done
+if [ "$legacy_expected" = 1 ]; then
+    echo "GSU: verified legacy 13.20 metadata unavailable; upgrade aborted."
+    exit 1
+fi
+exit 0

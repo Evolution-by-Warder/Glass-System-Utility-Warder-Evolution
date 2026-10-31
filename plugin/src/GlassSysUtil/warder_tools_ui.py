@@ -8,6 +8,7 @@ from Screens.Screen import Screen
 from twisted.internet.threads import deferToThread
 from .warder_tools import run_task
 from .warder_main import PLUGIN_NAME
+from .release_history import load_notes
 
 _SK={
     'Tools':'Nástroje',
@@ -47,6 +48,10 @@ def about_text(api,root=None):
     version=read_local('version',128) or text(api,'Unavailable')
     notes=read_local('release-notes.txt',16384).splitlines()
     changes='\n'.join(notes[1:]).strip() if notes and notes[0]=='GSU '+version else ''
+    settings=api.get('config')
+    language=getattr(getattr(getattr(settings,'osd',None),'language',None),'value','en')
+    enabled=getattr(getattr(getattr(getattr(settings,'plugins',None),'GlassSysUtil',None),'par62',None),'value',True)
+    changes=load_notes(root/'release-history.json',version,language if enabled else 'en') or changes
     return '\n'.join([PLUGIN_NAME,
         text(api,'Version')+': '+version,'',
         text(api,'Receiver information, CAM/ECM management and diagnostics.'),'',

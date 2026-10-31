@@ -63,6 +63,13 @@ def build(destination, bridge=False):
     if bridge:notes=notes.replace('GSU 13.40-r94','GSU 13.40-r93',1)
     assert notes.splitlines()[0]=='GSU '+version,'Release notes do not match runtime version'
     entries.append((PLUGIN+'/release-notes.txt',notes.encode('utf-8'),0o644))
+    history=json.loads((BASE/'update/RELEASE-NOTES.i18n.json').read_text())
+    history['version']=version
+    if bridge:
+        history['entries']=[entry for entry in history['entries']
+                            if int(entry['version'].rsplit('r',1)[1])<=93]
+    entries.append((PLUGIN+'/release-history.json',
+                    (json.dumps(history,ensure_ascii=False,indent=2)+'\n').encode(),0o644))
     for path in sorted((BASE/'converters').glob('*.py')):
         compile(path.read_text(),str(path),'exec')
         entries.append(('usr/lib/enigma2/python/Components/Converter/'+path.name,path.read_bytes(),0o644))
@@ -71,6 +78,12 @@ def build(destination, bridge=False):
     for path in sorted((BASE/'defaults').iterdir()):
         entries.append((PLUGIN+'/defaults/'+path.name,path.read_bytes(),0o644))
     control=('Package: '+package+'\nVersion: '+version+'\nArchitecture: all\nSection: '+('extra' if bridge else 'extensions')+'\nPriority: optional\nMaintainer: Warder Evolution\nDepends: enigma2, python3-core, python3-xml, python3-netclient, python3-compression, python3-fcntl, python3-json, python3-threading, ca-certificates\nDescription: GSU Warder Evolution: receiver information, CAM/ECM management and diagnostics\n'+('' if bridge else 'Replaces: '+LEGACY_PACKAGE+'\nConflicts: '+LEGACY_PACKAGE+'\n')).encode()
+    checked = {name[len(PLUGIN)+1:]: hashlib.sha256(data).hexdigest()
+               for name, data, mode in entries if name.startswith(PLUGIN+'/')
+               and (name.endswith('.py') or name == PLUGIN+'/version')}
+    entries.append((PLUGIN+'/installed-files.json',
+                    (json.dumps({'version':version,'files':checked},sort_keys=True,indent=2)+'\n').encode(),0o644))
+    preinst=(BASE/'control/preinst').read_bytes()
     postinst='''#!/bin/sh
 set -e
 [ -z "$D" ] || exit 0
@@ -85,7 +98,8 @@ done
 [ -e /etc/piconPaths.conf ] || cp "$p/defaults/piconPaths-def.conf" /etc/piconPaths.conf
 [ -e /etc/hddtemp.db ] || cp "$p/defaults/hddtemp-def.db" /etc/hddtemp.db
 [ -e /etc/oscam_version ] || cp "$p/defaults/oscam_version" /etc/oscam_version
-printf '%s\\n' 'GSU Warder Evolution installed. Restart the GUI.'
+/usr/bin/python3 "$p/install_health.py" --files-only
+printf '%s\\n' 'GSU files verified. Restart the GUI after installation completes.'
 exit 0
 '''.encode()
     prerm=b"""#!/bin/sh
@@ -97,7 +111,7 @@ if [ "$1" = remove ] && [ ! -f /var/lib/warder-gsu/package-rename-in-progress ];
 fi
 exit 0
 """
-    sections=[('debian-binary',b'2.0\n'),('control.tar.gz',archive([('control',control,0o644),('postinst',postinst,0o755),('prerm',prerm,0o755)])),('data.tar.gz',archive(entries))]
+    sections=[('debian-binary',b'2.0\n'),('control.tar.gz',archive([('control',control,0o644),('preinst',preinst,0o755),('postinst',postinst,0o755),('prerm',prerm,0o755)])),('data.tar.gz',archive(entries))]
     result=bytearray(b'!<arch>\n')
     for name,data in sections:
         result.extend(('%-16s%-12s%-6s%-6s%-8s%-10s`\n'%(name+'/',0,0,0,'100644',len(data))).encode());result.extend(data)

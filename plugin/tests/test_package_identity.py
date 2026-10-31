@@ -68,7 +68,7 @@ class PackageIdentityTests(unittest.TestCase):
                 self.assertTrue(flag.is_file())
                 self.assertEqual(flag.read_text(),'13.40-r94\n')
                 return types.SimpleNamespace(returncode=returncode,stdout='opkg result')
-            with patch.object(update,'MIGRATION_FLAG',flag):
+            with patch.object(update,'MIGRATION_FLAG',flag), patch.object(update,'verify_installation'):
                 if returncode or legacy_version=='13.40-r92':
                     with self.assertRaises(update.UpdateError):update.install_release(self.release,opener,runner)
                 else:self.assertEqual(update.install_release(self.release,opener,runner),'13.40-r94')
